@@ -17,7 +17,7 @@ Dashboards Grafana da infraestrutura e os contratos de dados que eles consomem.
 | Dashboard | UID | Job Prometheus | Logs (Loki) |
 |---|---|---|---|
 | Servidores Linux | `servers-linux` | `integrations/unix` | `systemd-journal` |
-| Servidores Windows | `servers-windows` | `integrations/windows` | — |
+| Servidores Windows | `servers-windows` | `integrations/windows` | `windows-eventlog` |
 
 ## Convenções
 

@@ -209,17 +209,6 @@
           "range": false,
           "refId": "C",
           "step": 240
-        },
-        {
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "rate(node_pressure_irq_stalled_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
-          "format": "time_series",
-          "instant": true,
-          "legendFormat": "Irq",
-          "range": false,
-          "refId": "D",
-          "step": 240
         }
       ],
       "title": "Pressure",
@@ -1960,35 +1949,6 @@
                     }
                   }
                 ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Guest - Running virtual CPUs, included in User/Nice"
-                },
-                "properties": [
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 0
-                  },
-                  {
-                    "id": "custom.lineStyle",
-                    "value": {
-                      "dash": [
-                        10,
-                        10
-                      ],
-                      "fill": "dash"
-                    }
-                  },
-                  {
-                    "id": "custom.stacking",
-                    "value": {
-                      "group": "A",
-                      "mode": "none"
-                    }
-                  }
-                ]
               }
             ]
           },
@@ -2090,15 +2050,6 @@
               "legendFormat": "Idle - Waiting for something to happen",
               "range": true,
               "refId": "H",
-              "step": 240
-            },
-            {
-              "editorMode": "code",
-              "expr": "sum by(instance) (rate(node_cpu_guest_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])) / on(instance) group_left sum by (instance)((rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval]))) > 0",
-              "format": "time_series",
-              "legendFormat": "Guest - Running virtual CPUs, included in User/Nice",
-              "range": true,
-              "refId": "I",
               "step": 240
             }
           ],
@@ -3360,15 +3311,6 @@
               "legendFormat": "I/O - Full",
               "range": true,
               "refId": "I/O full",
-              "step": 240
-            },
-            {
-              "editorMode": "code",
-              "expr": "rate(node_pressure_irq_stalled_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
-              "format": "time_series",
-              "legendFormat": "IRQ - Full",
-              "range": true,
-              "refId": "A",
               "step": 240
             }
           ],
@@ -5729,15 +5671,6 @@
               "range": true,
               "refId": "B",
               "step": 240
-            },
-            {
-              "editorMode": "code",
-              "expr": "increase(node_kernel_hung_tasks_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
-              "format": "time_series",
-              "legendFormat": "Hung Tasks Detected (D state > timeout)",
-              "range": true,
-              "refId": "C",
-              "step": 240
             }
           ],
           "title": "Processes Status",
@@ -6930,123 +6863,6 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "description": "Shows how hard each cooling device (fan/throttle) is working relative to its maximum capacity",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
-                "drawStyle": "line",
-                "fillOpacity": 20,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  }
-                ]
-              },
-              "unit": "percent"
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byRegexp",
-                  "options": "/.*Max.*/"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "dark-red",
-                      "mode": "fixed"
-                    }
-                  },
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 0
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 10,
-            "w": 12,
-            "x": 0,
-            "y": 747
-          },
-          "id": 300,
-          "options": {
-            "legend": {
-              "calcs": [
-                "min",
-                "mean",
-                "max"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "hideZeros": false,
-              "mode": "multi",
-              "sort": "desc"
-            }
-          },
-          "pluginVersion": "11.6.1",
-          "targets": [
-            {
-              "editorMode": "code",
-              "expr": "100 * node_cooling_device_cur_state{instance=\"$server\",job=\"integrations/unix\"} / (node_cooling_device_max_state{instance=\"$server\",job=\"integrations/unix\"} > 0)",
-              "format": "time_series",
-              "interval": "",
-              "legendFormat": "{{name}} - {{type}}",
-              "range": true,
-              "refId": "A",
-              "step": 240
-            }
-          ],
-          "title": "Cooling Device Utilization",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
           "description": "Tracks the system clock's estimated and maximum error, as well as its offset from the reference clock (e.g., via NTP). Useful for detecting synchronization drift",
           "fieldConfig": {
             "defaults": {
@@ -7164,103 +6980,6 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "description": "NTP phase-locked loop (PLL) time constant used by the kernel to control time adjustments. Lower values mean faster correction but less stability",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
-                "drawStyle": "line",
-                "fillOpacity": 20,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  }
-                ]
-              },
-              "unit": "short"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 10,
-            "w": 8,
-            "x": 8,
-            "y": 767
-          },
-          "id": 291,
-          "options": {
-            "legend": {
-              "calcs": [
-                "min",
-                "mean",
-                "max"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "hideZeros": false,
-              "mode": "multi",
-              "sort": "desc"
-            }
-          },
-          "pluginVersion": "11.6.1",
-          "targets": [
-            {
-              "editorMode": "code",
-              "expr": "node_timex_loop_time_constant{instance=\"$server\",job=\"integrations/unix\"}",
-              "format": "time_series",
-              "interval": "",
-              "legendFormat": "PLL Time Constant",
-              "range": true,
-              "refId": "A",
-              "step": 240
-            }
-          ],
-          "title": "Time PLL Adjust",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
           "description": "Shows whether the system clock is synchronized to a reliable time source, and the current frequency correction ratio applied by the kernel to maintain synchronization",
           "fieldConfig": {
             "defaults": {
@@ -7348,45 +7067,13 @@
               "range": true,
               "refId": "A",
               "step": 240
-            },
-            {
-              "editorMode": "code",
-              "expr": "node_timex_frequency_adjustment_ratio{instance=\"$server\",job=\"integrations/unix\"}",
-              "format": "time_series",
-              "interval": "",
-              "legendFormat": "Frequency Adjustment",
-              "range": true,
-              "refId": "B",
-              "step": 240
-            },
-            {
-              "editorMode": "code",
-              "expr": "node_timex_tick_seconds{instance=\"$server\",job=\"integrations/unix\"}",
-              "format": "time_series",
-              "hide": true,
-              "interval": "",
-              "legendFormat": "Tick Interval",
-              "range": true,
-              "refId": "C",
-              "step": 240
-            },
-            {
-              "editorMode": "code",
-              "expr": "node_timex_tai_offset_seconds{instance=\"$server\",job=\"integrations/unix\"}",
-              "format": "time_series",
-              "hide": true,
-              "interval": "",
-              "legendFormat": "TAI Offset",
-              "range": true,
-              "refId": "D",
-              "step": 240
             }
           ],
           "title": "Time Synchronized Status",
           "type": "timeseries"
         }
       ],
-      "title": "Hardware & Time",
+      "title": "Time Sync",
       "type": "row"
     },
     {
@@ -12477,22 +12164,6 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_TCPRcvQDrop{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
-              "interval": "",
-              "legendFormat": "Receive Queue Drops",
-              "range": true,
-              "refId": "G"
-            },
-            {
-              "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_TCPOFOQueue{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
-              "interval": "",
-              "legendFormat": "Out-of-order Queued",
-              "range": true,
-              "refId": "H"
-            },
-            {
-              "editorMode": "code",
               "expr": "rate(node_netstat_TcpExt_TCPTimeouts{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "TCP Timeouts",
@@ -13377,416 +13048,6 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "description": "Rate of CPU time used by the process exposing this metric (user + system mode)",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
-                "drawStyle": "line",
-                "fillOpacity": 20,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  }
-                ]
-              },
-              "unit": "percentunit"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 10,
-            "w": 12,
-            "x": 12,
-            "y": 164
-          },
-          "id": 308,
-          "options": {
-            "legend": {
-              "calcs": [
-                "min",
-                "mean",
-                "max"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "hideZeros": false,
-              "mode": "multi",
-              "sort": "desc"
-            }
-          },
-          "pluginVersion": "11.6.1",
-          "targets": [
-            {
-              "editorMode": "code",
-              "expr": "rate(process_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
-              "format": "time_series",
-              "interval": "",
-              "legendFormat": "Process CPU Usage",
-              "range": true,
-              "refId": "A",
-              "step": 240
-            }
-          ],
-          "title": "Exporter Process CPU Usage",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "description": "Tracks the memory usage of the process exposing this metric (e.g., node_exporter), including resident memory (RSS), current virtual memory and maximum virtual memory limit. The limit is shown in the legend and tooltip but hidden from the graph to preserve scale.",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
-                "drawStyle": "line",
-                "fillOpacity": 20,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "links": [],
-              "mappings": [],
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  }
-                ]
-              },
-              "unit": "bytes"
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Virtual Memory Limit"
-                },
-                "properties": [
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 0
-                  },
-                  {
-                    "id": "custom.lineStyle",
-                    "value": {
-                      "dash": [
-                        10,
-                        10
-                      ],
-                      "fill": "dash"
-                    }
-                  },
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "dark-red",
-                      "mode": "fixed"
-                    }
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Virtual Memory Limit"
-                },
-                "properties": [
-                  {
-                    "id": "custom.hideFrom",
-                    "value": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": true
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 10,
-            "w": 10,
-            "x": 0,
-            "y": 174
-          },
-          "id": 149,
-          "options": {
-            "legend": {
-              "calcs": [
-                "min",
-                "mean",
-                "max"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "hideZeros": false,
-              "mode": "multi",
-              "sort": "desc"
-            }
-          },
-          "pluginVersion": "11.6.1",
-          "targets": [
-            {
-              "editorMode": "code",
-              "expr": "process_virtual_memory_bytes{instance=\"$server\",job=\"integrations/unix\"}",
-              "interval": "",
-              "legendFormat": "Virtual Memory",
-              "range": true,
-              "refId": "A",
-              "step": 240
-            },
-            {
-              "editorMode": "code",
-              "expr": "process_virtual_memory_max_bytes{instance=\"$server\",job=\"integrations/unix\"}",
-              "interval": "",
-              "legendFormat": "Virtual Memory Limit",
-              "range": true,
-              "refId": "B",
-              "step": 240
-            },
-            {
-              "editorMode": "code",
-              "expr": "process_resident_memory_bytes{instance=\"$server\",job=\"integrations/unix\"}",
-              "interval": "",
-              "legendFormat": "Resident Memory (RSS)",
-              "range": true,
-              "refId": "C",
-              "step": 240
-            }
-          ],
-          "title": "Exporter Processes Memory",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "description": "Number of file descriptors used by the exporter process versus its configured limit. The limit is shown in the legend and tooltip but hidden from the graph to preserve scale.",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
-                "drawStyle": "line",
-                "fillOpacity": 20,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "links": [],
-              "mappings": [],
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  }
-                ]
-              },
-              "unit": "short"
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byRegexp",
-                  "options": "/.*Max.*/"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "dark-red",
-                      "mode": "fixed"
-                    }
-                  },
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 0
-                  },
-                  {
-                    "id": "custom.lineStyle",
-                    "value": {
-                      "dash": [
-                        10,
-                        10
-                      ],
-                      "fill": "dash"
-                    }
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Maximum open file descriptors"
-                },
-                "properties": [
-                  {
-                    "id": "custom.hideFrom",
-                    "value": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": true
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 10,
-            "w": 10,
-            "x": 10,
-            "y": 174
-          },
-          "id": 64,
-          "options": {
-            "legend": {
-              "calcs": [
-                "min",
-                "mean",
-                "max"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "hideZeros": false,
-              "mode": "multi",
-              "sort": "desc"
-            }
-          },
-          "pluginVersion": "11.6.1",
-          "targets": [
-            {
-              "editorMode": "code",
-              "expr": "process_max_fds{instance=\"$server\",job=\"integrations/unix\"}",
-              "interval": "",
-              "legendFormat": "Maximum open file descriptors",
-              "range": true,
-              "refId": "A",
-              "step": 240
-            },
-            {
-              "editorMode": "code",
-              "expr": "process_open_fds{instance=\"$server\",job=\"integrations/unix\"}",
-              "interval": "",
-              "legendFormat": "Open file descriptors",
-              "range": true,
-              "refId": "B",
-              "step": 240
-            }
-          ],
-          "title": "Exporter File Descriptor Usage",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
           "description": "Shows whether each Node Exporter collector scraped successfully (1 = success, 0 = failure), and whether the textfile collector returned an error.",
           "fieldConfig": {
             "defaults": {
@@ -13873,7 +13134,7 @@
           "type": "bargauge"
         }
       ],
-      "title": "Node Exporter",
+      "title": "Collector Health",
       "type": "row"
     }
   ],

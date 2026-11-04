@@ -104,7 +104,7 @@
       },
       "id": 261,
       "panels": [],
-      "title": "Quick CPU / Mem / Disk",
+      "title": "Resumo",
       "type": "row"
     },
     {
@@ -112,7 +112,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Resource pressure via PSI",
+      "description": "Fração do tempo com tarefas travadas esperando CPU, memória ou I/O (Pressure Stall Information).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -211,7 +211,7 @@
           "step": 240
         }
       ],
-      "title": "Pressure",
+      "title": "Pressão (PSI)",
       "type": "bargauge"
     },
     {
@@ -219,7 +219,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Overall CPU busy percentage (averaged across all cores)",
+      "description": "CPU ocupada, média de todos os núcleos.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -294,7 +294,7 @@
           "step": 240
         }
       ],
-      "title": "CPU Busy",
+      "title": "CPU em uso",
       "type": "gauge"
     },
     {
@@ -302,7 +302,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Tasks running or waiting (CPU, I/O) per core",
+      "description": "Load average de 1 min por núcleo: tarefas rodando ou esperando CPU/I/O. 100% = um processo por núcleo.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -377,7 +377,7 @@
           "step": 240
         }
       ],
-      "title": "Sys Load",
+      "title": "Load",
       "type": "gauge"
     },
     {
@@ -385,7 +385,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Real RAM usage excluding cache and reclaimable memory",
+      "description": "Uso real de RAM, sem cache e memória recuperável.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -450,7 +450,7 @@
           "step": 240
         }
       ],
-      "title": "RAM Used",
+      "title": "RAM em uso",
       "type": "gauge"
     },
     {
@@ -458,7 +458,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Percentage of swap space currently used by the system",
+      "description": "Percentual do swap em uso.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -532,7 +532,7 @@
           "step": 240
         }
       ],
-      "title": "SWAP Used",
+      "title": "Swap em uso",
       "type": "gauge"
     },
     {
@@ -540,7 +540,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Percentage of root filesystem space currently used",
+      "description": "Percentual usado do filesystem raiz (/).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -615,7 +615,7 @@
           "step": 240
         }
       ],
-      "title": "Root FS Used",
+      "title": "RootFS em uso",
       "type": "gauge"
     },
     {
@@ -649,7 +649,7 @@
             ]
           },
           "unit": "short",
-          "displayName": "CPU Cores"
+          "displayName": "Núcleos"
         },
         "overrides": []
       },
@@ -730,7 +730,7 @@
             ]
           },
           "unit": "bytes",
-          "displayName": "RAM Total"
+          "displayName": "RAM total"
         },
         "overrides": []
       },
@@ -811,7 +811,7 @@
             ]
           },
           "unit": "bytes",
-          "displayName": "SWAP Total"
+          "displayName": "Swap total"
         },
         "overrides": []
       },
@@ -892,7 +892,7 @@
             ]
           },
           "unit": "bytes",
-          "displayName": "RootFS Total"
+          "displayName": "RootFS total"
         },
         "overrides": []
       },
@@ -974,7 +974,7 @@
             ]
           },
           "unit": "s",
-          "displayName": "Uptime"
+          "displayName": "Ligado há"
         },
         "overrides": []
       },
@@ -1032,7 +1032,7 @@
       },
       "id": 263,
       "panels": [],
-      "title": "Basic CPU / Mem / Net / Disk",
+      "title": "CPU / Memória / Rede / Disco",
       "type": "row"
     },
     {
@@ -1040,7 +1040,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "CPU time spent busy vs idle, split by activity type",
+      "description": "Tempo de CPU por tipo de atividade.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1095,7 +1095,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Busy Iowait"
+              "options": "Iowait"
             },
             "properties": [
               {
@@ -1110,7 +1110,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Idle"
+              "options": "Ocioso"
             },
             "properties": [
               {
@@ -1125,7 +1125,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Busy System"
+              "options": "Sistema"
             },
             "properties": [
               {
@@ -1140,7 +1140,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Busy User"
+              "options": "Usuário"
             },
             "properties": [
               {
@@ -1155,7 +1155,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Busy Other"
+              "options": "Outros"
             },
             "properties": [
               {
@@ -1198,7 +1198,7 @@
           "expr": "avg(rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\", mode=\"system\"}[$__rate_interval]))",
           "format": "time_series",
           "instant": false,
-          "legendFormat": "Busy System",
+          "legendFormat": "Sistema",
           "range": true,
           "refId": "A",
           "step": 240
@@ -1207,7 +1207,7 @@
           "editorMode": "code",
           "expr": "avg(rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\", mode=\"user\"}[$__rate_interval]))",
           "format": "time_series",
-          "legendFormat": "Busy User",
+          "legendFormat": "Usuário",
           "range": true,
           "refId": "B",
           "step": 240
@@ -1216,7 +1216,7 @@
           "editorMode": "code",
           "expr": "avg(rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\", mode=\"iowait\"}[$__rate_interval]))",
           "format": "time_series",
-          "legendFormat": "Busy Iowait",
+          "legendFormat": "Iowait",
           "range": true,
           "refId": "C",
           "step": 240
@@ -1225,7 +1225,7 @@
           "editorMode": "code",
           "expr": "avg(sum without(mode) (rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\", mode=~\".*irq\"}[$__rate_interval])))",
           "format": "time_series",
-          "legendFormat": "Busy IRQs",
+          "legendFormat": "IRQs",
           "range": true,
           "refId": "D",
           "step": 240
@@ -1234,7 +1234,7 @@
           "editorMode": "code",
           "expr": "avg(sum without (mode) (rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\",  mode!='idle',mode!='user',mode!='system',mode!='iowait',mode!='irq',mode!='softirq'}[$__rate_interval])))",
           "format": "time_series",
-          "legendFormat": "Busy Other",
+          "legendFormat": "Outros",
           "range": true,
           "refId": "E",
           "step": 240
@@ -1243,13 +1243,13 @@
           "editorMode": "code",
           "expr": "avg(rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\", mode=\"idle\"}[$__rate_interval]))",
           "format": "time_series",
-          "legendFormat": "Idle",
+          "legendFormat": "Ocioso",
           "range": true,
           "refId": "F",
           "step": 240
         }
       ],
-      "title": "CPU Basic",
+      "title": "CPU",
       "type": "timeseries"
     },
     {
@@ -1257,7 +1257,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "RAM and swap usage overview, including caches",
+      "description": "RAM e swap, incluindo cache.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1312,7 +1312,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Swap used"
+              "options": "Swap em uso"
             },
             "properties": [
               {
@@ -1368,7 +1368,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Free"
+              "options": "Livre"
             },
             "properties": [
               {
@@ -1418,7 +1418,7 @@
           "editorMode": "code",
           "expr": "node_memory_MemTotal_bytes{instance=\"$server\",job=\"integrations/unix\"} - node_memory_MemFree_bytes{instance=\"$server\",job=\"integrations/unix\"} - (node_memory_Cached_bytes{instance=\"$server\",job=\"integrations/unix\"} + node_memory_Buffers_bytes{instance=\"$server\",job=\"integrations/unix\"} + node_memory_SReclaimable_bytes{instance=\"$server\",job=\"integrations/unix\"})",
           "format": "time_series",
-          "legendFormat": "Used",
+          "legendFormat": "Em uso",
           "range": true,
           "refId": "B",
           "step": 240
@@ -1436,7 +1436,7 @@
           "editorMode": "code",
           "expr": "node_memory_MemFree_bytes{instance=\"$server\",job=\"integrations/unix\"}",
           "format": "time_series",
-          "legendFormat": "Free",
+          "legendFormat": "Livre",
           "range": true,
           "refId": "D",
           "step": 240
@@ -1445,13 +1445,13 @@
           "editorMode": "code",
           "expr": "(node_memory_SwapTotal_bytes{instance=\"$server\",job=\"integrations/unix\"} - node_memory_SwapFree_bytes{instance=\"$server\",job=\"integrations/unix\"})",
           "format": "time_series",
-          "legendFormat": "Swap used",
+          "legendFormat": "Swap em uso",
           "range": true,
           "refId": "E",
           "step": 240
         }
       ],
-      "title": "Memory Basic",
+      "title": "Memória",
       "type": "timeseries"
     },
     {
@@ -1459,7 +1459,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Per-interface network traffic (receive and transmit) in bits per second",
+      "description": "Tráfego por interface em bits/s (Tx para baixo).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1565,7 +1565,7 @@
           "step": 240
         }
       ],
-      "title": "Network Traffic Basic",
+      "title": "Tráfego de rede",
       "type": "timeseries"
     },
     {
@@ -1573,7 +1573,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Percentage of filesystem space used for each mounted filesystem",
+      "description": "Percentual usado de cada filesystem montado.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1659,7 +1659,7 @@
           "step": 240
         }
       ],
-      "title": "Disk Space Used Basic",
+      "title": "Uso de disco",
       "type": "timeseries"
     },
     {
@@ -3318,7 +3318,7 @@
           "type": "timeseries"
         }
       ],
-      "title": "CPU / Memory / Net / Disk",
+      "title": "Detalhes: CPU / Memória / Rede / Disco",
       "type": "row"
     },
     {
@@ -5399,7 +5399,7 @@
           "type": "timeseries"
         }
       ],
-      "title": "Memory Details",
+      "title": "Detalhes: memória",
       "type": "row"
     },
     {
@@ -6369,7 +6369,7 @@
           "type": "timeseries"
         }
       ],
-      "title": "Processes",
+      "title": "Processos",
       "type": "row"
     },
     {
@@ -6845,7 +6845,7 @@
           "type": "timeseries"
         }
       ],
-      "title": "CPU & Scheduler",
+      "title": "CPU e scheduler",
       "type": "row"
     },
     {
@@ -7073,7 +7073,7 @@
           "type": "timeseries"
         }
       ],
-      "title": "Time Sync",
+      "title": "Sincronização de horário",
       "type": "row"
     },
     {
@@ -8745,7 +8745,7 @@
           "type": "timeseries"
         }
       ],
-      "title": "Storage",
+      "title": "Armazenamento",
       "type": "row"
     },
     {
@@ -10278,7 +10278,7 @@
           "type": "bargauge"
         }
       ],
-      "title": "Network Traffic",
+      "title": "Rede: tráfego",
       "type": "row"
     },
     {
@@ -11469,7 +11469,7 @@
           "type": "timeseries"
         }
       ],
-      "title": "Network Sockstat",
+      "title": "Rede: sockstat",
       "type": "row"
     },
     {
@@ -12929,7 +12929,7 @@
           "type": "timeseries"
         }
       ],
-      "title": "Network Netstat",
+      "title": "Rede: netstat",
       "type": "row"
     },
     {
@@ -13134,7 +13134,7 @@
           "type": "bargauge"
         }
       ],
-      "title": "Collector Health",
+      "title": "Saúde da coleta",
       "type": "row"
     }
   ],

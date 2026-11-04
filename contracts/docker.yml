@@ -1,0 +1,664 @@
+# Contrato observado para consumidores de dashboards; nao provisionar este YAML no Grafana.
+schema_version: 2
+kind: observability_contract
+version: 0.2.0
+id: docker
+title: Docker / metricas cAdvisor
+status: observed_baseline
+observed_at_utc: '2026-11-04T19:01:53.881Z'
+job: integrations/docker
+references:
+  common: common.yml
+  full_metric_catalog: ../catalogs/docker.yml
+  private_inventory: ../inventory/docker.yml
+  sources: ../sources.yml
+snapshot:
+  job: integrations/docker
+  metric_names: 73
+  series_returned: 1608
+  instances: 8
+  up_series_returned: 8
+  up_equal_one: 8
+  metadata_exact_matches: 0
+  metadata_parent_family_matches: 0
+  metadata_unavailable: 73
+identity:
+  target_key:
+    - job
+    - instance
+  container_key:
+    - job
+    - instance
+    - id
+  container_display_name: name
+  image_label: image
+  compose_project_label: container_label_com_docker_compose_project
+  compose_service_label: container_label_com_docker_compose_service
+  network_key:
+    - instance
+    - id
+    - interface
+  disk_key:
+    - instance
+    - id
+    - device
+  compose_service_alone_is_unique: false
+  expected_generic_labels_not_observed:
+    - container
+    - service
+    - node
+    - compose_project
+    - compose_service
+grafana_variables:
+  syntax: Grafana label_values, nao PromQL da API
+  instance:
+    query: label_values(container_last_seen{job="integrations/docker",name!=""}, instance)
+    multi: true
+    all_value: .*
+  project:
+    query: label_values(container_last_seen{job="integrations/docker",instance=~"$instance"}, container_label_com_docker_compose_project)
+    multi: true
+    all_value: .*
+  container:
+    query: label_values(container_last_seen{job="integrations/docker",instance=~"$instance",container_label_com_docker_compose_project=~"$project"},
+      name)
+    multi: true
+    all_value: .*
+metric_groups:
+  identity:
+    title: Identidade e presenca dos containers
+    metrics_observed:
+      - container_last_seen
+      - container_creation_time_seconds
+      - container_start_time_seconds
+    coverage:
+      container_last_seen:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_creation_time_seconds:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_start_time_seconds:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+  cpu:
+    title: CPU consumida pelos containers
+    metrics_observed:
+      - container_cpu_load_average_10s
+      - container_cpu_load_d_average_10s
+      - container_cpu_system_seconds_total
+      - container_cpu_usage_seconds_total
+      - container_cpu_user_seconds_total
+    coverage:
+      container_cpu_load_average_10s:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_cpu_load_d_average_10s:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_cpu_system_seconds_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_cpu_usage_seconds_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_cpu_user_seconds_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+    interpretation: cpu="total" esta presente em container_cpu_usage_seconds_total. Nao confundir CPU em cores com
+      percentual do limite.
+  memory:
+    title: Memoria dos containers
+    metrics_observed:
+      - container_memory_cache
+      - container_memory_events_high_total
+      - container_memory_events_max_total
+      - container_memory_failcnt
+      - container_memory_failures_total
+      - container_memory_file_dirty_bytes
+      - container_memory_file_writeback_bytes
+      - container_memory_kernel_usage
+      - container_memory_mapped_file
+      - container_memory_max_usage_bytes
+      - container_memory_pgscan_total
+      - container_memory_pgsteal_total
+      - container_memory_rss
+      - container_memory_swap
+      - container_memory_total_active_file_bytes
+      - container_memory_total_inactive_file_bytes
+      - container_memory_usage_bytes
+      - container_memory_working_set_bytes
+      - container_memory_workingset_refault_anon_total
+      - container_memory_workingset_refault_file_total
+    coverage:
+      container_memory_cache:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_events_high_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_events_max_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_failcnt:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_failures_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 84
+      container_memory_file_dirty_bytes:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_file_writeback_bytes:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_kernel_usage:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_mapped_file:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_max_usage_bytes:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_pgscan_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_pgsteal_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_rss:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_swap:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_total_active_file_bytes:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_total_inactive_file_bytes:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_usage_bytes:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_working_set_bytes:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_workingset_refault_anon_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_memory_workingset_refault_file_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+    interpretation: usage e working_set sao indicadores diferentes; nao sao intercambiaveis. Limites podem estar
+      ausentes ou nao representar um limite util.
+  network:
+    title: Rede por interface do container
+    metrics_observed:
+      - container_network_receive_bytes_total
+      - container_network_receive_errors_total
+      - container_network_receive_packets_dropped_total
+      - container_network_receive_packets_total
+      - container_network_transmit_bytes_total
+      - container_network_transmit_errors_total
+      - container_network_transmit_packets_dropped_total
+      - container_network_transmit_packets_total
+    coverage:
+      container_network_receive_bytes_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 24
+      container_network_receive_errors_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 24
+      container_network_receive_packets_dropped_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 24
+      container_network_receive_packets_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 24
+      container_network_transmit_bytes_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 24
+      container_network_transmit_errors_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 24
+      container_network_transmit_packets_dropped_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 24
+      container_network_transmit_packets_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 24
+  disk_io:
+    title: I/O de bloco e filesystem
+    metrics_observed:
+      - container_blkio_device_usage_total
+      - container_fs_reads_bytes_total
+      - container_fs_reads_total
+      - container_fs_writes_bytes_total
+      - container_fs_writes_total
+    coverage:
+      container_blkio_device_usage_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 80
+      container_fs_reads_bytes_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 40
+      container_fs_reads_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 40
+      container_fs_writes_bytes_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 40
+      container_fs_writes_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 40
+    interpretation: Ha I/O de leitura/escrita, mas container_fs_usage_bytes e container_fs_limit_bytes nao foram
+      observadas.
+  limits:
+    title: Especificacoes e limites
+    metrics_observed:
+      - container_spec_cpu_period
+      - container_spec_cpu_shares
+      - container_spec_memory_limit_bytes
+      - container_spec_memory_reservation_limit_bytes
+      - container_spec_memory_swap_limit_bytes
+    coverage:
+      container_spec_cpu_period:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 20
+      container_spec_cpu_shares:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 20
+      container_spec_memory_limit_bytes:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 20
+      container_spec_memory_reservation_limit_bytes:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 20
+      container_spec_memory_swap_limit_bytes:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 20
+    interpretation: Os limites aparecem em 20 das 21 identidades; quota de CPU nao foi observada.
+  health_and_pressure:
+    title: Saude, tarefas, OOM e pressure
+    metrics_observed:
+      - container_health_state
+      - container_oom_events_total
+      - container_pressure_cpu_stalled_seconds_total
+      - container_pressure_cpu_waiting_seconds_total
+      - container_pressure_io_stalled_seconds_total
+      - container_pressure_io_waiting_seconds_total
+      - container_pressure_memory_stalled_seconds_total
+      - container_pressure_memory_waiting_seconds_total
+      - container_tasks_state
+    coverage:
+      container_health_state:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_oom_events_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_pressure_cpu_stalled_seconds_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_pressure_cpu_waiting_seconds_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_pressure_io_stalled_seconds_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_pressure_io_waiting_seconds_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_pressure_memory_stalled_seconds_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_pressure_memory_waiting_seconds_total:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 21
+      container_tasks_state:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 105
+    interpretation: Health state existe, mas a codificacao numerica e os valores nao foram fornecidos pelo export.
+  machine:
+    title: Informacoes do host vistas pelo cAdvisor
+    metrics_observed:
+      - machine_cpu_books
+      - machine_cpu_cores
+      - machine_cpu_drawers
+      - machine_cpu_physical_cores
+      - machine_cpu_sockets
+      - machine_memory_bytes
+      - machine_nvm_avg_power_budget_watts
+      - machine_nvm_capacity
+      - machine_scrape_error
+      - machine_swap_bytes
+    coverage:
+      machine_cpu_books:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+      machine_cpu_cores:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+      machine_cpu_drawers:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+      machine_cpu_physical_cores:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+      machine_cpu_sockets:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+      machine_memory_bytes:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+      machine_nvm_avg_power_budget_watts:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+      machine_nvm_capacity:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 16
+      machine_scrape_error:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+      machine_swap_bytes:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+  collection_health:
+    title: Coleta e build
+    metrics_observed:
+      - up
+      - cadvisor_build_info
+      - cadvisor_version_info
+      - container_scrape_error
+      - machine_scrape_error
+    coverage:
+      up:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+      cadvisor_build_info:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+      cadvisor_version_info:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+      container_scrape_error:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+      machine_scrape_error:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+  other_observed:
+    title: Demais metricas observadas; detalhes no catalogo
+    metrics_observed:
+      - scrape_duration_seconds
+      - scrape_samples_post_metric_relabeling
+      - scrape_samples_scraped
+      - scrape_series_added
+    coverage:
+      scrape_duration_seconds:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+      scrape_samples_post_metric_relabeling:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+      scrape_samples_scraped:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+      scrape_series_added:
+        instances_present: 8
+        baseline_instances: 8
+        instances_missing: 0
+        series_returned: 8
+query_recipes:
+  - id: observed_container_identities
+    title: Containers representados na metrica last_seen
+    promql: count by (instance) (container_last_seen{job="integrations/docker",name!=""})
+    unit: count
+    dependencies:
+      - container_last_seen
+    validation: dependencies_in_export; not_executed
+    notes:
+      - Nao rotular automaticamente como containers running. Inventario de containers parados nao foi comprovado.
+  - id: container_cpu_cores
+    title: CPU em equivalentes de core
+    promql: rate(container_cpu_usage_seconds_total{job="integrations/docker",cpu="total",name!=""}[5m])
+    unit: cores
+    dependencies:
+      - container_cpu_usage_seconds_total
+    validation: dependencies_in_export; not_executed
+    notes:
+      - 'Referencia cAdvisor: contador de segundos de CPU. A taxa pode exceder 1 core; nao e percentual do limite.'
+  - id: container_working_set
+    title: Working set por container
+    promql: container_memory_working_set_bytes{job="integrations/docker",name!=""}
+    unit: bytes
+    dependencies:
+      - container_memory_working_set_bytes
+    validation: dependencies_in_export; not_executed
+    notes: []
+  - id: container_memory_usage
+    title: Uso de memoria incluindo cache contabilizado
+    promql: container_memory_usage_bytes{job="integrations/docker",name!=""}
+    unit: bytes
+    dependencies:
+      - container_memory_usage_bytes
+    validation: dependencies_in_export; not_executed
+    notes: []
+  - id: container_network_receive
+    title: Entrada por interface do container
+    promql: 8 * rate(container_network_receive_bytes_total{job="integrations/docker",name!=""}[5m])
+    unit: bits_per_second
+    dependencies:
+      - container_network_receive_bytes_total
+    validation: dependencies_in_export; not_executed
+    notes: []
+  - id: container_network_transmit
+    title: Saida por interface do container
+    promql: 8 * rate(container_network_transmit_bytes_total{job="integrations/docker",name!=""}[5m])
+    unit: bits_per_second
+    dependencies:
+      - container_network_transmit_bytes_total
+    validation: dependencies_in_export; not_executed
+    notes: []
+  - id: container_disk_reads
+    title: Leitura por container e device
+    promql: rate(container_fs_reads_bytes_total{job="integrations/docker",name!=""}[5m])
+    unit: bytes_per_second
+    dependencies:
+      - container_fs_reads_bytes_total
+    validation: dependencies_in_export; not_executed
+    notes:
+      - Nao agregar camadas de device sem curadoria.
+  - id: container_disk_writes
+    title: Escrita por container e device
+    promql: rate(container_fs_writes_bytes_total{job="integrations/docker",name!=""}[5m])
+    unit: bytes_per_second
+    dependencies:
+      - container_fs_writes_bytes_total
+    validation: dependencies_in_export; not_executed
+    notes: []
+  - id: container_scrape_error
+    title: Erro de coleta de containers
+    promql: container_scrape_error{job="integrations/docker"}
+    unit: boolean
+    dependencies:
+      - container_scrape_error
+    validation: dependencies_in_export; not_executed
+    notes:
+      - Up=1 nao basta para garantir ausencia de erros internos do exporter.
+limitations:
+  - Metricas cadvisor_* e container_* confirmam CPU, memoria, rede e I/O por container. A hipotese anterior de coleta
+    apenas do daemon foi descartada.
+  - 8 hosts e 21 identidades de containers neste snapshot; nao sao um inventario definitivo de containers ligados/desligados
+    de toda a infraestrutura.
+  - O host de monitoramento nao aparece no job Docker deste export; detalhe no inventario privado. Nao foi inferida
+    a causa.
+  - Nao assumir que a ausencia de um container cAdvisor separado elimina o cAdvisor embarcado no Alloy. A configuracao
+    Alloy nao foi lida neste pacote.
+  - container_fs_usage_bytes, container_fs_limit_bytes e container_spec_cpu_quota nao foram observadas.
+  - Limites de memoria/CPU nao existem para todas as identidades observadas; nao preencher ausencias com zero.
+  - Nao inventar mapeamento de container_health_state sem validar a enumeracao da versao em execucao.
+  - Os labels Compose de metricas sao longos e diferentes dos labels simplificados usados em logs Loki. Este contrato
+    nao cobre logs.
+  - O dashboard 15798 nao foi validado painel a painel; os nomes e labels reais estao documentados para adaptacao.
+change_policy:
+  baseline_counts_are_fixed_requirements: false
+  require_new_metrics_before_using_in_dashboard: true
+  preserve_raw_labels: true
+  alloy_changes_applied: false
+query_policy:
+  numerically_validated: false
+  promql_parser_validation: not_performed
+  static_metric_dependencies_checked: true
+  documentation_sources:
+    - prometheus_functions
+  note: As receitas usam semantica padrao onde conhecida; o catalogo preserva a ausencia de TYPE/HELP do exporter
+    em execucao.

@@ -1,0 +1,1839 @@
+# Contrato observado para consumidores de dashboards; nao provisionar este YAML no Grafana.
+schema_version: 2
+kind: observability_contract
+version: 0.2.0
+id: linux
+title: Linux / Node Exporter embarcado
+status: observed_baseline
+observed_at_utc: '2026-11-04T19:01:53.881Z'
+job: integrations/unix
+references:
+  common: common.yml
+  full_metric_catalog: ../catalogs/linux.yml
+  private_inventory: ../inventory/linux.yml
+  sources: ../sources.yml
+snapshot:
+  job: integrations/unix
+  metric_names: 274
+  series_returned: 17238
+  instances: 11
+  up_series_returned: 11
+  up_equal_one: 11
+  metadata_exact_matches: 0
+  metadata_parent_family_matches: 0
+  metadata_unavailable: 274
+identity:
+  target_key:
+    - job
+    - instance
+  host_label: host
+  per_cpu_key:
+    - instance
+    - cpu
+  filesystem_key:
+    - instance
+    - device
+    - mountpoint
+    - fstype
+  network_key:
+    - instance
+    - device
+  disk_io_key:
+    - instance
+    - device
+  systemd_key:
+    - instance
+    - name
+    - state
+grafana_variables:
+  syntax: Grafana label_values, nao PromQL da API
+  instance:
+    query: label_values(node_uname_info{job="integrations/unix"}, instance)
+    multi: true
+    all_value: .*
+  device:
+    query: label_values(node_network_receive_bytes_total{job="integrations/unix",instance=~"$instance"}, device)
+    multi: true
+    suggested_default: eth0
+metric_groups:
+  cpu:
+    title: CPU e carga
+    metrics_observed:
+      - node_cpu_seconds_total
+      - node_load1
+      - node_load5
+      - node_load15
+      - node_procs_running
+      - node_procs_blocked
+    coverage:
+      node_cpu_seconds_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 480
+      node_load1:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_load5:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_load15:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_procs_running:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_procs_blocked:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+  memory:
+    title: Memoria e swap
+    metrics_observed:
+      - node_memory_MemTotal_bytes
+      - node_memory_MemAvailable_bytes
+      - node_memory_MemFree_bytes
+      - node_memory_Buffers_bytes
+      - node_memory_Cached_bytes
+      - node_memory_SwapTotal_bytes
+      - node_memory_SwapFree_bytes
+    coverage:
+      node_memory_MemTotal_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_MemAvailable_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_MemFree_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Buffers_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Cached_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_SwapTotal_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_SwapFree_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+  filesystem:
+    title: Capacidade, inodes e estado das montagens
+    metrics_observed:
+      - node_filesystem_avail_bytes
+      - node_filesystem_device_error
+      - node_filesystem_files
+      - node_filesystem_files_free
+      - node_filesystem_free_bytes
+      - node_filesystem_readonly
+      - node_filesystem_size_bytes
+    coverage:
+      node_filesystem_avail_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 56
+      node_filesystem_device_error:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 56
+      node_filesystem_files:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 56
+      node_filesystem_files_free:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 56
+      node_filesystem_free_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 56
+      node_filesystem_readonly:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 56
+      node_filesystem_size_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 56
+    interpretation: Usar device + mountpoint + fstype. Separar tmpfs dos volumes persistentes; nao somar montagens
+      repetidas.
+  disk_io:
+    title: I/O dos dispositivos de bloco
+    metrics_observed:
+      - node_disk_device_mapper_info
+      - node_disk_discard_time_seconds_total
+      - node_disk_discarded_sectors_total
+      - node_disk_discards_completed_total
+      - node_disk_discards_merged_total
+      - node_disk_filesystem_info
+      - node_disk_flush_requests_time_seconds_total
+      - node_disk_flush_requests_total
+      - node_disk_info
+      - node_disk_io_now
+      - node_disk_io_time_seconds_total
+      - node_disk_io_time_weighted_seconds_total
+      - node_disk_read_bytes_total
+      - node_disk_read_time_seconds_total
+      - node_disk_reads_completed_total
+      - node_disk_reads_merged_total
+      - node_disk_write_time_seconds_total
+      - node_disk_writes_completed_total
+      - node_disk_writes_merged_total
+      - node_disk_written_bytes_total
+    coverage:
+      node_disk_device_mapper_info:
+        instances_present: 10
+        baseline_instances: 11
+        instances_missing: 1
+        series_returned: 10
+      node_disk_discard_time_seconds_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_discarded_sectors_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_discards_completed_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_discards_merged_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_filesystem_info:
+        instances_present: 10
+        baseline_instances: 11
+        instances_missing: 1
+        series_returned: 10
+      node_disk_flush_requests_time_seconds_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_flush_requests_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_info:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_io_now:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_io_time_seconds_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_io_time_weighted_seconds_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_read_bytes_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_read_time_seconds_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_reads_completed_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_reads_merged_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_write_time_seconds_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_writes_completed_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_writes_merged_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+      node_disk_written_bytes_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 31
+    interpretation: Manter device. Somar sda e dm-0 pode contar o mesmo I/O em camadas diferentes.
+  network:
+    title: Rede por interface
+    metrics_observed:
+      - node_network_address_assign_type
+      - node_network_carrier
+      - node_network_carrier_changes_total
+      - node_network_carrier_down_changes_total
+      - node_network_carrier_up_changes_total
+      - node_network_device_id
+      - node_network_dormant
+      - node_network_flags
+      - node_network_iface_id
+      - node_network_iface_link
+      - node_network_iface_link_mode
+      - node_network_info
+      - node_network_mtu_bytes
+      - node_network_name_assign_type
+      - node_network_net_dev_group
+      - node_network_protocol_type
+      - node_network_receive_bytes_total
+      - node_network_receive_compressed_total
+      - node_network_receive_drop_total
+      - node_network_receive_errs_total
+      - node_network_receive_fifo_total
+      - node_network_receive_frame_total
+      - node_network_receive_multicast_total
+      - node_network_receive_packets_total
+      - node_network_speed_bytes
+      - node_network_transmit_bytes_total
+      - node_network_transmit_carrier_total
+      - node_network_transmit_colls_total
+      - node_network_transmit_compressed_total
+      - node_network_transmit_drop_total
+      - node_network_transmit_errs_total
+      - node_network_transmit_fifo_total
+      - node_network_transmit_packets_total
+      - node_network_transmit_queue_length
+      - node_network_up
+    coverage:
+      node_network_address_assign_type:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_carrier:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_carrier_changes_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_carrier_down_changes_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_carrier_up_changes_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_device_id:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_dormant:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_flags:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_iface_id:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_iface_link:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_iface_link_mode:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_info:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_mtu_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_name_assign_type:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 82
+      node_network_net_dev_group:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_protocol_type:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_receive_bytes_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_receive_compressed_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_receive_drop_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_receive_errs_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_receive_fifo_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_receive_frame_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_receive_multicast_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_receive_packets_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_speed_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 73
+      node_network_transmit_bytes_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_transmit_carrier_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_transmit_colls_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_transmit_compressed_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_transmit_drop_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_transmit_errs_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_transmit_fifo_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_transmit_packets_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_transmit_queue_length:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+      node_network_up:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 84
+    interpretation: eth0 e tailscale0 foram observadas, alem de lo e redes Docker. Nao somar o trafego de overlay/VPN
+      com a interface que o transporta.
+  systemd:
+    title: Servicos systemd
+    metrics_observed:
+      - node_systemd_service_restart_total
+      - node_systemd_system_running
+      - node_systemd_unit_state
+      - node_systemd_units
+      - node_systemd_version
+    coverage:
+      node_systemd_service_restart_total:
+        instances_present: 10
+        baseline_instances: 11
+        instances_missing: 1
+        series_returned: 1477
+      node_systemd_system_running:
+        instances_present: 10
+        baseline_instances: 11
+        instances_missing: 1
+        series_returned: 10
+      node_systemd_unit_state:
+        instances_present: 10
+        baseline_instances: 11
+        instances_missing: 1
+        series_returned: 7385
+      node_systemd_units:
+        instances_present: 10
+        baseline_instances: 11
+        instances_missing: 1
+        series_returned: 50
+      node_systemd_version:
+        instances_present: 10
+        baseline_instances: 11
+        instances_missing: 1
+        series_returned: 10
+    interpretation: Cobertura observada em 10/11 hosts. A ausencia em um host nao significa que seus servicos estao
+      saudaveis.
+  os_identity:
+    title: Sistema e identificacao
+    metrics_observed:
+      - node_uname_info
+      - node_os_info
+      - node_boot_time_seconds
+      - node_time_seconds
+      - node_exporter_build_info
+    coverage:
+      node_uname_info:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_os_info:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_boot_time_seconds:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_time_seconds:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_exporter_build_info:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+  collection_health:
+    title: Diagnostico da coleta
+    metrics_observed:
+      - up
+      - node_scrape_collector_success
+      - node_scrape_collector_duration_seconds
+      - node_textfile_scrape_error
+    coverage:
+      up:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_scrape_collector_success:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 516
+      node_scrape_collector_duration_seconds:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 516
+      node_textfile_scrape_error:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+  other_observed:
+    title: Demais metricas observadas; detalhes no catalogo
+    metrics_observed:
+      - node_arp_entries
+      - node_context_switches_total
+      - node_cooling_device_cur_state
+      - node_cooling_device_max_state
+      - node_dmi_info
+      - node_entropy_available_bits
+      - node_entropy_pool_size_bits
+      - node_filefd_allocated
+      - node_filefd_maximum
+      - node_forks_total
+      - node_intr_total
+      - node_memory_Active_anon_bytes
+      - node_memory_Active_bytes
+      - node_memory_Active_file_bytes
+      - node_memory_AnonHugePages_bytes
+      - node_memory_AnonPages_bytes
+      - node_memory_Bounce_bytes
+      - node_memory_CommitLimit_bytes
+      - node_memory_Committed_AS_bytes
+      - node_memory_DirectMap1G_bytes
+      - node_memory_DirectMap2M_bytes
+      - node_memory_DirectMap4k_bytes
+      - node_memory_Dirty_bytes
+      - node_memory_FileHugePages_bytes
+      - node_memory_FilePmdMapped_bytes
+      - node_memory_HardwareCorrupted_bytes
+      - node_memory_HugePages_Free
+      - node_memory_HugePages_Rsvd
+      - node_memory_HugePages_Surp
+      - node_memory_HugePages_Total
+      - node_memory_Hugepagesize_bytes
+      - node_memory_Hugetlb_bytes
+      - node_memory_Inactive_anon_bytes
+      - node_memory_Inactive_bytes
+      - node_memory_Inactive_file_bytes
+      - node_memory_KReclaimable_bytes
+      - node_memory_KernelStack_bytes
+      - node_memory_Mapped_bytes
+      - node_memory_Mlocked_bytes
+      - node_memory_NFS_Unstable_bytes
+      - node_memory_PageTables_bytes
+      - node_memory_Percpu_bytes
+      - node_memory_SReclaimable_bytes
+      - node_memory_SUnreclaim_bytes
+      - node_memory_SecPageTables_bytes
+      - node_memory_ShmemHugePages_bytes
+      - node_memory_ShmemPmdMapped_bytes
+      - node_memory_Shmem_bytes
+      - node_memory_Slab_bytes
+      - node_memory_SwapCached_bytes
+      - node_memory_Unaccepted_bytes
+      - node_memory_Unevictable_bytes
+      - node_memory_VmallocChunk_bytes
+      - node_memory_VmallocTotal_bytes
+      - node_memory_VmallocUsed_bytes
+      - node_memory_WritebackTmp_bytes
+      - node_memory_Writeback_bytes
+      - node_memory_Zswap_bytes
+      - node_memory_Zswapped_bytes
+      - node_netstat_Icmp6_InErrors
+      - node_netstat_Icmp6_InMsgs
+      - node_netstat_Icmp6_OutMsgs
+      - node_netstat_Icmp_InErrors
+      - node_netstat_Icmp_InMsgs
+      - node_netstat_Icmp_OutMsgs
+      - node_netstat_Ip6_InOctets
+      - node_netstat_Ip6_OutOctets
+      - node_netstat_IpExt_InOctets
+      - node_netstat_IpExt_OutOctets
+      - node_netstat_Ip_Forwarding
+      - node_netstat_TcpExt_ListenDrops
+      - node_netstat_TcpExt_ListenOverflows
+      - node_netstat_TcpExt_SyncookiesFailed
+      - node_netstat_TcpExt_SyncookiesRecv
+      - node_netstat_TcpExt_SyncookiesSent
+      - node_netstat_TcpExt_TCPSynRetrans
+      - node_netstat_TcpExt_TCPTimeouts
+      - node_netstat_Tcp_ActiveOpens
+      - node_netstat_Tcp_CurrEstab
+      - node_netstat_Tcp_InErrs
+      - node_netstat_Tcp_InSegs
+      - node_netstat_Tcp_OutRsts
+      - node_netstat_Tcp_OutSegs
+      - node_netstat_Tcp_PassiveOpens
+      - node_netstat_Tcp_RetransSegs
+      - node_netstat_Udp6_InDatagrams
+      - node_netstat_Udp6_InErrors
+      - node_netstat_Udp6_NoPorts
+      - node_netstat_Udp6_OutDatagrams
+      - node_netstat_Udp6_RcvbufErrors
+      - node_netstat_Udp6_SndbufErrors
+      - node_netstat_UdpLite6_InErrors
+      - node_netstat_UdpLite_InErrors
+      - node_netstat_Udp_InDatagrams
+      - node_netstat_Udp_InErrors
+      - node_netstat_Udp_NoPorts
+      - node_netstat_Udp_OutDatagrams
+      - node_netstat_Udp_RcvbufErrors
+      - node_netstat_Udp_SndbufErrors
+      - node_nf_conntrack_entries
+      - node_nf_conntrack_entries_limit
+      - node_nf_conntrack_stat_drop
+      - node_nf_conntrack_stat_early_drop
+      - node_nf_conntrack_stat_found
+      - node_nf_conntrack_stat_ignore
+      - node_nf_conntrack_stat_insert
+      - node_nf_conntrack_stat_insert_failed
+      - node_nf_conntrack_stat_invalid
+      - node_nf_conntrack_stat_search_restart
+      - node_os_version
+      - node_pressure_cpu_waiting_seconds_total
+      - node_pressure_io_stalled_seconds_total
+      - node_pressure_io_waiting_seconds_total
+      - node_pressure_memory_stalled_seconds_total
+      - node_pressure_memory_waiting_seconds_total
+      - node_processes_max_processes
+      - node_processes_max_threads
+      - node_processes_pids
+      - node_processes_state
+      - node_processes_threads
+      - node_processes_threads_state
+      - node_schedstat_running_seconds_total
+      - node_schedstat_timeslices_total
+      - node_schedstat_waiting_seconds_total
+      - node_selinux_enabled
+      - node_sockstat_FRAG6_inuse
+      - node_sockstat_FRAG6_memory
+      - node_sockstat_FRAG_inuse
+      - node_sockstat_FRAG_memory
+      - node_sockstat_RAW6_inuse
+      - node_sockstat_RAW_inuse
+      - node_sockstat_TCP6_inuse
+      - node_sockstat_TCP_alloc
+      - node_sockstat_TCP_inuse
+      - node_sockstat_TCP_mem
+      - node_sockstat_TCP_mem_bytes
+      - node_sockstat_TCP_orphan
+      - node_sockstat_TCP_tw
+      - node_sockstat_UDP6_inuse
+      - node_sockstat_UDPLITE6_inuse
+      - node_sockstat_UDPLITE_inuse
+      - node_sockstat_UDP_inuse
+      - node_sockstat_UDP_mem
+      - node_sockstat_UDP_mem_bytes
+      - node_sockstat_sockets_used
+      - node_softnet_backlog_len
+      - node_softnet_cpu_collision_total
+      - node_softnet_dropped_total
+      - node_softnet_flow_limit_count_total
+      - node_softnet_processed_total
+      - node_softnet_received_rps_total
+      - node_softnet_times_squeezed_total
+      - node_time_clocksource_available_info
+      - node_time_clocksource_current_info
+      - node_time_zone_offset_seconds
+      - node_timex_estimated_error_seconds
+      - node_timex_frequency_adjustment_ratio
+      - node_timex_loop_time_constant
+      - node_timex_maxerror_seconds
+      - node_timex_offset_seconds
+      - node_timex_pps_calibration_total
+      - node_timex_pps_error_total
+      - node_timex_pps_frequency_hertz
+      - node_timex_pps_jitter_seconds
+      - node_timex_pps_jitter_total
+      - node_timex_pps_shift_seconds
+      - node_timex_pps_stability_exceeded_total
+      - node_timex_pps_stability_hertz
+      - node_timex_status
+      - node_timex_sync_status
+      - node_timex_tai_offset_seconds
+      - node_timex_tick_seconds
+      - node_udp_queues
+      - node_vmstat_oom_kill
+      - node_vmstat_pgfault
+      - node_vmstat_pgmajfault
+      - node_vmstat_pgpgin
+      - node_vmstat_pgpgout
+      - node_vmstat_pswpin
+      - node_vmstat_pswpout
+      - promhttp_metric_handler_errors_total
+      - scrape_duration_seconds
+      - scrape_samples_post_metric_relabeling
+      - scrape_samples_scraped
+      - scrape_series_added
+    coverage:
+      node_arp_entries:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 24
+      node_context_switches_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_cooling_device_cur_state:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 60
+      node_cooling_device_max_state:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 60
+      node_dmi_info:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_entropy_available_bits:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_entropy_pool_size_bits:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_filefd_allocated:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_filefd_maximum:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_forks_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_intr_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Active_anon_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Active_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Active_file_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_AnonHugePages_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_AnonPages_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Bounce_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_CommitLimit_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Committed_AS_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_DirectMap1G_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_DirectMap2M_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_DirectMap4k_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Dirty_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_FileHugePages_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_FilePmdMapped_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_HardwareCorrupted_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_HugePages_Free:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_HugePages_Rsvd:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_HugePages_Surp:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_HugePages_Total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Hugepagesize_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Hugetlb_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Inactive_anon_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Inactive_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Inactive_file_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_KReclaimable_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_KernelStack_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Mapped_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Mlocked_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_NFS_Unstable_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_PageTables_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Percpu_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_SReclaimable_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_SUnreclaim_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_SecPageTables_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_ShmemHugePages_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_ShmemPmdMapped_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Shmem_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Slab_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_SwapCached_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Unaccepted_bytes:
+        instances_present: 10
+        baseline_instances: 11
+        instances_missing: 1
+        series_returned: 10
+      node_memory_Unevictable_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_VmallocChunk_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_VmallocTotal_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_VmallocUsed_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_WritebackTmp_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Writeback_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Zswap_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_memory_Zswapped_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Icmp6_InErrors:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Icmp6_InMsgs:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Icmp6_OutMsgs:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Icmp_InErrors:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Icmp_InMsgs:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Icmp_OutMsgs:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Ip6_InOctets:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Ip6_OutOctets:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_IpExt_InOctets:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_IpExt_OutOctets:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Ip_Forwarding:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_TcpExt_ListenDrops:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_TcpExt_ListenOverflows:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_TcpExt_SyncookiesFailed:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_TcpExt_SyncookiesRecv:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_TcpExt_SyncookiesSent:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_TcpExt_TCPSynRetrans:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_TcpExt_TCPTimeouts:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Tcp_ActiveOpens:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Tcp_CurrEstab:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Tcp_InErrs:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Tcp_InSegs:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Tcp_OutRsts:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Tcp_OutSegs:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Tcp_PassiveOpens:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Tcp_RetransSegs:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Udp6_InDatagrams:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Udp6_InErrors:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Udp6_NoPorts:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Udp6_OutDatagrams:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Udp6_RcvbufErrors:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Udp6_SndbufErrors:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_UdpLite6_InErrors:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_UdpLite_InErrors:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Udp_InDatagrams:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Udp_InErrors:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Udp_NoPorts:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Udp_OutDatagrams:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Udp_RcvbufErrors:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_netstat_Udp_SndbufErrors:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_nf_conntrack_entries:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_nf_conntrack_entries_limit:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_nf_conntrack_stat_drop:
+        instances_present: 1
+        baseline_instances: 11
+        instances_missing: 10
+        series_returned: 1
+      node_nf_conntrack_stat_early_drop:
+        instances_present: 1
+        baseline_instances: 11
+        instances_missing: 10
+        series_returned: 1
+      node_nf_conntrack_stat_found:
+        instances_present: 1
+        baseline_instances: 11
+        instances_missing: 10
+        series_returned: 1
+      node_nf_conntrack_stat_ignore:
+        instances_present: 1
+        baseline_instances: 11
+        instances_missing: 10
+        series_returned: 1
+      node_nf_conntrack_stat_insert:
+        instances_present: 1
+        baseline_instances: 11
+        instances_missing: 10
+        series_returned: 1
+      node_nf_conntrack_stat_insert_failed:
+        instances_present: 1
+        baseline_instances: 11
+        instances_missing: 10
+        series_returned: 1
+      node_nf_conntrack_stat_invalid:
+        instances_present: 1
+        baseline_instances: 11
+        instances_missing: 10
+        series_returned: 1
+      node_nf_conntrack_stat_search_restart:
+        instances_present: 1
+        baseline_instances: 11
+        instances_missing: 10
+        series_returned: 1
+      node_os_version:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_pressure_cpu_waiting_seconds_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_pressure_io_stalled_seconds_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_pressure_io_waiting_seconds_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_pressure_memory_stalled_seconds_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_pressure_memory_waiting_seconds_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_processes_max_processes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_processes_max_threads:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_processes_pids:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_processes_state:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 39
+      node_processes_threads:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_processes_threads_state:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 40
+      node_schedstat_running_seconds_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 60
+      node_schedstat_timeslices_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 60
+      node_schedstat_waiting_seconds_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 60
+      node_selinux_enabled:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_FRAG6_inuse:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_FRAG6_memory:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_FRAG_inuse:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_FRAG_memory:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_RAW6_inuse:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_RAW_inuse:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_TCP6_inuse:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_TCP_alloc:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_TCP_inuse:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_TCP_mem:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_TCP_mem_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_TCP_orphan:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_TCP_tw:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_UDP6_inuse:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_UDPLITE6_inuse:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_UDPLITE_inuse:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_UDP_inuse:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_UDP_mem:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_UDP_mem_bytes:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_sockstat_sockets_used:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_softnet_backlog_len:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 60
+      node_softnet_cpu_collision_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 60
+      node_softnet_dropped_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 60
+      node_softnet_flow_limit_count_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 60
+      node_softnet_processed_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 60
+      node_softnet_received_rps_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 60
+      node_softnet_times_squeezed_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 60
+      node_time_clocksource_available_info:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 43
+      node_time_clocksource_current_info:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_time_zone_offset_seconds:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_estimated_error_seconds:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_frequency_adjustment_ratio:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_loop_time_constant:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_maxerror_seconds:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_offset_seconds:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_pps_calibration_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_pps_error_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_pps_frequency_hertz:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_pps_jitter_seconds:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_pps_jitter_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_pps_shift_seconds:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_pps_stability_exceeded_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_pps_stability_hertz:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_status:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_sync_status:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_tai_offset_seconds:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_timex_tick_seconds:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_udp_queues:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 44
+      node_vmstat_oom_kill:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_vmstat_pgfault:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_vmstat_pgmajfault:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_vmstat_pgpgin:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_vmstat_pgpgout:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_vmstat_pswpin:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      node_vmstat_pswpout:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      promhttp_metric_handler_errors_total:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 22
+      scrape_duration_seconds:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      scrape_samples_post_metric_relabeling:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      scrape_samples_scraped:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+      scrape_series_added:
+        instances_present: 11
+        baseline_instances: 11
+        instances_missing: 0
+        series_returned: 11
+query_recipes:
+  - id: cpu_non_idle_pct
+    title: CPU nao ociosa por servidor
+    promql: 100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{job="integrations/unix",mode="idle"}[5m])))
+    unit: percent_0_100
+    dependencies:
+      - node_cpu_seconds_total
+    validation: dependencies_in_export; not_executed
+    notes:
+      - Receita de contador padrao; inclui iowait entre os estados nao idle. Valores nao foram avaliados.
+  - id: memory_used_pct
+    title: RAM indisponivel ao sistema
+    promql: 100 * (1 - node_memory_MemAvailable_bytes{job="integrations/unix"} / node_memory_MemTotal_bytes{job="integrations/unix"})
+    unit: percent_0_100
+    dependencies:
+      - node_memory_MemAvailable_bytes
+      - node_memory_MemTotal_bytes
+    validation: dependencies_in_export; not_executed
+    notes: []
+  - id: filesystem_unavailable_pct
+    title: Capacidade indisponivel ao usuario comum
+    promql: (100 * (1 - node_filesystem_avail_bytes{job="integrations/unix",fstype!~"tmpfs|devtmpfs|overlay|squashfs"}
+      / node_filesystem_size_bytes{job="integrations/unix",fstype!~"tmpfs|devtmpfs|overlay|squashfs"})) and (node_filesystem_size_bytes{job="integrations/unix",fstype!~"tmpfs|devtmpfs|overlay|squashfs"}
+      > 0)
+    unit: percent_0_100
+    dependencies:
+      - node_filesystem_avail_bytes
+      - node_filesystem_size_bytes
+    validation: dependencies_in_export; not_executed
+    notes:
+      - Inclui blocos reservados indisponiveis ao usuario; nao e exatamente size - free.
+  - id: network_receive_eth0_bps
+    title: Entrada pela interface eth0
+    promql: 8 * rate(node_network_receive_bytes_total{job="integrations/unix",device="eth0"}[5m])
+    unit: bits_per_second
+    dependencies:
+      - node_network_receive_bytes_total
+    validation: dependencies_in_export; not_executed
+    notes:
+      - eth0 e um padrao observado neste snapshot, nao uma exigencia para futuros servidores.
+  - id: network_transmit_eth0_bps
+    title: Saida pela interface eth0
+    promql: 8 * rate(node_network_transmit_bytes_total{job="integrations/unix",device="eth0"}[5m])
+    unit: bits_per_second
+    dependencies:
+      - node_network_transmit_bytes_total
+    validation: dependencies_in_export; not_executed
+    notes: []
+  - id: disk_read_by_device
+    title: Leitura por dispositivo de bloco
+    promql: rate(node_disk_read_bytes_total{job="integrations/unix"}[5m])
+    unit: bytes_per_second
+    dependencies:
+      - node_disk_read_bytes_total
+    validation: dependencies_in_export; not_executed
+    notes:
+      - Nao agregar sda e dm-0 indiscriminadamente.
+  - id: failed_systemd_flags
+    title: Flags de falha das unidades coletadas
+    promql: node_systemd_unit_state{job="integrations/unix",state="failed"}
+    unit: boolean
+    dependencies:
+      - node_systemd_unit_state
+    validation: dependencies_in_export; not_executed
+    notes:
+      - Zero e um valor do indicador; ausencia da serie nao e zero.
+  - id: collector_success
+    title: Sucesso dos coletores
+    promql: node_scrape_collector_success{job="integrations/unix"}
+    unit: boolean
+    dependencies:
+      - node_scrape_collector_success
+    validation: dependencies_in_export; not_executed
+    notes: []
+limitations:
+  - Todos os 11 hosts apresentam CPU, MemTotal, MemAvailable, capacidade/livre de filesystem, rede e I/O de bloco
+    no schema exportado.
+  - Nao ha TYPE/HELP das metricas node_* em metadata.json. As formulas padrao nao substituem uma validacao dos valores
+    no exporter instalado.
+  - Systemd nao e uniforme entre os hosts; ver inventario privado e relatorio.
+  - A presenca dos coletores em node_scrape_collector_success nao comprova valor 1; seus valores nao foram exportados.
+change_policy:
+  baseline_counts_are_fixed_requirements: false
+  require_new_metrics_before_using_in_dashboard: true
+  preserve_raw_labels: true
+  alloy_changes_applied: false
+query_policy:
+  numerically_validated: false
+  promql_parser_validation: not_performed
+  static_metric_dependencies_checked: true
+  documentation_sources:
+    - prometheus_functions
+  note: As receitas usam semantica padrao onde conhecida; o catalogo preserva a ausencia de TYPE/HELP do exporter
+    em execucao.

@@ -1,0 +1,1070 @@
+# Contrato observado para consumidores de dashboards; nao provisionar este YAML no Grafana.
+schema_version: 2
+kind: observability_contract
+version: 0.2.0
+id: hyperv
+title: Hyper-V / visao unificada de hosts e VMs
+status: observed_baseline
+observed_at_utc: '2026-11-04T19:01:53.881Z'
+job: integrations/hyperv
+references:
+  common: common.yml
+  full_metric_catalog: ../catalogs/hyperv.yml
+  private_inventory: ../inventory/hyperv.yml
+  sources: ../sources.yml
+snapshot:
+  job: integrations/hyperv
+  metric_names: 143
+  series_returned: 4569
+  instances: 1
+  up_series_returned: 1
+  up_equal_one: 1
+  metadata_exact_matches: 0
+  metadata_parent_family_matches: 0
+  metadata_unavailable: 143
+identity:
+  target_key:
+    - job
+    - instance
+  instance_means: hypervisor_host
+  vm_cpu_key:
+    - instance
+    - vm
+    - core
+  vm_memory_key:
+    - instance
+    - vm
+  network_key:
+    - instance
+    - adapter
+  storage_key:
+    - instance
+    - device
+  vm_label_is_case_sensitive: true
+  native_vm_id_label_observed: false
+  guest_join:
+    status: candidate_only
+    method: comparar vm.lower() com instance dos jobs unix/windows
+    runtime_join_implemented: false
+    note: Nao renomear instance do hypervisor como nome do convidado. Uma tabela de mapeamento validada e necessaria
+      para joins duraveis.
+grafana_variables:
+  syntax: Grafana label_values, nao PromQL da API
+  instance:
+    query: label_values(windows_hyperv_dynamic_memory_vm_physical_bytes{job="integrations/hyperv"}, instance)
+    multi: true
+    all_value: .*
+  vm:
+    query: label_values(windows_hyperv_dynamic_memory_vm_physical_bytes{job="integrations/hyperv",instance=~"$instance"},
+      vm)
+    multi: true
+    all_value: .*
+    preserve_case: true
+metric_groups:
+  host_processors:
+    title: Processadores logicos do hypervisor
+    metrics_observed:
+      - windows_hyperv_hypervisor_logical_processor_context_switches_total
+      - windows_hyperv_hypervisor_logical_processor_time_total
+      - windows_hyperv_hypervisor_logical_processor_total_run_time_total
+    coverage:
+      windows_hyperv_hypervisor_logical_processor_context_switches_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 32
+      windows_hyperv_hypervisor_logical_processor_time_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 96
+      windows_hyperv_hypervisor_logical_processor_total_run_time_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 32
+  root_processors:
+    title: Processadores da particao raiz
+    metrics_observed:
+      - windows_hyperv_hypervisor_root_virtual_cpu_wait_time_per_dispatch_total
+      - windows_hyperv_hypervisor_root_virtual_processor_time_total
+      - windows_hyperv_hypervisor_root_virtual_processor_total_run_time_total
+    coverage:
+      windows_hyperv_hypervisor_root_virtual_cpu_wait_time_per_dispatch_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 32
+      windows_hyperv_hypervisor_root_virtual_processor_time_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 96
+      windows_hyperv_hypervisor_root_virtual_processor_total_run_time_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 32
+  vm_processors:
+    title: Processadores virtuais por vm/core
+    metrics_observed:
+      - windows_hyperv_hypervisor_virtual_processor_cpu_wait_time_per_dispatch_total
+      - windows_hyperv_hypervisor_virtual_processor_time_total
+      - windows_hyperv_hypervisor_virtual_processor_total_run_time_total
+    coverage:
+      windows_hyperv_hypervisor_virtual_processor_cpu_wait_time_per_dispatch_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 120
+      windows_hyperv_hypervisor_virtual_processor_time_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 360
+      windows_hyperv_hypervisor_virtual_processor_total_run_time_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 120
+    interpretation: vm identifica o nome da VM; core identifica a vCPU. Nao inferir percentual apenas pelo sufixo
+      total.
+  vm_memory:
+    title: Memoria por VM
+    metrics_observed:
+      - windows_hyperv_dynamic_memory_vm_add_operations_total
+      - windows_hyperv_dynamic_memory_vm_added_total
+      - windows_hyperv_dynamic_memory_vm_guest_available_bytes
+      - windows_hyperv_dynamic_memory_vm_guest_visible_physical_memory_bytes
+      - windows_hyperv_dynamic_memory_vm_physical_bytes
+      - windows_hyperv_dynamic_memory_vm_pressure_current_ratio
+      - windows_hyperv_dynamic_memory_vm_pressure_maximum_ratio
+      - windows_hyperv_dynamic_memory_vm_pressure_minimum_ratio
+      - windows_hyperv_dynamic_memory_vm_remove_operations_total
+      - windows_hyperv_dynamic_memory_vm_removed_bytes_total
+    coverage:
+      windows_hyperv_dynamic_memory_vm_add_operations_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 18
+      windows_hyperv_dynamic_memory_vm_added_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 18
+      windows_hyperv_dynamic_memory_vm_guest_available_bytes:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 18
+      windows_hyperv_dynamic_memory_vm_guest_visible_physical_memory_bytes:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 18
+      windows_hyperv_dynamic_memory_vm_physical_bytes:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 18
+      windows_hyperv_dynamic_memory_vm_pressure_current_ratio:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 18
+      windows_hyperv_dynamic_memory_vm_pressure_maximum_ratio:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 18
+      windows_hyperv_dynamic_memory_vm_pressure_minimum_ratio:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 18
+      windows_hyperv_dynamic_memory_vm_remove_operations_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 18
+      windows_hyperv_dynamic_memory_vm_removed_bytes_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 18
+    interpretation: Memoria atribuida/visivel/disponivel nao sao sinonimos. O nome do grupo dynamic_memory nao prova
+      que a VM usa memoria dinamica.
+  memory_balancer:
+    title: Balanceador de memoria
+    metrics_observed:
+      - windows_hyperv_dynamic_memory_balancer_available_memory_bytes
+      - windows_hyperv_dynamic_memory_balancer_available_memory_for_balancing_bytes
+      - windows_hyperv_dynamic_memory_balancer_average_pressure_ratio
+      - windows_hyperv_dynamic_memory_balancer_system_current_pressure_ratio
+    coverage:
+      windows_hyperv_dynamic_memory_balancer_available_memory_bytes:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_dynamic_memory_balancer_available_memory_for_balancing_bytes:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_dynamic_memory_balancer_average_pressure_ratio:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_dynamic_memory_balancer_system_current_pressure_ratio:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+  vm_network:
+    title: Adaptadores de rede virtual
+    metrics_observed:
+      - windows_hyperv_virtual_network_adapter_drop_reasons
+      - windows_hyperv_virtual_network_adapter_incoming_dropped_packets_total
+      - windows_hyperv_virtual_network_adapter_outgoing_dropped_packets_total
+      - windows_hyperv_virtual_network_adapter_received_bytes_total
+      - windows_hyperv_virtual_network_adapter_received_packets_total
+      - windows_hyperv_virtual_network_adapter_sent_bytes_total
+      - windows_hyperv_virtual_network_adapter_sent_packets_total
+    coverage:
+      windows_hyperv_virtual_network_adapter_drop_reasons:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1000
+      windows_hyperv_virtual_network_adapter_incoming_dropped_packets_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 20
+      windows_hyperv_virtual_network_adapter_outgoing_dropped_packets_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 20
+      windows_hyperv_virtual_network_adapter_received_bytes_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 20
+      windows_hyperv_virtual_network_adapter_received_packets_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 20
+      windows_hyperv_virtual_network_adapter_sent_bytes_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 20
+      windows_hyperv_virtual_network_adapter_sent_packets_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 20
+    interpretation: adapter e o identificador real. Nao existe label vm nestas series. Nao agregar como rede por
+      VM sem mapeamento explicito.
+  virtual_storage:
+    title: Dispositivos de armazenamento virtual
+    metrics_observed:
+      - windows_hyperv_virtual_storage_device_bytes_read
+      - windows_hyperv_virtual_storage_device_bytes_written
+      - windows_hyperv_virtual_storage_device_error_count_total
+      - windows_hyperv_virtual_storage_device_latency_seconds
+      - windows_hyperv_virtual_storage_device_lower_latency_seconds
+      - windows_hyperv_virtual_storage_device_lower_queue_length
+      - windows_hyperv_virtual_storage_device_normalized_throughput
+      - windows_hyperv_virtual_storage_device_operations_read_total
+      - windows_hyperv_virtual_storage_device_operations_written_total
+      - windows_hyperv_virtual_storage_device_queue_length
+      - windows_hyperv_virtual_storage_device_throughput
+    coverage:
+      windows_hyperv_virtual_storage_device_bytes_read:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 37
+      windows_hyperv_virtual_storage_device_bytes_written:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 37
+      windows_hyperv_virtual_storage_device_error_count_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 37
+      windows_hyperv_virtual_storage_device_latency_seconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 37
+      windows_hyperv_virtual_storage_device_lower_latency_seconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 37
+      windows_hyperv_virtual_storage_device_lower_queue_length:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 37
+      windows_hyperv_virtual_storage_device_normalized_throughput:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 37
+      windows_hyperv_virtual_storage_device_operations_read_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 37
+      windows_hyperv_virtual_storage_device_operations_written_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 37
+      windows_hyperv_virtual_storage_device_queue_length:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 37
+      windows_hyperv_virtual_storage_device_throughput:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 37
+    interpretation: device e um caminho normalizado. Inclui VHDX, VMGS e ISO; nao representa exclusivamente discos
+      de dados nem informa espaco livre no convidado.
+  datastore:
+    title: Armazenamento por datastore
+    metrics_observed:
+      - windows_hyperv_datastore_available_entries
+      - windows_hyperv_datastore_cache_update_operation_count
+      - windows_hyperv_datastore_cache_update_operation_latency_microseconds
+      - windows_hyperv_datastore_commit_byte_count
+      - windows_hyperv_datastore_commit_byte_latency_microseconds
+      - windows_hyperv_datastore_commit_count
+      - windows_hyperv_datastore_commit_operation_count
+      - windows_hyperv_datastore_commit_operation_latency_microseconds
+      - windows_hyperv_datastore_compact_operation_count
+      - windows_hyperv_datastore_compact_operation_latency_microseconds
+      - windows_hyperv_datastore_current_replay_log_size_bytes
+      - windows_hyperv_datastore_data_alignment_bytes
+      - windows_hyperv_datastore_data_end_bytes
+      - windows_hyperv_datastore_disconnect_count
+      - windows_hyperv_datastore_empty_entries
+      - windows_hyperv_datastore_file_data_size_bytes
+      - windows_hyperv_datastore_file_objects
+      - windows_hyperv_datastore_fragmentation_ratio
+      - windows_hyperv_datastore_free_bytes
+      - windows_hyperv_datastore_key_tables
+      - windows_hyperv_datastore_load_file_operation_count
+      - windows_hyperv_datastore_load_file_operation_latency_microseconds
+      - windows_hyperv_datastore_names_size_bytes
+      - windows_hyperv_datastore_number_of_keys
+      - windows_hyperv_datastore_object_tables
+      - windows_hyperv_datastore_query_size_operation_count
+      - windows_hyperv_datastore_query_size_operation_latency_microseconds
+      - windows_hyperv_datastore_read_from_file_byte_count
+      - windows_hyperv_datastore_read_from_file_byte_latency_microseconds
+      - windows_hyperv_datastore_read_from_file_count
+      - windows_hyperv_datastore_read_from_storage_byte_count
+      - windows_hyperv_datastore_read_from_storage_byte_latency_microseconds
+      - windows_hyperv_datastore_read_from_storage_count
+      - windows_hyperv_datastore_reconnect_latency_microseconds
+      - windows_hyperv_datastore_remove_operation_count
+      - windows_hyperv_datastore_remove_operation_latency_microseconds
+      - windows_hyperv_datastore_sector_size_bytes
+      - windows_hyperv_datastore_set_operation_count
+      - windows_hyperv_datastore_set_operation_latency_microseconds
+      - windows_hyperv_datastore_table_data_size_bytes
+      - windows_hyperv_datastore_write_to_file_byte_count
+      - windows_hyperv_datastore_write_to_file_byte_latency_microseconds
+      - windows_hyperv_datastore_write_to_file_count
+      - windows_hyperv_datastore_write_to_storage_byte_count
+      - windows_hyperv_datastore_write_to_storage_byte_latency_microseconds
+      - windows_hyperv_datastore_write_to_storage_count
+    coverage:
+      windows_hyperv_datastore_available_entries:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_cache_update_operation_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_cache_update_operation_latency_microseconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_commit_byte_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_commit_byte_latency_microseconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_commit_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_commit_operation_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_commit_operation_latency_microseconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_compact_operation_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_compact_operation_latency_microseconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_current_replay_log_size_bytes:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_data_alignment_bytes:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_data_end_bytes:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_disconnect_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_empty_entries:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_file_data_size_bytes:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_file_objects:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_fragmentation_ratio:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_free_bytes:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_key_tables:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_load_file_operation_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_load_file_operation_latency_microseconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_names_size_bytes:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_number_of_keys:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_object_tables:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_query_size_operation_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_query_size_operation_latency_microseconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_read_from_file_byte_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_read_from_file_byte_latency_microseconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_read_from_file_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_read_from_storage_byte_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_read_from_storage_byte_latency_microseconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_read_from_storage_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_reconnect_latency_microseconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_remove_operation_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_remove_operation_latency_microseconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_sector_size_bytes:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_set_operation_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_set_operation_latency_microseconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_table_data_size_bytes:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_write_to_file_byte_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_write_to_file_byte_latency_microseconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_write_to_file_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_write_to_storage_byte_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_write_to_storage_byte_latency_microseconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+      windows_hyperv_datastore_write_to_storage_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 39
+  virtual_switch:
+    title: Switches virtuais
+    metrics_observed: []
+    coverage: {}
+  aggregate_health:
+    title: Saude agregada das VMs
+    metrics_observed:
+      - windows_hyperv_virtual_machine_health_total_count
+    coverage:
+      windows_hyperv_virtual_machine_health_total_count:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 2
+    interpretation: Duas series diferenciadas por state. Nao fornece Estado por VM nem confirma que existem duas
+      VMs criticas.
+  collection_health:
+    title: Diagnostico do exporter
+    metrics_observed:
+      - scrape_duration_seconds
+      - scrape_samples_post_metric_relabeling
+      - scrape_samples_scraped
+      - scrape_series_added
+      - up
+      - windows_exporter_build_info
+      - windows_exporter_collector_duration_seconds
+      - windows_exporter_collector_success
+      - windows_exporter_collector_timeout
+      - windows_exporter_scrape_duration_seconds
+    coverage:
+      scrape_duration_seconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      scrape_samples_post_metric_relabeling:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      scrape_samples_scraped:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      scrape_series_added:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      up:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_exporter_build_info:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_exporter_collector_duration_seconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_exporter_collector_success:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_exporter_collector_timeout:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_exporter_scrape_duration_seconds:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+  other_observed:
+    title: Demais metricas observadas; detalhes no catalogo
+    metrics_observed:
+      - windows_hyperv_io_quota_replenishment_rate
+      - windows_hyperv_root_partition_1G_device_pages
+      - windows_hyperv_root_partition_1G_gpa_pages
+      - windows_hyperv_root_partition_2M_device_pages
+      - windows_hyperv_root_partition_2M_gpa_pages
+      - windows_hyperv_root_partition_4K_device_pages
+      - windows_hyperv_root_partition_4K_gpa_pages
+      - windows_hyperv_root_partition_address_spaces
+      - windows_hyperv_root_partition_attached_devices
+      - windows_hyperv_root_partition_deposited_pages
+      - windows_hyperv_root_partition_device_dma_errors
+      - windows_hyperv_root_partition_device_interrupt_errors
+      - windows_hyperv_root_partition_device_interrupt_throttle_events
+      - windows_hyperv_root_partition_gpa_space_modifications
+      - windows_hyperv_root_partition_io_tlb_flush
+      - windows_hyperv_root_partition_io_tlb_flush_cost
+      - windows_hyperv_root_partition_physical_pages_allocated
+      - windows_hyperv_root_partition_preferred_numa_node_index
+      - windows_hyperv_root_partition_recommended_virtual_tlb_size
+      - windows_hyperv_root_partition_virtual_tlb_flush_entries
+      - windows_hyperv_root_partition_virtual_tlb_pages
+      - windows_hyperv_vid_physical_pages_allocated
+      - windows_hyperv_vid_preferred_numa_node_index
+      - windows_hyperv_vid_remote_physical_pages
+      - windows_hyperv_vswitch_broadcast_packets_received_total
+      - windows_hyperv_vswitch_broadcast_packets_sent_total
+      - windows_hyperv_vswitch_bytes_received_total
+      - windows_hyperv_vswitch_bytes_sent_total
+      - windows_hyperv_vswitch_bytes_total
+      - windows_hyperv_vswitch_directed_packets_received_total
+      - windows_hyperv_vswitch_directed_packets_send_total
+      - windows_hyperv_vswitch_dropped_packets_incoming_total
+      - windows_hyperv_vswitch_dropped_packets_outcoming_total
+      - windows_hyperv_vswitch_extensions_dropped_packets_incoming_total
+      - windows_hyperv_vswitch_extensions_dropped_packets_outcoming_total
+      - windows_hyperv_vswitch_learned_mac_addresses_total
+      - windows_hyperv_vswitch_multicast_packets_received_total
+      - windows_hyperv_vswitch_multicast_packets_sent_total
+      - windows_hyperv_vswitch_number_of_send_channel_moves_total
+      - windows_hyperv_vswitch_number_of_vmq_moves_total
+      - windows_hyperv_vswitch_packets_flooded_total
+      - windows_hyperv_vswitch_packets_received_total
+      - windows_hyperv_vswitch_packets_sent_total
+      - windows_hyperv_vswitch_packets_total
+      - windows_hyperv_vswitch_purged_mac_addresses_total
+    coverage:
+      windows_hyperv_io_quota_replenishment_rate:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 37
+      windows_hyperv_root_partition_1G_device_pages:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_1G_gpa_pages:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_2M_device_pages:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_2M_gpa_pages:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_4K_device_pages:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_4K_gpa_pages:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_address_spaces:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_attached_devices:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_deposited_pages:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_device_dma_errors:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_device_interrupt_errors:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_device_interrupt_throttle_events:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_gpa_space_modifications:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_io_tlb_flush:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_io_tlb_flush_cost:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_physical_pages_allocated:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_preferred_numa_node_index:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_recommended_virtual_tlb_size:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_virtual_tlb_flush_entries:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_root_partition_virtual_tlb_pages:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vid_physical_pages_allocated:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 18
+      windows_hyperv_vid_preferred_numa_node_index:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 18
+      windows_hyperv_vid_remote_physical_pages:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 18
+      windows_hyperv_vswitch_broadcast_packets_received_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_broadcast_packets_sent_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_bytes_received_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_bytes_sent_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_bytes_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_directed_packets_received_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_directed_packets_send_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_dropped_packets_incoming_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_dropped_packets_outcoming_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_extensions_dropped_packets_incoming_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_extensions_dropped_packets_outcoming_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_learned_mac_addresses_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_multicast_packets_received_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_multicast_packets_sent_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_number_of_send_channel_moves_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_number_of_vmq_moves_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_packets_flooded_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_packets_received_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_packets_sent_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_packets_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+      windows_hyperv_vswitch_purged_mac_addresses_total:
+        instances_present: 1
+        baseline_instances: 1
+        instances_missing: 0
+        series_returned: 1
+query_recipes:
+  - id: observed_vm_vcpu_counts
+    title: vCPUs observadas por host e VM
+    promql: count by (instance, vm) (windows_hyperv_hypervisor_virtual_processor_total_run_time_total{job="integrations/hyperv"})
+    unit: count
+    dependencies:
+      - windows_hyperv_hypervisor_virtual_processor_total_run_time_total
+    validation: dependencies_in_export; not_executed
+    notes:
+      - Conta labels core presentes; nao constitui inventario completo de VMs ligadas/desligadas.
+  - id: vm_assigned_memory
+    title: Memoria fisica atribuida por VM
+    promql: windows_hyperv_dynamic_memory_vm_physical_bytes{job="integrations/hyperv"}
+    unit: bytes
+    dependencies:
+      - windows_hyperv_dynamic_memory_vm_physical_bytes
+    validation: dependencies_in_export; not_executed
+    notes:
+      - Nao rotular como memoria efetivamente utilizada pelo sistema convidado.
+  - id: vm_guest_visible_memory
+    title: Memoria visivel ao convidado
+    promql: windows_hyperv_dynamic_memory_vm_guest_visible_physical_memory_bytes{job="integrations/hyperv"}
+    unit: bytes
+    dependencies:
+      - windows_hyperv_dynamic_memory_vm_guest_visible_physical_memory_bytes
+    validation: dependencies_in_export; not_executed
+    notes: []
+  - id: vm_guest_available_memory
+    title: Memoria disponivel informada pelo Hyper-V
+    promql: windows_hyperv_dynamic_memory_vm_guest_available_bytes{job="integrations/hyperv"}
+    unit: bytes
+    dependencies:
+      - windows_hyperv_dynamic_memory_vm_guest_available_bytes
+    validation: dependencies_in_export; not_executed
+    notes:
+      - Valores nao comparados ao Alloy instalado dentro da VM.
+  - id: network_received_counter
+    title: Contador bruto por adapter
+    promql: windows_hyperv_virtual_network_adapter_received_bytes_total{job="integrations/hyperv"}
+    unit: bytes_counter_reference
+    dependencies:
+      - windows_hyperv_virtual_network_adapter_received_bytes_total
+    validation: dependencies_in_export; not_executed
+    notes:
+      - Consulta de inspecao. Nao e taxa de trafego e nao agrupa por VM. Confirmar TYPE antes de consolidar receita
+        de rate.
+  - id: storage_read_vhdx_counter
+    title: Valor bruto de leitura em dispositivos VHDX
+    promql: windows_hyperv_virtual_storage_device_bytes_read{job="integrations/hyperv",device=~"(?i).*[.]vhdx"}
+    unit: unverified_raw_value
+    dependencies:
+      - windows_hyperv_virtual_storage_device_bytes_read
+    validation: dependencies_in_export; not_executed
+    notes:
+      - Filtro apenas por extensao observada. Confirmar semantica de bytes_read antes de usar rate; nao indica ocupacao
+        do disco.
+  - id: aggregate_health
+    title: Saude agregada por state
+    promql: windows_hyperv_virtual_machine_health_total_count{job="integrations/hyperv"}
+    unit: unverified_raw_value
+    dependencies:
+      - windows_hyperv_virtual_machine_health_total_count
+    validation: dependencies_in_export; not_executed
+    notes:
+      - Nao fornece state individual das VMs.
+limitations:
+  - 18 nomes de VM aparecem em CPU/memoria; isso nao comprova que todas as VMs configuradas, inclusive desligadas,
+    estejam representadas.
+  - O export possui 143 nomes de metricas no job; 133 com prefixo windows_hyperv e 10 de suporte.
+  - Nao foi observada metrica de estado operacional individual da VM nem label vm_id dedicada.
+  - Rede e armazenamento nao possuem label vm. Foram preservados adapter e device sem criar relacionamentos por
+    regex.
+  - '37 dispositivos de armazenamento: 18 com sufixo VHDX, 18 VMGS e uma entrada ISO. Os caminhos nao autorizam
+    um join universal com vm.'
+  - Memoria por VM tem label vm; CPU tem vm e core. Dados do convidado exigem contrato Linux/Windows e mapeamento.
+  - 'Nao foram convertidos contadores de CPU/latencia em percentuais: TYPE, unidade de runtime e amostras nao vieram
+    neste export.'
+  - A presenca de metricas de memoria dinamica nao confirma a configuracao de memoria de cada VM.
+change_policy:
+  baseline_counts_are_fixed_requirements: false
+  require_new_metrics_before_using_in_dashboard: true
+  preserve_raw_labels: true
+  alloy_changes_applied: false
+query_policy:
+  numerically_validated: false
+  promql_parser_validation: not_performed
+  static_metric_dependencies_checked: true
+  documentation_sources:
+    - prometheus_functions
+  note: As receitas usam semantica padrao onde conhecida; o catalogo preserva a ausencia de TYPE/HELP do exporter
+    em execucao.

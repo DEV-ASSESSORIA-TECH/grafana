@@ -1,0 +1,52 @@
+schema_version: 2
+kind: observability_contract_common
+version: 0.2.0
+status: observed_baseline
+observed_at_utc: '2026-11-04T19:01:53.881Z'
+scope: Contrato de consumo dos dados atualmente observados. Nao e especificacao da configuracao instalada nem obrigacao
+  de ativar coletores.
+evidence:
+  metric_schema: Nome e labels confirmados em /api/v1/series; cobertura e cardinalidade derivadas da exportacao.
+  numeric_values: Somente up.json inclui valores de metricas. Os demais arquivos nao incluem amostras de CPU, memoria,
+    saude, latencia ou disponibilidade dos monitores.
+  metadata: TYPE/HELP/UNIT so sao confirmados quando presentes em metadata.json. A API nao associa esses registros
+    a cada job.
+  freshness: O timestamp de up.json e o instante de avaliacao da consulta, nao a idade da ultima amostra. Nao foi
+    exportado timestamp(up).
+  window: O script de coleta solicitou aproximadamente 15 minutos. Os parametros nao constam das respostas; /series
+    pode incluir series sem amostras no intervalo.
+  targets: 'targets.json contem apenas os dois targets de scrape direto: Prometheus e Uptime Kuma. Os targets Alloy
+    devem ser inventariados tambem por up/series.'
+  live_testing: Nenhuma consulta deste pacote foi executada no servidor durante a geracao.
+identity:
+  target_key:
+    - job
+    - instance
+  alloy_host_label: host
+  observed_alloy_host_equals_instance: true
+  hyperv_instance_meaning: host hypervisor, nunca o sistema operacional convidado
+  case_sensitivity: vm em maiusculas e instance em minusculas no snapshot. Nao ha join direto automatico entre elas.
+  host_is_not_global: Nenhum tenant/environment/site foi observado. Evitar homonimos caso a coleta se expanda para
+    clientes diferentes.
+consumer_rules:
+  - Fixar o job em toda consulta e usar instance na selecao do servidor.
+  - Usar =~ com variaveis Grafana multi-value; usar ${instance:regex} para interpolar valores corretamente.
+  - Manter labels reais; nao assumir labels hostname, container, service, node, vm_id ou environment que nao foram
+    observadas.
+  - Nao transformar ausencia de serie em zero ou em estado saudavel.
+  - Nao usar numero de series como numero de VMs, containers ou entidades sem escolher uma metrica e deduplicar
+    pela chave correta.
+  - Nao aplicar rate a gauges; nomes terminados em total nao substituem a verificacao de TYPE/HELP.
+  - Contagens do inventario sao informativas e variaveis, nao limites obrigatorios do contrato.
+  - Queries sao receitas iniciais, com dependencias verificadas estaticamente; precisam de avaliacao no Prometheus
+    para validar valores e desempenho.
+  - Dados de runtime, servicos e systemd podem ter cobertura parcial sem invalidar CPU, memoria e discos do mesmo
+    host.
+non_goals:
+  - Mudar o Alloy ou o Docker Compose
+  - Instalar coletores
+  - Publicar endpoints
+  - Criar dashboards
+  - Comprovar alertas ativos, retencao ou SLA
+privacy: Inventarios e relatorios contem estrutura interna. O .gitignore evita a inclusao inicial dessas pastas,
+  mas nao remove arquivos ja rastreados. Revisar todo o pacote antes de publicar.

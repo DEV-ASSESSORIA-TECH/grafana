@@ -1,0 +1,881 @@
+# Contrato observado para consumidores de dashboards; nao provisionar este YAML no Grafana.
+schema_version: 2
+kind: observability_contract
+version: 0.2.0
+id: windows
+title: Windows Server / Windows Exporter embarcado
+status: observed_baseline
+observed_at_utc: '2026-11-04T19:01:53.881Z'
+job: integrations/windows
+references:
+  common: common.yml
+  full_metric_catalog: ../catalogs/windows.yml
+  private_inventory: ../inventory/windows.yml
+  sources: ../sources.yml
+snapshot:
+  job: integrations/windows
+  metric_names: 118
+  series_returned: 19295
+  instances: 5
+  up_series_returned: 5
+  up_equal_one: 5
+  metadata_exact_matches: 0
+  metadata_parent_family_matches: 0
+  metadata_unavailable: 118
+identity:
+  target_key:
+    - job
+    - instance
+  host_label: host
+  per_cpu_key:
+    - instance
+    - core
+    - mode
+  core_format_observed: grupo,processador; exemplo 0,0
+  volume_key:
+    - instance
+    - volume
+  network_key:
+    - instance
+    - nic
+  service_key:
+    - instance
+    - name
+grafana_variables:
+  syntax: Grafana label_values, nao PromQL da API
+  instance:
+    query: label_values(windows_os_info{job="integrations/windows"}, instance)
+    multi: true
+    all_value: .*
+  volume:
+    query: label_values(windows_logical_disk_size_bytes{job="integrations/windows",instance=~"$instance"}, volume)
+    multi: true
+metric_groups:
+  cpu:
+    title: CPU por core e mode
+    metrics_observed:
+      - windows_cpu_clock_interrupts_total
+      - windows_cpu_core_frequency_mhz
+      - windows_cpu_cstate_seconds_total
+      - windows_cpu_dpcs_total
+      - windows_cpu_idle_break_events_total
+      - windows_cpu_interrupts_total
+      - windows_cpu_logical_processor
+      - windows_cpu_parking_status
+      - windows_cpu_processor_mperf_total
+      - windows_cpu_processor_performance_total
+      - windows_cpu_processor_privileged_utility_total
+      - windows_cpu_processor_rtc_total
+      - windows_cpu_processor_utility_total
+      - windows_cpu_time_total
+    coverage:
+      windows_cpu_clock_interrupts_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 56
+      windows_cpu_core_frequency_mhz:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 56
+      windows_cpu_cstate_seconds_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 168
+      windows_cpu_dpcs_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 56
+      windows_cpu_idle_break_events_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 56
+      windows_cpu_interrupts_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 56
+      windows_cpu_logical_processor:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_cpu_parking_status:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 56
+      windows_cpu_processor_mperf_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 56
+      windows_cpu_processor_performance_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 56
+      windows_cpu_processor_privileged_utility_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 56
+      windows_cpu_processor_rtc_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 56
+      windows_cpu_processor_utility_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 56
+      windows_cpu_time_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 280
+  memory:
+    title: Memoria do sistema convidado/host Windows
+    metrics_observed:
+      - windows_memory_available_bytes
+      - windows_memory_cache_bytes
+      - windows_memory_cache_bytes_peak
+      - windows_memory_cache_faults_total
+      - windows_memory_commit_limit
+      - windows_memory_committed_bytes
+      - windows_memory_demand_zero_faults_total
+      - windows_memory_free_and_zero_page_list_bytes
+      - windows_memory_free_system_page_table_entries
+      - windows_memory_modified_page_list_bytes
+      - windows_memory_page_faults_total
+      - windows_memory_physical_free_bytes
+      - windows_memory_physical_total_bytes
+      - windows_memory_pool_nonpaged_allocs_total
+      - windows_memory_pool_nonpaged_bytes
+      - windows_memory_pool_paged_allocs_total
+      - windows_memory_pool_paged_bytes
+      - windows_memory_pool_paged_resident_bytes
+      - windows_memory_process_memory_limit_bytes
+      - windows_memory_standby_cache_core_bytes
+      - windows_memory_standby_cache_normal_priority_bytes
+      - windows_memory_standby_cache_reserve_bytes
+      - windows_memory_swap_page_operations_total
+      - windows_memory_swap_page_reads_total
+      - windows_memory_swap_page_writes_total
+      - windows_memory_swap_pages_read_total
+      - windows_memory_swap_pages_written_total
+      - windows_memory_system_cache_resident_bytes
+      - windows_memory_system_code_resident_bytes
+      - windows_memory_system_code_total_bytes
+      - windows_memory_system_driver_resident_bytes
+      - windows_memory_system_driver_total_bytes
+      - windows_memory_transition_faults_total
+      - windows_memory_transition_pages_repurposed_total
+      - windows_memory_write_copies_total
+    coverage:
+      windows_memory_available_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_cache_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_cache_bytes_peak:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_cache_faults_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_commit_limit:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_committed_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_demand_zero_faults_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_free_and_zero_page_list_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_free_system_page_table_entries:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_modified_page_list_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_page_faults_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_physical_free_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_physical_total_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_pool_nonpaged_allocs_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_pool_nonpaged_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_pool_paged_allocs_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_pool_paged_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_pool_paged_resident_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_process_memory_limit_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_standby_cache_core_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_standby_cache_normal_priority_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_standby_cache_reserve_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_swap_page_operations_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_swap_page_reads_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_swap_page_writes_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_swap_pages_read_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_swap_pages_written_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_system_cache_resident_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_system_code_resident_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_system_code_total_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_system_driver_resident_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_system_driver_total_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_transition_faults_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_transition_pages_repurposed_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_memory_write_copies_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+  logical_disks:
+    title: Capacidade e I/O de volumes logicos
+    metrics_observed:
+      - windows_logical_disk_avg_read_requests_queued
+      - windows_logical_disk_avg_write_requests_queued
+      - windows_logical_disk_free_bytes
+      - windows_logical_disk_idle_seconds_total
+      - windows_logical_disk_info
+      - windows_logical_disk_read_bytes_total
+      - windows_logical_disk_read_latency_seconds_total
+      - windows_logical_disk_read_seconds_total
+      - windows_logical_disk_read_write_latency_seconds_total
+      - windows_logical_disk_reads_total
+      - windows_logical_disk_requests_queued
+      - windows_logical_disk_size_bytes
+      - windows_logical_disk_split_ios_total
+      - windows_logical_disk_write_bytes_total
+      - windows_logical_disk_write_latency_seconds_total
+      - windows_logical_disk_write_seconds_total
+      - windows_logical_disk_writes_total
+    coverage:
+      windows_logical_disk_avg_read_requests_queued:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_avg_write_requests_queued:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_free_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_idle_seconds_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_info:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_read_bytes_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_read_latency_seconds_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_read_seconds_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_read_write_latency_seconds_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_reads_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_requests_queued:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_size_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_split_ios_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_write_bytes_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_write_latency_seconds_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_write_seconds_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+      windows_logical_disk_writes_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 17
+    interpretation: volume inclui letras de unidade e HarddiskVolume*. Para o resumo, selecionar volume=~"[A-Z]:";
+      manter detalhes das demais particoes.
+  physical_disks:
+    title: I/O dos discos fisicos
+    metrics_observed:
+      - windows_physical_disk_idle_seconds_total
+      - windows_physical_disk_read_bytes_total
+      - windows_physical_disk_read_latency_seconds_total
+      - windows_physical_disk_read_seconds_total
+      - windows_physical_disk_read_write_latency_seconds_total
+      - windows_physical_disk_reads_total
+      - windows_physical_disk_requests_queued
+      - windows_physical_disk_split_ios_total
+      - windows_physical_disk_write_bytes_total
+      - windows_physical_disk_write_latency_seconds_total
+      - windows_physical_disk_write_seconds_total
+      - windows_physical_disk_writes_total
+    coverage:
+      windows_physical_disk_idle_seconds_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 7
+      windows_physical_disk_read_bytes_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 7
+      windows_physical_disk_read_latency_seconds_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 7
+      windows_physical_disk_read_seconds_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 7
+      windows_physical_disk_read_write_latency_seconds_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 7
+      windows_physical_disk_reads_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 7
+      windows_physical_disk_requests_queued:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 7
+      windows_physical_disk_split_ios_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 7
+      windows_physical_disk_write_bytes_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 7
+      windows_physical_disk_write_latency_seconds_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 7
+      windows_physical_disk_write_seconds_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 7
+      windows_physical_disk_writes_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 7
+    interpretation: Nao somar camadas physical_disk e logical_disk no mesmo total de I/O.
+  network:
+    title: Rede por nic
+    metrics_observed:
+      - windows_net_bytes_received_total
+      - windows_net_bytes_sent_total
+      - windows_net_bytes_total
+      - windows_net_current_bandwidth_bytes
+      - windows_net_nic_address_info
+      - windows_net_nic_info
+      - windows_net_nic_operation_status
+      - windows_net_output_queue_length_packets
+      - windows_net_packets_outbound_discarded_total
+      - windows_net_packets_outbound_errors_total
+      - windows_net_packets_received_discarded_total
+      - windows_net_packets_received_errors_total
+      - windows_net_packets_received_total
+      - windows_net_packets_received_unknown_total
+      - windows_net_packets_sent_total
+      - windows_net_packets_total
+    coverage:
+      windows_net_bytes_received_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_net_bytes_sent_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_net_bytes_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_net_current_bandwidth_bytes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_net_nic_address_info:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 12
+      windows_net_nic_info:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 14
+      windows_net_nic_operation_status:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 98
+      windows_net_output_queue_length_packets:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_net_packets_outbound_discarded_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_net_packets_outbound_errors_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_net_packets_received_discarded_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_net_packets_received_errors_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_net_packets_received_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_net_packets_received_unknown_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_net_packets_sent_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_net_packets_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+    interpretation: Uma nic de trafego por host no snapshot; outras familias de informacao podem usar labels diferentes.
+  services:
+    title: Servicos do Windows
+    metrics_observed:
+      - windows_service_info
+      - windows_service_process
+      - windows_service_start_mode
+      - windows_service_state
+    coverage:
+      windows_service_info:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 1287
+      windows_service_process:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 553
+      windows_service_start_mode:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 6435
+      windows_service_state:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 9009
+    interpretation: Estado e start_mode possuem varias series por servico. Nao contar series como servicos.
+  system:
+    title: Sistema operacional e uptime
+    metrics_observed:
+      - windows_os_hostname
+      - windows_os_info
+      - windows_system_boot_time_timestamp
+      - windows_system_context_switches_total
+      - windows_system_exception_dispatches_total
+      - windows_system_processes
+      - windows_system_processes_limit
+      - windows_system_processor_queue_length
+      - windows_system_system_calls_total
+      - windows_system_threads
+    coverage:
+      windows_os_hostname:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_os_info:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_system_boot_time_timestamp:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_system_context_switches_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_system_exception_dispatches_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_system_processes:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_system_processes_limit:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_system_processor_queue_length:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_system_system_calls_total:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_system_threads:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+  collection_health:
+    title: Diagnostico do exporter
+    metrics_observed:
+      - scrape_duration_seconds
+      - scrape_samples_post_metric_relabeling
+      - scrape_samples_scraped
+      - scrape_series_added
+      - up
+      - windows_exporter_build_info
+      - windows_exporter_collector_duration_seconds
+      - windows_exporter_collector_success
+      - windows_exporter_collector_timeout
+      - windows_exporter_scrape_duration_seconds
+    coverage:
+      scrape_duration_seconds:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      scrape_samples_post_metric_relabeling:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      scrape_samples_scraped:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      scrape_series_added:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      up:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_exporter_build_info:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+      windows_exporter_collector_duration_seconds:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 40
+      windows_exporter_collector_success:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 40
+      windows_exporter_collector_timeout:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 40
+      windows_exporter_scrape_duration_seconds:
+        instances_present: 5
+        baseline_instances: 5
+        instances_missing: 0
+        series_returned: 5
+query_recipes:
+  - id: cpu_non_idle_pct
+    title: CPU nao ociosa por servidor
+    promql: 100 * (1 - avg by (instance) (rate(windows_cpu_time_total{job="integrations/windows",mode="idle"}[5m])))
+    unit: percent_0_100
+    dependencies:
+      - windows_cpu_time_total
+    validation: dependencies_in_export; not_executed
+    notes: []
+  - id: memory_used_pct
+    title: RAM utilizada no Windows
+    promql: 100 * (1 - windows_memory_available_bytes{job="integrations/windows"} / windows_memory_physical_total_bytes{job="integrations/windows"})
+    unit: percent_0_100
+    dependencies:
+      - windows_memory_available_bytes
+      - windows_memory_physical_total_bytes
+    validation: dependencies_in_export; not_executed
+    notes: []
+  - id: logical_disk_used_pct
+    title: Ocupacao das unidades com letra
+    promql: (100 * (1 - windows_logical_disk_free_bytes{job="integrations/windows",volume=~"[A-Z]:"} / windows_logical_disk_size_bytes{job="integrations/windows",volume=~"[A-Z]:"}))
+      and (windows_logical_disk_size_bytes{job="integrations/windows",volume=~"[A-Z]:"} > 0)
+    unit: percent_0_100
+    dependencies:
+      - windows_logical_disk_free_bytes
+      - windows_logical_disk_size_bytes
+    validation: dependencies_in_export; not_executed
+    notes: []
+  - id: network_receive_bps
+    title: Entrada por adaptador
+    promql: 8 * rate(windows_net_bytes_received_total{job="integrations/windows"}[5m])
+    unit: bits_per_second
+    dependencies:
+      - windows_net_bytes_received_total
+    validation: dependencies_in_export; not_executed
+    notes: []
+  - id: network_transmit_bps
+    title: Saida por adaptador
+    promql: 8 * rate(windows_net_bytes_sent_total{job="integrations/windows"}[5m])
+    unit: bits_per_second
+    dependencies:
+      - windows_net_bytes_sent_total
+    validation: dependencies_in_export; not_executed
+    notes: []
+  - id: collector_success
+    title: Sucesso dos coletores Windows
+    promql: windows_exporter_collector_success{job="integrations/windows"}
+    unit: boolean
+    dependencies:
+      - windows_exporter_collector_success
+    validation: dependencies_in_export; not_executed
+    notes: []
+  - id: os_inventory
+    title: Identificacao do Windows
+    promql: windows_os_info{job="integrations/windows"}
+    unit: info
+    dependencies:
+      - windows_os_info
+    validation: dependencies_in_export; not_executed
+    notes: []
+limitations:
+  - Os cinco hosts apresentam as familias essenciais. Isso nao valida automaticamente todos os paineis do dashboard
+    comunitario 21697.
+  - Ha series de estado e modo de inicio dos servicos, mas seus valores nao foram exportados; nao e possivel contar
+    servicos parados neste pacote.
+  - O Windows do hypervisor mede seu proprio sistema operacional. Nao representa sozinho o consumo agregado de todas
+    as VMs.
+  - version em windows_exporter_build_info reporta o build embarcado; nao foi tratado como versao upstream autonoma
+    do windows_exporter.
+  - metadata.json nao inclui TYPE/HELP de windows_* neste export.
+change_policy:
+  baseline_counts_are_fixed_requirements: false
+  require_new_metrics_before_using_in_dashboard: true
+  preserve_raw_labels: true
+  alloy_changes_applied: false
+query_policy:
+  numerically_validated: false
+  promql_parser_validation: not_performed
+  static_metric_dependencies_checked: true
+  documentation_sources:
+    - prometheus_functions
+  note: As receitas usam semantica padrao onde conhecida; o catalogo preserva a ausencia de TYPE/HELP do exporter
+    em execucao.

@@ -1,0 +1,32 @@
+schema_version: 1
+kind: loki_log_contract
+version: 0.1.0
+status: observed_baseline
+observed_date: '2026-11-04'
+source: Alloy Windows Hyper-V / loki.source.windowsevent
+job: hyperv-eventlog
+identity:
+  required_labels:
+  - job
+  - host
+  observed_labels:
+  - channel
+  - computer
+  - host
+  - job
+  - level
+  - service_name
+observed:
+  streams: 1
+  hosts:
+  - srv-host01
+  channels:
+  - Microsoft-Windows-Hyper-V-VMMS-Admin
+expected_configuration:
+  channels:
+  - Microsoft-Windows-Hyper-V-VMMS-Admin
+  - Microsoft-Windows-Hyper-V-Worker-Admin
+limitations:
+- Apenas VMMS-Admin foi observado. Worker-Admin pode nao ter gerado eventos no periodo ou pode haver problema
+  de coleta.
+- Dados de logs nao fornecem automaticamente o estado atual de cada VM.

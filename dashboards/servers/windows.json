@@ -64,7 +64,7 @@
       }
     ]
   },
-  "description": "Windows Exporter Dashboard forked from Ismaeil Rasoulivand",
+  "description": "windows_exporter (integrations/windows). Baseado no Windows Exporter Dashboard (gnet 21697).",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "gnetId": 21697,
@@ -149,7 +149,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "(time() - windows_system_system_up_time{instance=\"$server\"})",
+          "expr": "(time() - windows_system_system_up_time{job=\"integrations/windows\",instance=\"$server\"})",
           "format": "time_series",
           "hide": false,
           "instant": true,
@@ -237,7 +237,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "100 - (avg by (instance) (irate(windows_cpu_time_total{mode=\"idle\", instance=~\"$server\"}[1m])) * 100)",
+          "expr": "100 - (avg by (instance) (irate(windows_cpu_time_total{mode=\"idle\", job=\"integrations/windows\",instance=\"$server\"}[1m])) * 100)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "",
@@ -322,7 +322,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "(windows_cs_physical_memory_bytes{instance=~\"$server\"} - windows_os_physical_memory_free_bytes{instance=~\"$server\"}) / windows_cs_physical_memory_bytes{instance=~\"$server\"} * 100",
+          "expr": "(windows_cs_physical_memory_bytes{job=\"integrations/windows\",instance=\"$server\"} - windows_os_physical_memory_free_bytes{job=\"integrations/windows\",instance=\"$server\"}) / windows_cs_physical_memory_bytes{job=\"integrations/windows\",instance=\"$server\"} * 100",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -405,7 +405,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "(sum(windows_logical_disk_size_bytes{volume!~\"Harddisk.*\", instance=\"$server\"}) by (instance) - sum(windows_logical_disk_free_bytes{volume!~\"Harddisk.*\", instance=\"$server\"}) by (instance)) / sum(windows_logical_disk_size_bytes{volume!~\"Harddisk.*\", instance=\"$server\"}) by (instance) * 100",
+          "expr": "(sum(windows_logical_disk_size_bytes{volume!~\"Harddisk.*\", job=\"integrations/windows\",instance=\"$server\"}) by (instance) - sum(windows_logical_disk_free_bytes{volume!~\"Harddisk.*\", job=\"integrations/windows\",instance=\"$server\"}) by (instance)) / sum(windows_logical_disk_size_bytes{volume!~\"Harddisk.*\", job=\"integrations/windows\",instance=\"$server\"}) by (instance) * 100",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -489,7 +489,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "(sum(irate(windows_net_bytes_total{instance=\"$server\"}[1m])) > 1)* 8",
+          "expr": "(sum(irate(windows_net_bytes_total{job=\"integrations/windows\",instance=\"$server\"}[1m])) > 1)* 8",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
@@ -501,7 +501,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "  sum(irate(windows_net_bytes_total{instance=~\"$server\",nic=\"Red_Hat_VirtIO_Ethernet_Adapter\"}[5m])) / sum(windows_net_current_bandwidth{instance=~\"$server\",nic=\"Red_Hat_VirtIO_Ethernet_Adapter\"}/8) * 100",
+          "expr": "  sum(irate(windows_net_bytes_total{job=\"integrations/windows\",instance=\"$server\",nic=\"Red_Hat_VirtIO_Ethernet_Adapter\"}[5m])) / sum(windows_net_current_bandwidth{job=\"integrations/windows\",instance=\"$server\",nic=\"Red_Hat_VirtIO_Ethernet_Adapter\"}/8) * 100",
           "format": "time_series",
           "hide": true,
           "intervalFactor": 1,
@@ -586,7 +586,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "100 - (windows_logical_disk_free_bytes{instance=~\"$server\"} / windows_logical_disk_size_bytes{instance=~\"$server\"})*100",
+          "expr": "100 - (windows_logical_disk_free_bytes{job=\"integrations/windows\",instance=\"$server\"} / windows_logical_disk_size_bytes{job=\"integrations/windows\",instance=\"$server\"})*100",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -599,7 +599,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "windows_logical_disk_free_bytes{instance=~\"$server\"}",
+          "expr": "windows_logical_disk_free_bytes{job=\"integrations/windows\",instance=\"$server\"}",
           "hide": true,
           "interval": "",
           "legendFormat": "{{ instance }}",
@@ -684,7 +684,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "windows_cs_logical_processors{instance=~\"$server\"}",
+          "expr": "windows_cs_logical_processors{job=\"integrations/windows\",instance=\"$server\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "",
@@ -769,7 +769,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "windows_cs_physical_memory_bytes{instance=~\"$server\"}",
+          "expr": "windows_cs_physical_memory_bytes{job=\"integrations/windows\",instance=\"$server\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "",
@@ -904,7 +904,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum by (mode) (rate(windows_cpu_time_total{instance=~\"$server\"}[5m]))",
+          "expr": "sum by (mode) (rate(windows_cpu_time_total{job=\"integrations/windows\",instance=\"$server\"}[5m]))",
           "format": "time_series",
           "functions": [],
           "group": {
@@ -1025,7 +1025,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "(avg without (cpu) (sum(irate(windows_cpu_time_total{instance=\"$server\",mode!=\"idle\"}[5m])) by (mode)) / 16)* 100",
+          "expr": "(avg without (cpu) (sum(irate(windows_cpu_time_total{job=\"integrations/windows\",instance=\"$server\",mode!=\"idle\"}[5m])) by (mode)) / 16)* 100",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{mode}}",
@@ -1130,7 +1130,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum by (pod) (kube_pod_container_info{} * on(container_id) group_left avg by (container_id) (windows_container_memory_usage_private_working_set_bytes{instance=\"$server\"}))",
+          "expr": "sum by (pod) (kube_pod_container_info{} * on(container_id) group_left avg by (container_id) (windows_container_memory_usage_private_working_set_bytes{job=\"integrations/windows\",instance=\"$server\"}))",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "__auto",
@@ -1261,7 +1261,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum by (pod) (kube_pod_container_info * on(container_id) group_left avg by (container_id) (rate(windows_container_cpu_usage_seconds_total{instance=\"$server\"}[2m])) * 10)",
+          "expr": "sum by (pod) (kube_pod_container_info * on(container_id) group_left avg by (container_id) (rate(windows_container_cpu_usage_seconds_total{job=\"integrations/windows\",instance=\"$server\"}[2m])) * 10)",
           "hide": false,
           "instant": false,
           "legendFormat": "__auto",
@@ -1366,7 +1366,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "rate(windows_net_bytes_sent_total{instance=~\"$server\"}[$interval]) >0",
+          "expr": "rate(windows_net_bytes_sent_total{job=\"integrations/windows\",instance=\"$server\"}[$interval]) >0",
           "format": "time_series",
           "functions": [],
           "group": {
@@ -1398,7 +1398,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "- rate(windows_net_bytes_received_total{instance=~\"$server\"}[$interval]) <0",
+          "expr": "- rate(windows_net_bytes_received_total{job=\"integrations/windows\",instance=\"$server\"}[$interval]) <0",
           "format": "time_series",
           "functions": [],
           "group": {
@@ -1502,7 +1502,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "windows_memory_swap_page_operations_total{instance=\"$server\"}",
+          "expr": "windows_memory_swap_page_operations_total{job=\"integrations/windows\",instance=\"$server\"}",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -1608,7 +1608,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "windows_cs_physical_memory_bytes{instance=~\"$server\"}",
+          "expr": "windows_cs_physical_memory_bytes{job=\"integrations/windows\",instance=\"$server\"}",
           "format": "time_series",
           "functions": [],
           "group": {
@@ -1639,7 +1639,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "windows_os_physical_memory_free_bytes{instance=~\"$server\"}",
+          "expr": "windows_os_physical_memory_free_bytes{job=\"integrations/windows\",instance=\"$server\"}",
           "format": "time_series",
           "functions": [],
           "group": {
@@ -1670,7 +1670,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "windows_os_virtual_memory_bytes{instance=~\"$server\"}",
+          "expr": "windows_os_virtual_memory_bytes{job=\"integrations/windows\",instance=\"$server\"}",
           "format": "time_series",
           "functions": [],
           "group": {
@@ -1698,7 +1698,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "windows_os_virtual_memory_free_bytes{instance=~\"$server\"}",
+          "expr": "windows_os_virtual_memory_free_bytes{job=\"integrations/windows\",instance=\"$server\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Free virtual memory",
@@ -1801,7 +1801,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(windows_net_bytes_received_total{instance=\"$server\"}[1h])) by (instance)",
+          "expr": "sum(increase(windows_net_bytes_received_total{job=\"integrations/windows\",instance=\"$server\"}[1h])) by (instance)",
           "format": "time_series",
           "interval": "1h",
           "intervalFactor": 1,
@@ -1815,7 +1815,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(windows_net_bytes_sent_total{instance=\"$server\"}[1h])) by (instance)",
+          "expr": "sum(increase(windows_net_bytes_sent_total{job=\"integrations/windows\",instance=\"$server\"}[1h])) by (instance)",
           "format": "time_series",
           "interval": "1h",
           "intervalFactor": 1,
@@ -1921,7 +1921,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "irate(windows_net_packets_outbound_discarded_total{instance=~\"$server\"}[$interval]) + irate(windows_net_packets_outbound_errors_total{instance=~\"$server\"}[$interval])",
+          "expr": "irate(windows_net_packets_outbound_discarded_total{job=\"integrations/windows\",instance=\"$server\"}[$interval]) + irate(windows_net_packets_outbound_errors_total{job=\"integrations/windows\",instance=\"$server\"}[$interval])",
           "format": "time_series",
           "functions": [],
           "group": {
@@ -1953,7 +1953,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "irate(windows_net_packets_outbound_discarded_total{instance=~\"$server\"}[$interval]) + irate(windows_net_packets_outbound_errors_total{instance=~\"$server\"}[$interval])",
+          "expr": "irate(windows_net_packets_outbound_discarded_total{job=\"integrations/windows\",instance=\"$server\"}[$interval]) + irate(windows_net_packets_outbound_errors_total{job=\"integrations/windows\",instance=\"$server\"}[$interval])",
           "format": "time_series",
           "functions": [],
           "group": {
@@ -2075,7 +2075,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "irate(windows_logical_disk_write_bytes_total{instance=~\"$server\", volume !~\"HarddiskVolume.+\"}[60s])",
+          "expr": "irate(windows_logical_disk_write_bytes_total{job=\"integrations/windows\",instance=\"$server\", volume !~\"HarddiskVolume.+\"}[60s])",
           "format": "time_series",
           "functions": [],
           "group": {
@@ -2106,7 +2106,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "- irate(windows_logical_disk_read_bytes_total{instance=~\"$server\", volume !~\"HarddiskVolume.+\"}[60s])",
+          "expr": "- irate(windows_logical_disk_read_bytes_total{job=\"integrations/windows\",instance=\"$server\", volume !~\"HarddiskVolume.+\"}[60s])",
           "format": "time_series",
           "functions": [],
           "group": {
@@ -2227,7 +2227,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "rate(windows_logical_disk_split_ios_total{instance=~\"$server\", volume !~\"HarddiskVolume.+\"}[60s])",
+          "expr": "rate(windows_logical_disk_split_ios_total{job=\"integrations/windows\",instance=\"$server\", volume !~\"HarddiskVolume.+\"}[60s])",
           "format": "time_series",
           "functions": [],
           "group": {
@@ -2320,7 +2320,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "windows_logical_disk_free_bytes{instance=~\"$server\", volume !~\"HarddiskVolume.+\"}",
+          "expr": "windows_logical_disk_free_bytes{job=\"integrations/windows\",instance=\"$server\", volume !~\"HarddiskVolume.+\"}",
           "format": "time_series",
           "functions": [],
           "group": {
@@ -2441,7 +2441,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "windows_process_thread_count{instance=~\"$server\"}",
+          "expr": "windows_process_thread_count{job=\"integrations/windows\",instance=\"$server\"}",
           "format": "time_series",
           "functions": [],
           "group": {
@@ -2556,7 +2556,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "windows_os_processes{instance=\"$server\"}",
+          "expr": "windows_os_processes{job=\"integrations/windows\",instance=\"$server\"}",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -2691,7 +2691,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum(windows_service_state{instance=~\"$server\"}) by (state)",
+          "expr": "sum(windows_service_state{job=\"integrations/windows\",instance=\"$server\"}) by (state)",
           "format": "time_series",
           "functions": [],
           "group": {
@@ -2719,7 +2719,10 @@
   ],
   "refresh": "1m",
   "schemaVersion": 39,
-  "tags": [],
+  "tags": [
+    "windows",
+    "servers"
+  ],
   "templating": {
     "list": [
       {
@@ -2752,18 +2755,21 @@
           "type": "prometheus",
           "uid": "${DS_PROMETHEUS}"
         },
-        "definition": "label_values(windows_cpu_time_total, instance)",
+        "definition": "label_values(windows_os_info{job=\"integrations/windows\"}, instance)",
         "hide": 0,
         "includeAll": false,
         "label": "Server",
         "multi": false,
         "name": "server",
         "options": [],
-        "query": "label_values(windows_cpu_time_total, instance)",
+        "query": {
+          "query": "label_values(windows_os_info{job=\"integrations/windows\"}, instance)",
+          "refId": "Prometheus-server-Variable-Query"
+        },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
-        "sort": 0,
+        "sort": 1,
         "tagValuesQuery": "",
         "tagsQuery": "",
         "type": "query",
@@ -2800,8 +2806,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "Windows Exporter Dashboard",
-  "uid": "IV0hu1m7z",
+  "title": "Servidores Windows",
+  "uid": "servers-windows",
   "version": 19,
   "weekStart": ""
 }

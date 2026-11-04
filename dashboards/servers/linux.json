@@ -1,4 +1,14 @@
 {
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
   "__requires": [
     {
       "type": "panel",
@@ -80,7 +90,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${ds_prometheus}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "Resource pressure via PSI",
       "fieldConfig": {
@@ -150,7 +160,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "rate(node_pressure_cpu_waiting_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+          "expr": "rate(node_pressure_cpu_waiting_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
           "format": "time_series",
           "instant": true,
           "legendFormat": "CPU",
@@ -161,7 +171,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "rate(node_pressure_memory_waiting_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+          "expr": "rate(node_pressure_memory_waiting_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
           "format": "time_series",
           "instant": true,
           "legendFormat": "Mem",
@@ -172,7 +182,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "rate(node_pressure_io_waiting_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+          "expr": "rate(node_pressure_io_waiting_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
           "format": "time_series",
           "instant": true,
           "legendFormat": "I/O",
@@ -183,7 +193,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "rate(node_pressure_irq_stalled_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+          "expr": "rate(node_pressure_irq_stalled_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
           "format": "time_series",
           "instant": true,
           "legendFormat": "Irq",
@@ -198,7 +208,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${ds_prometheus}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "Overall CPU busy percentage (averaged across all cores)",
       "fieldConfig": {
@@ -267,7 +277,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\",instance=\"$node\",job=\"$job\"}[$__rate_interval])))",
+          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\",instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])))",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -281,7 +291,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${ds_prometheus}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "Tasks running or waiting (CPU, I/O) per core",
       "fieldConfig": {
@@ -350,7 +360,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "scalar(node_load1{instance=\"$node\",job=\"$job\"}) * 100 / count(count(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}) by (cpu))",
+          "expr": "scalar(node_load1{instance=\"$server\",job=\"integrations/unix\"}) * 100 / count(count(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}) by (cpu))",
           "format": "time_series",
           "instant": true,
           "range": false,
@@ -364,7 +374,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${ds_prometheus}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "Real RAM usage excluding cache and reclaimable memory",
       "fieldConfig": {
@@ -423,7 +433,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "clamp_min((1 - (node_memory_MemAvailable_bytes{instance=\"$node\", job=\"$job\"} / node_memory_MemTotal_bytes{instance=\"$node\", job=\"$job\"})) * 100, 0)",
+          "expr": "clamp_min((1 - (node_memory_MemAvailable_bytes{instance=\"$server\", job=\"integrations/unix\"} / node_memory_MemTotal_bytes{instance=\"$server\", job=\"integrations/unix\"})) * 100, 0)",
           "format": "time_series",
           "instant": true,
           "range": false,
@@ -437,7 +447,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${ds_prometheus}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "Percentage of swap space currently used by the system",
       "fieldConfig": {
@@ -506,7 +516,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "((node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"} - node_memory_SwapFree_bytes{instance=\"$node\",job=\"$job\"}) / (node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"} > 0)) * 100",
+          "expr": "((node_memory_SwapTotal_bytes{instance=\"$server\",job=\"integrations/unix\"} - node_memory_SwapFree_bytes{instance=\"$server\",job=\"integrations/unix\"}) / (node_memory_SwapTotal_bytes{instance=\"$server\",job=\"integrations/unix\"} > 0)) * 100",
           "instant": true,
           "range": false,
           "refId": "A",
@@ -519,7 +529,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${ds_prometheus}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "Percentage of root filesystem space currently used",
       "fieldConfig": {
@@ -588,7 +598,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "(\n  (node_filesystem_size_bytes{instance=\"$node\", job=\"$job\", mountpoint=\"/\", fstype!=\"rootfs\"}\n   - node_filesystem_avail_bytes{instance=\"$node\", job=\"$job\", mountpoint=\"/\", fstype!=\"rootfs\"})\n  / node_filesystem_size_bytes{instance=\"$node\", job=\"$job\", mountpoint=\"/\", fstype!=\"rootfs\"}\n) * 100\n",
+          "expr": "(\n  (node_filesystem_size_bytes{instance=\"$server\", job=\"integrations/unix\", mountpoint=\"/\", fstype!=\"rootfs\"}\n   - node_filesystem_avail_bytes{instance=\"$server\", job=\"integrations/unix\", mountpoint=\"/\", fstype!=\"rootfs\"})\n  / node_filesystem_size_bytes{instance=\"$server\", job=\"integrations/unix\", mountpoint=\"/\", fstype!=\"rootfs\"}\n) * 100\n",
           "format": "time_series",
           "instant": true,
           "range": false,
@@ -602,7 +612,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${ds_prometheus}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -668,7 +678,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "count(count(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}) by (cpu))",
+          "expr": "count(count(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}) by (cpu))",
           "instant": true,
           "legendFormat": "__auto",
           "range": false,
@@ -681,7 +691,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${ds_prometheus}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -749,7 +759,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "node_memory_MemTotal_bytes{instance=\"$node\",job=\"$job\"}",
+          "expr": "node_memory_MemTotal_bytes{instance=\"$server\",job=\"integrations/unix\"}",
           "instant": true,
           "range": false,
           "refId": "A",
@@ -762,7 +772,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${ds_prometheus}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -830,7 +840,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"}",
+          "expr": "node_memory_SwapTotal_bytes{instance=\"$server\",job=\"integrations/unix\"}",
           "instant": true,
           "range": false,
           "refId": "A",
@@ -843,7 +853,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${ds_prometheus}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -911,7 +921,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "node_filesystem_size_bytes{instance=\"$node\",job=\"$job\",mountpoint=\"/\",fstype!=\"rootfs\"}",
+          "expr": "node_filesystem_size_bytes{instance=\"$server\",job=\"integrations/unix\",mountpoint=\"/\",fstype!=\"rootfs\"}",
           "format": "time_series",
           "instant": true,
           "range": false,
@@ -925,7 +935,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${ds_prometheus}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "",
       "fieldConfig": {
@@ -993,7 +1003,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "node_time_seconds{instance=\"$node\",job=\"$job\"} - node_boot_time_seconds{instance=\"$node\",job=\"$job\"}",
+          "expr": "node_time_seconds{instance=\"$server\",job=\"integrations/unix\"} - node_boot_time_seconds{instance=\"$server\",job=\"integrations/unix\"}",
           "instant": true,
           "range": false,
           "refId": "A",
@@ -1019,7 +1029,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${ds_prometheus}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "CPU time spent busy vs idle, split by activity type",
       "fieldConfig": {
@@ -1176,7 +1186,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "avg(rate(node_cpu_seconds_total{instance=\"$node\",job=\"$job\", mode=\"system\"}[$__rate_interval]))",
+          "expr": "avg(rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\", mode=\"system\"}[$__rate_interval]))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "Busy System",
@@ -1186,7 +1196,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "avg(rate(node_cpu_seconds_total{instance=\"$node\",job=\"$job\", mode=\"user\"}[$__rate_interval]))",
+          "expr": "avg(rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\", mode=\"user\"}[$__rate_interval]))",
           "format": "time_series",
           "legendFormat": "Busy User",
           "range": true,
@@ -1195,7 +1205,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "avg(rate(node_cpu_seconds_total{instance=\"$node\",job=\"$job\", mode=\"iowait\"}[$__rate_interval]))",
+          "expr": "avg(rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\", mode=\"iowait\"}[$__rate_interval]))",
           "format": "time_series",
           "legendFormat": "Busy Iowait",
           "range": true,
@@ -1204,7 +1214,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "avg(sum without(mode) (rate(node_cpu_seconds_total{instance=\"$node\",job=\"$job\", mode=~\".*irq\"}[$__rate_interval])))",
+          "expr": "avg(sum without(mode) (rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\", mode=~\".*irq\"}[$__rate_interval])))",
           "format": "time_series",
           "legendFormat": "Busy IRQs",
           "range": true,
@@ -1213,7 +1223,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "avg(sum without (mode) (rate(node_cpu_seconds_total{instance=\"$node\",job=\"$job\",  mode!='idle',mode!='user',mode!='system',mode!='iowait',mode!='irq',mode!='softirq'}[$__rate_interval])))",
+          "expr": "avg(sum without (mode) (rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\",  mode!='idle',mode!='user',mode!='system',mode!='iowait',mode!='irq',mode!='softirq'}[$__rate_interval])))",
           "format": "time_series",
           "legendFormat": "Busy Other",
           "range": true,
@@ -1222,7 +1232,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "avg(rate(node_cpu_seconds_total{instance=\"$node\",job=\"$job\", mode=\"idle\"}[$__rate_interval]))",
+          "expr": "avg(rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\", mode=\"idle\"}[$__rate_interval]))",
           "format": "time_series",
           "legendFormat": "Idle",
           "range": true,
@@ -1236,7 +1246,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${ds_prometheus}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "RAM and swap usage overview, including caches",
       "fieldConfig": {
@@ -1388,7 +1398,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "node_memory_MemTotal_bytes{instance=\"$node\",job=\"$job\"}",
+          "expr": "node_memory_MemTotal_bytes{instance=\"$server\",job=\"integrations/unix\"}",
           "format": "time_series",
           "legendFormat": "Total",
           "range": true,
@@ -1397,7 +1407,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "node_memory_MemTotal_bytes{instance=\"$node\",job=\"$job\"} - node_memory_MemFree_bytes{instance=\"$node\",job=\"$job\"} - (node_memory_Cached_bytes{instance=\"$node\",job=\"$job\"} + node_memory_Buffers_bytes{instance=\"$node\",job=\"$job\"} + node_memory_SReclaimable_bytes{instance=\"$node\",job=\"$job\"})",
+          "expr": "node_memory_MemTotal_bytes{instance=\"$server\",job=\"integrations/unix\"} - node_memory_MemFree_bytes{instance=\"$server\",job=\"integrations/unix\"} - (node_memory_Cached_bytes{instance=\"$server\",job=\"integrations/unix\"} + node_memory_Buffers_bytes{instance=\"$server\",job=\"integrations/unix\"} + node_memory_SReclaimable_bytes{instance=\"$server\",job=\"integrations/unix\"})",
           "format": "time_series",
           "legendFormat": "Used",
           "range": true,
@@ -1406,7 +1416,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "node_memory_Cached_bytes{instance=\"$node\",job=\"$job\"} + node_memory_Buffers_bytes{instance=\"$node\",job=\"$job\"} + node_memory_SReclaimable_bytes{instance=\"$node\",job=\"$job\"}",
+          "expr": "node_memory_Cached_bytes{instance=\"$server\",job=\"integrations/unix\"} + node_memory_Buffers_bytes{instance=\"$server\",job=\"integrations/unix\"} + node_memory_SReclaimable_bytes{instance=\"$server\",job=\"integrations/unix\"}",
           "format": "time_series",
           "legendFormat": "Cache + Buffer",
           "range": true,
@@ -1415,7 +1425,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "node_memory_MemFree_bytes{instance=\"$node\",job=\"$job\"}",
+          "expr": "node_memory_MemFree_bytes{instance=\"$server\",job=\"integrations/unix\"}",
           "format": "time_series",
           "legendFormat": "Free",
           "range": true,
@@ -1424,7 +1434,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "(node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"} - node_memory_SwapFree_bytes{instance=\"$node\",job=\"$job\"})",
+          "expr": "(node_memory_SwapTotal_bytes{instance=\"$server\",job=\"integrations/unix\"} - node_memory_SwapFree_bytes{instance=\"$server\",job=\"integrations/unix\"})",
           "format": "time_series",
           "legendFormat": "Swap used",
           "range": true,
@@ -1438,7 +1448,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${ds_prometheus}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "Per-interface network traffic (receive and transmit) in bits per second",
       "fieldConfig": {
@@ -1529,7 +1539,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "rate(node_network_receive_bytes_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])*8",
+          "expr": "rate(node_network_receive_bytes_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])*8",
           "format": "time_series",
           "legendFormat": "Rx {{device}}",
           "range": true,
@@ -1538,7 +1548,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "rate(node_network_transmit_bytes_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])*8",
+          "expr": "rate(node_network_transmit_bytes_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])*8",
           "format": "time_series",
           "legendFormat": "Tx {{device}}",
           "range": true,
@@ -1552,7 +1562,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${ds_prometheus}"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "Percentage of filesystem space used for each mounted filesystem",
       "fieldConfig": {
@@ -1632,7 +1642,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "((node_filesystem_size_bytes{instance=\"$node\", job=\"$job\", fstype!~'rootfs'} - node_filesystem_avail_bytes{instance=\"$node\", job=\"$job\", fstype!~'rootfs'}) / node_filesystem_size_bytes{instance=\"$node\", job=\"$job\", fstype!~'rootfs'}) * 100",
+          "expr": "((node_filesystem_size_bytes{instance=\"$server\", job=\"integrations/unix\", fstype!~'rootfs'} - node_filesystem_avail_bytes{instance=\"$server\", job=\"integrations/unix\", fstype!~'rootfs'}) / node_filesystem_size_bytes{instance=\"$server\", job=\"integrations/unix\", fstype!~'rootfs'}) * 100",
           "format": "time_series",
           "legendFormat": "{{mountpoint}}",
           "range": true,
@@ -1656,7 +1666,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "CPU time usage split by state, normalized across all CPU cores",
           "fieldConfig": {
@@ -1890,7 +1900,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{mode=\"system\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{mode=\"system\",instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}) by (cpu)))",
               "format": "time_series",
               "interval": "",
               "legendFormat": "System - Processes executing in kernel mode",
@@ -1900,7 +1910,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{mode=\"user\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{mode=\"user\",instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}) by (cpu)))",
               "format": "time_series",
               "legendFormat": "User - Normal processes executing in user mode",
               "range": true,
@@ -1909,7 +1919,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{mode=\"nice\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{mode=\"nice\",instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}) by (cpu)))",
               "format": "time_series",
               "legendFormat": "Nice - Niced processes executing in user mode",
               "range": true,
@@ -1918,7 +1928,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{mode=\"iowait\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{mode=\"iowait\",instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}) by (cpu)))",
               "format": "time_series",
               "legendFormat": "Iowait - Waiting for I/O to complete",
               "range": true,
@@ -1927,7 +1937,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{mode=\"irq\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{mode=\"irq\",instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}) by (cpu)))",
               "format": "time_series",
               "legendFormat": "Irq - Servicing interrupts",
               "range": true,
@@ -1936,7 +1946,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{mode=\"softirq\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{mode=\"softirq\",instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}) by (cpu)))",
               "format": "time_series",
               "legendFormat": "Softirq - Servicing softirqs",
               "range": true,
@@ -1945,7 +1955,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{mode=\"steal\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{mode=\"steal\",instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}) by (cpu)))",
               "format": "time_series",
               "legendFormat": "Steal - Time spent in other operating systems when running in a virtualized environment",
               "range": true,
@@ -1954,7 +1964,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{mode=\"idle\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}) by (cpu)))",
+              "expr": "sum(rate(node_cpu_seconds_total{mode=\"idle\",instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}) by (cpu)))",
               "format": "time_series",
               "legendFormat": "Idle - Waiting for something to happen",
               "range": true,
@@ -1963,7 +1973,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "sum by(instance) (rate(node_cpu_guest_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])) / on(instance) group_left sum by (instance)((rate(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]))) > 0",
+              "expr": "sum by(instance) (rate(node_cpu_guest_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])) / on(instance) group_left sum by (instance)((rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval]))) > 0",
               "format": "time_series",
               "legendFormat": "Guest - Running virtual CPUs, included in User/Nice",
               "range": true,
@@ -1977,7 +1987,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Breakdown of physical memory and swap usage. Hardware-detected memory errors are also displayed",
           "fieldConfig": {
@@ -2212,7 +2222,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_MemTotal_bytes{instance=\"$node\",job=\"$job\"} - node_memory_MemFree_bytes{instance=\"$node\",job=\"$job\"} - node_memory_Buffers_bytes{instance=\"$node\",job=\"$job\"} - node_memory_Cached_bytes{instance=\"$node\",job=\"$job\"} - node_memory_Slab_bytes{instance=\"$node\",job=\"$job\"} - node_memory_PageTables_bytes{instance=\"$node\",job=\"$job\"} - node_memory_SwapCached_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_MemTotal_bytes{instance=\"$server\",job=\"integrations/unix\"} - node_memory_MemFree_bytes{instance=\"$server\",job=\"integrations/unix\"} - node_memory_Buffers_bytes{instance=\"$server\",job=\"integrations/unix\"} - node_memory_Cached_bytes{instance=\"$server\",job=\"integrations/unix\"} - node_memory_Slab_bytes{instance=\"$server\",job=\"integrations/unix\"} - node_memory_PageTables_bytes{instance=\"$server\",job=\"integrations/unix\"} - node_memory_SwapCached_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Apps - Memory used by user-space applications",
               "range": true,
@@ -2221,7 +2231,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_PageTables_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_PageTables_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "PageTables - Memory used to map between virtual and physical memory addresses",
               "range": true,
@@ -2230,7 +2240,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_SwapCached_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_SwapCached_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "SwapCache - Memory that keeps track of pages that have been fetched from swap but not yet been modified",
               "range": true,
@@ -2239,7 +2249,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Slab_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Slab_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Slab - Memory used by the kernel to cache data structures for its own use (caches like inode, dentry, etc)",
               "range": true,
@@ -2248,7 +2258,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Cached_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Cached_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Cache - Parked file data (file content) cache",
               "range": true,
@@ -2257,7 +2267,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Buffers_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Buffers_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Buffers - Block device (e.g. harddisk) cache",
               "range": true,
@@ -2266,7 +2276,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_MemFree_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_MemFree_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Unused - Free memory unassigned",
               "range": true,
@@ -2275,7 +2285,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "(node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"} - node_memory_SwapFree_bytes{instance=\"$node\",job=\"$job\"})",
+              "expr": "(node_memory_SwapTotal_bytes{instance=\"$server\",job=\"integrations/unix\"} - node_memory_SwapFree_bytes{instance=\"$server\",job=\"integrations/unix\"})",
               "format": "time_series",
               "legendFormat": "Swap - Swap space used",
               "range": true,
@@ -2284,7 +2294,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_HardwareCorrupted_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_HardwareCorrupted_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Hardware Corrupted - Amount of RAM that the kernel identified as corrupted / not working",
               "range": true,
@@ -2298,7 +2308,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Incoming and outgoing network traffic per interface",
           "fieldConfig": {
@@ -2393,7 +2403,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_bytes_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])*8",
+              "expr": "rate(node_network_receive_bytes_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])*8",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -2402,7 +2412,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_bytes_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])*8",
+              "expr": "rate(node_network_transmit_bytes_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])*8",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -2416,7 +2426,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Network interface utilization as a percentage of its maximum capacity",
           "fieldConfig": {
@@ -2511,7 +2521,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "(node_network_speed_bytes{instance=\"$node\",job=\"$job\"} > bool 0) * (rate(node_network_receive_bytes_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) / node_network_speed_bytes{instance=\"$node\",job=\"$job\"})",
+              "expr": "(node_network_speed_bytes{instance=\"$server\",job=\"integrations/unix\"} > bool 0) * (rate(node_network_receive_bytes_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval]) / node_network_speed_bytes{instance=\"$server\",job=\"integrations/unix\"})",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -2520,7 +2530,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "(node_network_speed_bytes{instance=\"$node\",job=\"$job\"} > bool 0) * (rate(node_network_transmit_bytes_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) / node_network_speed_bytes{instance=\"$node\",job=\"$job\"})",
+              "expr": "(node_network_speed_bytes{instance=\"$server\",job=\"integrations/unix\"} > bool 0) * (rate(node_network_transmit_bytes_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval]) / node_network_speed_bytes{instance=\"$server\",job=\"integrations/unix\"})",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -2534,7 +2544,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Disk I/O operations per second for each device",
           "fieldConfig": {
@@ -2629,7 +2639,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_reads_completed_total{instance=\"$node\",job=\"$job\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
+              "expr": "rate(node_disk_reads_completed_total{instance=\"$server\",job=\"integrations/unix\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
               "legendFormat": "{{device}} - Read",
               "range": true,
               "refId": "A",
@@ -2637,7 +2647,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_writes_completed_total{instance=\"$node\",job=\"$job\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
+              "expr": "rate(node_disk_writes_completed_total{instance=\"$server\",job=\"integrations/unix\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
               "legendFormat": "{{device}} - Write",
               "range": true,
               "refId": "B",
@@ -2650,7 +2660,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Disk I/O throughput per device",
           "fieldConfig": {
@@ -2745,7 +2755,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_read_bytes_total{instance=\"$node\",job=\"$job\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
+              "expr": "rate(node_disk_read_bytes_total{instance=\"$server\",job=\"integrations/unix\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Read",
               "range": true,
@@ -2754,7 +2764,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_written_bytes_total{instance=\"$node\",job=\"$job\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
+              "expr": "rate(node_disk_written_bytes_total{instance=\"$server\",job=\"integrations/unix\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Write",
               "range": true,
@@ -2768,7 +2778,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Amount of available disk space per mounted filesystem, excluding rootfs. Based on block availability to non-root users",
           "fieldConfig": {
@@ -2851,7 +2861,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_filesystem_avail_bytes{instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
+              "expr": "node_filesystem_avail_bytes{instance=\"$server\",job=\"integrations/unix\",fstype!~'rootfs'}",
               "format": "time_series",
               "legendFormat": "{{mountpoint}}",
               "metric": "",
@@ -2861,7 +2871,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_filesystem_free_bytes{instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
+              "expr": "node_filesystem_free_bytes{instance=\"$server\",job=\"integrations/unix\",fstype!~'rootfs'}",
               "format": "time_series",
               "hide": true,
               "legendFormat": "{{mountpoint}} - Free",
@@ -2871,7 +2881,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_filesystem_size_bytes{instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
+              "expr": "node_filesystem_size_bytes{instance=\"$server\",job=\"integrations/unix\",fstype!~'rootfs'}",
               "format": "time_series",
               "hide": true,
               "legendFormat": "{{mountpoint}} - Size",
@@ -2886,7 +2896,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Disk usage (used = total - available) per mountpoint",
           "fieldConfig": {
@@ -2969,7 +2979,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_filesystem_size_bytes{instance=\"$node\",job=\"$job\",fstype!~'rootfs'} - node_filesystem_avail_bytes{instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
+              "expr": "node_filesystem_size_bytes{instance=\"$server\",job=\"integrations/unix\",fstype!~'rootfs'} - node_filesystem_avail_bytes{instance=\"$server\",job=\"integrations/unix\",fstype!~'rootfs'}",
               "format": "time_series",
               "legendFormat": "{{mountpoint}}",
               "range": true,
@@ -2983,7 +2993,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Percentage of time the disk was actively processing I/O operations",
           "fieldConfig": {
@@ -3066,7 +3076,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_io_time_seconds_total{instance=\"$node\",job=\"$job\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"} [$__rate_interval])",
+              "expr": "rate(node_disk_io_time_seconds_total{instance=\"$server\",job=\"integrations/unix\",device=~\"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+\"} [$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{device}}",
@@ -3081,7 +3091,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "How often tasks experience CPU, memory, or I/O delays. 'Some' indicates partial slowdown; 'Full' indicates all tasks are stalled. Based on Linux PSI metrics:\nhttps://docs.kernel.org/accounting/psi.html",
           "fieldConfig": {
@@ -3188,7 +3198,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_pressure_cpu_waiting_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_pressure_cpu_waiting_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "CPU - Some",
               "range": true,
@@ -3197,7 +3207,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_pressure_memory_waiting_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_pressure_memory_waiting_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Memory - Some",
               "range": true,
@@ -3206,7 +3216,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_pressure_memory_stalled_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_pressure_memory_stalled_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Memory - Full",
               "range": true,
@@ -3215,7 +3225,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_pressure_io_waiting_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_pressure_io_waiting_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "I/O - Some",
               "range": true,
@@ -3224,7 +3234,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_pressure_io_stalled_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_pressure_io_stalled_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "I/O - Full",
               "range": true,
@@ -3233,7 +3243,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_pressure_irq_stalled_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_pressure_irq_stalled_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IRQ - Full",
               "range": true,
@@ -3261,7 +3271,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Displays committed memory usage versus the system's commit limit. Exceeding the limit is allowed under Linux overcommit policies but may increase OOM risks under high load",
           "fieldConfig": {
@@ -3365,7 +3375,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_Committed_AS_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Committed_AS_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Committed_AS – Memory promised to processes (not necessarily used)",
               "range": true,
@@ -3374,7 +3384,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_CommitLimit_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_CommitLimit_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "CommitLimit - Max allowable committed memory",
               "range": true,
@@ -3388,7 +3398,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Memory currently dirty (modified but not yet written to disk), being actively written back, or held by writeback buffers. High dirty or writeback memory may indicate disk I/O pressure or delayed flushing",
           "fieldConfig": {
@@ -3471,7 +3481,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_Writeback_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Writeback_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Writeback – Memory currently being flushed to disk",
               "range": true,
@@ -3480,7 +3490,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_WritebackTmp_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_WritebackTmp_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "WritebackTmp – FUSE temporary writeback buffers",
               "range": true,
@@ -3489,7 +3499,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Dirty_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Dirty_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Dirty – Memory marked dirty (pending write to disk)",
               "range": true,
@@ -3498,7 +3508,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_NFS_Unstable_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_NFS_Unstable_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "NFS Unstable – Pages sent to NFS server, awaiting storage commit",
               "range": true,
@@ -3512,7 +3522,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Memory used by anonymous pages (not backed by files), including standard and huge page allocations. Includes heap, stack, and memory-mapped anonymous regions",
           "fieldConfig": {
@@ -3595,7 +3605,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_AnonHugePages_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_AnonHugePages_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "AnonHugePages – Anonymous memory using HugePages",
               "range": true,
@@ -3604,7 +3614,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_AnonPages_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_AnonPages_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "AnonPages – Anonymous memory (non-file-backed)",
               "range": true,
@@ -3618,7 +3628,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Memory used for mapped files (such as libraries) and shared memory (shmem and tmpfs), including variants backed by huge pages",
           "fieldConfig": {
@@ -3702,7 +3712,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_Mapped_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Mapped_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Mapped – Memory mapped from files (e.g., libraries, mmap)",
               "range": true,
@@ -3711,7 +3721,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Shmem_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Shmem_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Shmem – Shared memory used by processes and tmpfs",
               "range": true,
@@ -3720,7 +3730,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_ShmemHugePages_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_ShmemHugePages_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "ShmemHugePages – Shared memory (shmem/tmpfs) allocated with HugePages",
@@ -3730,7 +3740,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_ShmemPmdMapped_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_ShmemPmdMapped_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "PMD Mapped – Shmem/tmpfs backed by Transparent HugePages (PMD)",
@@ -3745,7 +3755,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Proportion of memory pages in the kernel's active and inactive LRU lists relative to total RAM. Active pages have been recently used, while inactive pages are less recently accessed but still resident in memory",
           "fieldConfig": {
@@ -3860,7 +3870,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "(node_memory_Inactive_bytes{instance=\"$node\",job=\"$job\"}) \n/ \n(node_memory_MemTotal_bytes{instance=\"$node\",job=\"$job\"})",
+              "expr": "(node_memory_Inactive_bytes{instance=\"$server\",job=\"integrations/unix\"}) \n/ \n(node_memory_MemTotal_bytes{instance=\"$server\",job=\"integrations/unix\"})",
               "format": "time_series",
               "legendFormat": "Inactive – Less recently used memory, more likely to be reclaimed",
               "range": true,
@@ -3869,7 +3879,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "(node_memory_Active_bytes{instance=\"$node\",job=\"$job\"}) \n/ \n(node_memory_MemTotal_bytes{instance=\"$node\",job=\"$job\"})\n",
+              "expr": "(node_memory_Active_bytes{instance=\"$server\",job=\"integrations/unix\"}) \n/ \n(node_memory_MemTotal_bytes{instance=\"$server\",job=\"integrations/unix\"})\n",
               "format": "time_series",
               "legendFormat": "Active – Recently used memory, retained unless under pressure",
               "range": true,
@@ -3883,7 +3893,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Breakdown of memory pages in the kernel's active and inactive LRU lists, separated by anonymous (heap, tmpfs) and file-backed (caches, mmap) pages.",
           "fieldConfig": {
@@ -3967,7 +3977,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_Inactive_file_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Inactive_file_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Inactive_file - File-backed memory on inactive LRU list",
               "range": true,
@@ -3976,7 +3986,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Inactive_anon_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Inactive_anon_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Inactive_anon – Anonymous memory on inactive LRU (incl. tmpfs & swap cache)",
               "range": true,
@@ -3985,7 +3995,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Active_file_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Active_file_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Active_file - File-backed memory on active LRU list",
               "range": true,
@@ -3994,7 +4004,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Active_anon_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Active_anon_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Active_anon – Anonymous memory on active LRU (incl. tmpfs & swap cache)",
               "range": true,
@@ -4008,7 +4018,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Kernel slab memory usage, separated into reclaimable and non-reclaimable categories. Reclaimable memory can be freed under memory pressure (e.g., caches), while unreclaimable memory is locked by the kernel for core functions",
           "fieldConfig": {
@@ -4091,7 +4101,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_SUnreclaim_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_SUnreclaim_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "SUnreclaim – Non-reclaimable slab memory (kernel objects)",
               "range": true,
@@ -4100,7 +4110,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_SReclaimable_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_SReclaimable_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "SReclaimable – Potentially reclaimable slab memory (e.g., inode cache)",
               "range": true,
@@ -4114,7 +4124,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Usage of the kernel's vmalloc area, which provides virtual memory allocations for kernel modules and drivers. Includes total, used, and largest free block sizes",
           "fieldConfig": {
@@ -4227,7 +4237,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_VmallocChunk_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_VmallocChunk_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Vmalloc Free Chunk – Largest available block in vmalloc area",
               "range": true,
@@ -4236,7 +4246,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_VmallocTotal_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_VmallocTotal_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Vmalloc Total – Total size of the vmalloc memory area",
               "range": true,
@@ -4245,7 +4255,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_VmallocUsed_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_VmallocUsed_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Vmalloc Used – Portion of vmalloc area currently in use",
               "range": true,
@@ -4259,7 +4269,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Tracks kernel memory used for CPU-local structures and per-thread stacks. These areas are typically small but critical for low-level operations",
           "fieldConfig": {
@@ -4343,7 +4353,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_KernelStack_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_KernelStack_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "KernelStack – Kernel stack memory (per-thread, non-reclaimable)",
               "range": true,
@@ -4352,7 +4362,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Percpu_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Percpu_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "PerCPU – Dynamically allocated per-CPU memory (used by kernel modules)",
@@ -4367,7 +4377,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "How much memory is directly mapped in the kernel using different page sizes (4K, 2M, 1G). Helps monitor large page utilization in the direct map region",
           "fieldConfig": {
@@ -4454,7 +4464,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_DirectMap1G_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_DirectMap1G_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "DirectMap 1G – Memory mapped with 1GB pages",
               "range": true,
@@ -4463,7 +4473,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_DirectMap2M_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_DirectMap2M_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "DirectMap 2M – Memory mapped with 2MB pages",
@@ -4473,7 +4483,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_DirectMap4k_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_DirectMap4k_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "DirectMap 4K – Memory mapped with 4KB pages",
@@ -4488,7 +4498,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Memory that is locked in RAM and cannot be swapped out. Includes both kernel-unevictable memory and user-level memory locked with mlock()",
           "fieldConfig": {
@@ -4572,7 +4582,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_Unevictable_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Unevictable_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Unevictable – Kernel-pinned memory (not swappable)",
               "range": true,
@@ -4581,7 +4591,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Mlocked_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Mlocked_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Mlocked – Application-locked memory via mlock()",
               "range": true,
@@ -4595,7 +4605,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Displays HugePages memory usage in bytes, including allocated, free, reserved, and surplus memory. All values are calculated based on the number of huge pages multiplied by their configured size",
           "fieldConfig": {
@@ -4678,7 +4688,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "(node_memory_HugePages_Total{instance=\"$node\",job=\"$job\"} - node_memory_HugePages_Free{instance=\"$node\",job=\"$job\"}) * node_memory_Hugepagesize_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "(node_memory_HugePages_Total{instance=\"$server\",job=\"integrations/unix\"} - node_memory_HugePages_Free{instance=\"$server\",job=\"integrations/unix\"}) * node_memory_Hugepagesize_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "HugePages Used – Currently allocated",
               "range": true,
@@ -4687,7 +4697,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_HugePages_Rsvd{instance=\"$node\",job=\"$job\"} * node_memory_Hugepagesize_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_HugePages_Rsvd{instance=\"$server\",job=\"integrations/unix\"} * node_memory_Hugepagesize_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "HugePages Reserved – Promised but unused",
               "range": true,
@@ -4696,7 +4706,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_HugePages_Surp{instance=\"$node\",job=\"$job\"} * node_memory_Hugepagesize_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_HugePages_Surp{instance=\"$server\",job=\"integrations/unix\"} * node_memory_Hugepagesize_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "HugePages Surplus – Dynamic pool extension",
               "range": true,
@@ -4705,7 +4715,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_HugePages_Total{instance=\"$node\",job=\"$job\"} * node_memory_Hugepagesize_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_HugePages_Total{instance=\"$server\",job=\"integrations/unix\"} * node_memory_Hugepagesize_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "HugePages Total – Preallocated pool size",
               "range": true,
@@ -4719,7 +4729,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Zswap is a compressed RAM cache for swap pages. Zswap stores compressed pages that would otherwise be written to swap, reducing disk I/O. Zswapped shows the amount of data stored in the Zswap pool before compression",
           "fieldConfig": {
@@ -4802,7 +4812,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_memory_Zswap_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Zswap_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Zswap – Compressed pool size in RAM",
               "range": true,
@@ -4811,7 +4821,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_memory_Zswapped_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_memory_Zswapped_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Zswapped – Original data size before compression",
               "range": true,
@@ -4825,7 +4835,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of data read from and written to block devices. Despite the historical name, it covers all block I/O, not only memory paging",
           "fieldConfig": {
@@ -4920,7 +4930,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_pgpgin{instance=\"$node\",job=\"$job\"}[$__rate_interval]) * 1024",
+              "expr": "rate(node_vmstat_pgpgin{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval]) * 1024",
               "format": "time_series",
               "legendFormat": "Pagesin - Data paged in",
               "range": true,
@@ -4929,7 +4939,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_pgpgout{instance=\"$node\",job=\"$job\"}[$__rate_interval]) * 1024",
+              "expr": "rate(node_vmstat_pgpgout{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval]) * 1024",
               "format": "time_series",
               "legendFormat": "Pagesout - Data paged out",
               "range": true,
@@ -4943,7 +4953,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate at which memory pages are being swapped in from or out to disk. High swap-out activity may indicate memory pressure",
           "fieldConfig": {
@@ -5038,7 +5048,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_pswpin{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_vmstat_pswpin{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Pswpin - Pages swapped in",
               "range": true,
@@ -5047,7 +5057,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_pswpout{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_vmstat_pswpout{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Pswpout - Pages swapped out",
               "range": true,
@@ -5061,7 +5071,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of memory page faults, split into total, major (disk-backed), and derived minor (non-disk) faults. High major fault rates may indicate memory pressure or insufficient RAM",
           "fieldConfig": {
@@ -5182,7 +5192,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_pgfault{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_vmstat_pgfault{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Pgfault - Page major and minor fault ops",
               "range": true,
@@ -5191,7 +5201,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_pgmajfault{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_vmstat_pgmajfault{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Pgmajfault - Major page fault ops",
               "range": true,
@@ -5200,7 +5210,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_pgfault{instance=\"$node\",job=\"$job\"}[$__rate_interval])  - rate(node_vmstat_pgmajfault{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_vmstat_pgfault{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])  - rate(node_vmstat_pgmajfault{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Pgminfault - Minor page fault ops",
               "range": true,
@@ -5214,7 +5224,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of Out-of-Memory (OOM) kill events. A non-zero value indicates the kernel has terminated one or more processes due to memory exhaustion",
           "fieldConfig": {
@@ -5313,7 +5323,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_vmstat_oom_kill{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_vmstat_oom_kill{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "OOM Kills",
@@ -5342,7 +5352,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "System load average over 1, 5, and 15 minutes. Reflects the number of active or waiting processes. Values above CPU core count may indicate overload",
           "fieldConfig": {
@@ -5455,7 +5465,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_load1{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_load1{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Load 1m",
               "range": true,
@@ -5464,7 +5474,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_load5{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_load5{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Load 5m",
               "range": true,
@@ -5473,7 +5483,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_load15{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_load15{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Load 15m",
               "range": true,
@@ -5482,7 +5492,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "count(count(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}) by (cpu))",
+              "expr": "count(count(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}) by (cpu))",
               "format": "time_series",
               "legendFormat": "CPU Core Count",
               "range": true,
@@ -5496,7 +5506,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Running and blocked processes, plus kernel hung tasks detected (processes stuck in uninterruptible D state beyond the kernel timeout threshold)",
           "fieldConfig": {
@@ -5583,7 +5593,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_procs_blocked{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_procs_blocked{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Blocked (I/O Wait)",
               "range": true,
@@ -5592,7 +5602,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_procs_running{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_procs_running{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Runnable (Ready for CPU)",
               "range": true,
@@ -5601,7 +5611,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "increase(node_kernel_hung_tasks_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "increase(node_kernel_hung_tasks_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Hung Tasks Detected (D state > timeout)",
               "range": true,
@@ -5615,7 +5625,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Current number of processes in each state (e.g., running, sleeping, zombie). Requires --collector.processes to be enabled in node_exporter",
           "fieldConfig": {
@@ -5783,7 +5793,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_processes_state{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_processes_state{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ state }}",
@@ -5798,7 +5808,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of new processes being created on the system (forks/sec).",
           "fieldConfig": {
@@ -5881,7 +5891,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_forks_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_forks_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Process Forks per second",
               "range": true,
@@ -5895,7 +5905,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of active PIDs on the system and the configured maximum allowed. Useful for detecting PID exhaustion risk. Requires --collector.processes in node_exporter",
           "fieldConfig": {
@@ -6008,7 +6018,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_processes_pids{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_processes_pids{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Number of PIDs",
@@ -6018,7 +6028,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_processes_max_processes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_processes_max_processes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "PIDs limit",
@@ -6033,7 +6043,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of active threads on the system and the configured thread limit. Useful for monitoring thread pressure. Requires --collector.processes in node_exporter",
           "fieldConfig": {
@@ -6146,7 +6156,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_processes_threads{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_processes_threads{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Allocated threads",
@@ -6156,7 +6166,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_processes_max_threads{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_processes_max_threads{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Threads limit",
@@ -6171,7 +6181,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of file descriptors currently allocated system-wide versus the system limit. Important for detecting descriptor exhaustion risks",
           "fieldConfig": {
@@ -6284,7 +6294,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_filefd_maximum{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_filefd_maximum{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Max open files",
               "range": true,
@@ -6293,7 +6303,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_filefd_allocated{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_filefd_allocated{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Open files",
               "range": true,
@@ -6321,7 +6331,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Per-second rate of context switches and hardware interrupts. High values may indicate intense CPU or I/O activity",
           "fieldConfig": {
@@ -6404,7 +6414,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_context_switches_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_context_switches_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Context switches",
               "range": true,
@@ -6413,7 +6423,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_intr_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_intr_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "Interrupts",
               "range": true,
@@ -6427,7 +6437,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Shows CPU saturation per core, calculated as the proportion of time spent waiting to run relative to total time demanded (running + waiting).",
           "fieldConfig": {
@@ -6513,7 +6523,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_schedstat_running_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_schedstat_running_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -6524,7 +6534,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_schedstat_waiting_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_schedstat_waiting_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -6535,7 +6545,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_schedstat_waiting_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) / ((rate(node_schedstat_running_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) + rate(node_schedstat_waiting_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])) > 0)",
+              "expr": "rate(node_schedstat_waiting_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval]) / ((rate(node_schedstat_running_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval]) + rate(node_schedstat_waiting_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])) > 0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{cpu}}",
@@ -6550,7 +6560,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Real-time CPU frequency scaling per core, including average minimum and maximum allowed scaling frequencies",
           "fieldConfig": {
@@ -6699,7 +6709,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_cpu_scaling_frequency_hertz{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_cpu_scaling_frequency_hertz{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{ cpu }}",
@@ -6709,7 +6719,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "avg(node_cpu_scaling_frequency_max_hertz{instance=\"$node\",job=\"$job\"})",
+              "expr": "avg(node_cpu_scaling_frequency_max_hertz{instance=\"$server\",job=\"integrations/unix\"})",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Max",
@@ -6719,7 +6729,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "avg(node_cpu_scaling_frequency_min_hertz{instance=\"$node\",job=\"$job\"})",
+              "expr": "avg(node_cpu_scaling_frequency_min_hertz{instance=\"$server\",job=\"integrations/unix\"})",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Min",
@@ -6734,7 +6744,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of scheduling timeslices executed per CPU. Reflects how frequently the scheduler switches tasks on each core",
           "fieldConfig": {
@@ -6816,7 +6826,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_schedstat_timeslices_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_schedstat_timeslices_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{ cpu }}",
@@ -6831,7 +6841,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Breaks down hardware interrupts by type and device. Useful for diagnosing IRQ load on network, disk, or CPU interfaces. Requires --collector.interrupts to be enabled in node_exporter",
           "fieldConfig": {
@@ -6914,7 +6924,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum without (cpu) (rate(node_interrupts_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]))",
+              "expr": "sum without (cpu) (rate(node_interrupts_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval]))",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ type }} - {{ info }}",
@@ -6929,7 +6939,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of bits of entropy currently available to the system's random number generators (e.g., /dev/random). Low values may indicate that random number generation could block or degrade performance of cryptographic operations",
           "fieldConfig": {
@@ -7042,7 +7052,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_entropy_available_bits{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_entropy_available_bits{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Entropy available",
               "range": true,
@@ -7051,7 +7061,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_entropy_pool_size_bits{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_entropy_pool_size_bits{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "Entropy pool max",
               "range": true,
@@ -7079,7 +7089,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Monitors hardware sensor temperatures and critical thresholds as exposed by Linux hwmon. Includes CPU, GPU, and motherboard sensors where available",
           "fieldConfig": {
@@ -7182,7 +7192,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_hwmon_temp_celsius{instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_hwmon_temp_celsius{instance=\"$server\",job=\"integrations/unix\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ chip_name }} {{ sensor }}",
@@ -7191,7 +7201,7 @@
               "step": 240
             },
             {
-              "expr": "node_hwmon_temp_crit_alarm_celsius{instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_hwmon_temp_crit_alarm_celsius{instance=\"$server\",job=\"integrations/unix\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -7201,7 +7211,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_hwmon_temp_crit_celsius{instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_hwmon_temp_crit_celsius{instance=\"$server\",job=\"integrations/unix\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ chip_name }} {{ sensor }} Critical",
@@ -7210,7 +7220,7 @@
               "step": 240
             },
             {
-              "expr": "node_hwmon_temp_crit_hyst_celsius{instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_hwmon_temp_crit_hyst_celsius{instance=\"$server\",job=\"integrations/unix\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -7219,7 +7229,7 @@
               "step": 240
             },
             {
-              "expr": "node_hwmon_temp_max_celsius{instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_hwmon_temp_max_celsius{instance=\"$server\",job=\"integrations/unix\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -7234,7 +7244,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Shows how hard each cooling device (fan/throttle) is working relative to its maximum capacity",
           "fieldConfig": {
@@ -7336,7 +7346,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "100 * node_cooling_device_cur_state{instance=\"$node\",job=\"$job\"} / (node_cooling_device_max_state{instance=\"$node\",job=\"$job\"} > 0)",
+              "expr": "100 * node_cooling_device_cur_state{instance=\"$server\",job=\"integrations/unix\"} / (node_cooling_device_max_state{instance=\"$server\",job=\"integrations/unix\"} > 0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{name}} - {{type}}",
@@ -7351,7 +7361,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Displays the current fan speeds (RPM) from hardware sensors via the hwmon interface",
           "fieldConfig": {
@@ -7434,7 +7444,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_hwmon_fan_rpm{instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_hwmon_fan_rpm{instance=\"$server\",job=\"integrations/unix\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ chip_name }} {{ sensor }}",
@@ -7444,7 +7454,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_hwmon_fan_min_rpm{instance=\"$node\",job=\"$job\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_hwmon_fan_min_rpm{instance=\"$server\",job=\"integrations/unix\"} * on(chip) group_left(chip_name) node_hwmon_chip_names{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -7460,7 +7470,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Core-level CPU thermal throttling events per package. Values above zero indicate cores were throttled during the interval. Requires hardware that exposes thermal_throttle counters (mostly Intel); absent on AMD and most virtual machines.",
           "fieldConfig": {
@@ -7545,7 +7555,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum by (package) (increase(node_cpu_core_throttles_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]))",
+              "expr": "sum by (package) (increase(node_cpu_core_throttles_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval]))",
               "format": "time_series",
               "legendFormat": "Package {{package}}",
               "range": true,
@@ -7559,7 +7569,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Tracks the system clock's estimated and maximum error, as well as its offset from the reference clock (e.g., via NTP). Useful for detecting synchronization drift",
           "fieldConfig": {
@@ -7641,7 +7651,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_timex_estimated_error_seconds{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_estimated_error_seconds{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Estimated error",
@@ -7651,7 +7661,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_timex_offset_seconds{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_offset_seconds{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Offset local vs reference",
@@ -7661,7 +7671,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_timex_maxerror_seconds{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_maxerror_seconds{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Maximum error",
@@ -7676,7 +7686,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "NTP phase-locked loop (PLL) time constant used by the kernel to control time adjustments. Lower values mean faster correction but less stability",
           "fieldConfig": {
@@ -7758,7 +7768,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_timex_loop_time_constant{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_loop_time_constant{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "PLL Time Constant",
@@ -7773,7 +7783,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Shows whether the system clock is synchronized to a reliable time source, and the current frequency correction ratio applied by the kernel to maintain synchronization",
           "fieldConfig": {
@@ -7855,7 +7865,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_timex_sync_status{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_sync_status{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Sync status (1 = ok)",
@@ -7865,7 +7875,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_timex_frequency_adjustment_ratio{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_frequency_adjustment_ratio{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Frequency Adjustment",
@@ -7875,7 +7885,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_timex_tick_seconds{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_tick_seconds{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -7886,7 +7896,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_timex_tai_offset_seconds{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_timex_tai_offset_seconds{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -7902,7 +7912,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Correctable and uncorrectable ECC memory errors reported by EDAC. Correctable errors indicate a degrading DIMM; uncorrectable errors can cause data corruption. Only available on bare metal hosts that expose EDAC.",
           "fieldConfig": {
@@ -8020,7 +8030,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "increase(node_edac_correctable_errors_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "increase(node_edac_correctable_errors_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{controller}} - Correctable",
@@ -8030,7 +8040,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "increase(node_edac_uncorrectable_errors_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "increase(node_edac_uncorrectable_errors_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{controller}} - Uncorrectable",
@@ -8045,7 +8055,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Online and present state of each power supply exposed by /sys/class/power_supply. 1 = OK, 0 = failed or missing. Only available on hardware that exposes node_power_supply_online or node_power_supply_present; absent on most virtual machines.",
           "fieldConfig": {
@@ -8150,7 +8160,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_power_supply_online{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_power_supply_online{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{power_supply}} online",
@@ -8160,7 +8170,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_power_supply_present{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_power_supply_present{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{power_supply}} present",
@@ -8189,7 +8199,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Current number of systemd units in each operational state, such as active, failed, inactive, or transitioning",
           "fieldConfig": {
@@ -8347,7 +8357,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_systemd_units{instance=\"$node\",job=\"$job\",state=\"activating\"}",
+              "expr": "node_systemd_units{instance=\"$server\",job=\"integrations/unix\",state=\"activating\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Activating",
@@ -8357,7 +8367,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_systemd_units{instance=\"$node\",job=\"$job\",state=\"active\"}",
+              "expr": "node_systemd_units{instance=\"$server\",job=\"integrations/unix\",state=\"active\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Active",
@@ -8367,7 +8377,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_systemd_units{instance=\"$node\",job=\"$job\",state=\"deactivating\"}",
+              "expr": "node_systemd_units{instance=\"$server\",job=\"integrations/unix\",state=\"deactivating\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Deactivating",
@@ -8377,7 +8387,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_systemd_units{instance=\"$node\",job=\"$job\",state=\"failed\"}",
+              "expr": "node_systemd_units{instance=\"$server\",job=\"integrations/unix\",state=\"failed\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Failed",
@@ -8387,7 +8397,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_systemd_units{instance=\"$node\",job=\"$job\",state=\"inactive\"}",
+              "expr": "node_systemd_units{instance=\"$server\",job=\"integrations/unix\",state=\"inactive\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Inactive",
@@ -8402,7 +8412,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Current number of active connections per systemd socket, as reported by the Node Exporter systemd collector",
           "fieldConfig": {
@@ -8485,7 +8495,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_systemd_socket_current_connections{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_systemd_socket_current_connections{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ name }}",
@@ -8500,7 +8510,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of accepted connections per second for each systemd socket",
           "fieldConfig": {
@@ -8583,7 +8593,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_systemd_socket_accepted_connections_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_systemd_socket_accepted_connections_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ name }}",
@@ -8598,7 +8608,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of systemd socket connection refusals per second, typically due to service unavailability or backlog overflow",
           "fieldConfig": {
@@ -8681,7 +8691,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_systemd_socket_refused_connections_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_systemd_socket_refused_connections_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ name }}",
@@ -8710,7 +8720,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of I/O operations completed per second for the device (after merges), including both reads and writes",
           "fieldConfig": {
@@ -8820,7 +8830,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_reads_completed_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_reads_completed_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "legendFormat": "{{device}} - Read",
               "range": true,
               "refId": "A",
@@ -8828,7 +8838,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_writes_completed_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_writes_completed_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "legendFormat": "{{device}} - Write",
               "range": true,
               "refId": "B",
@@ -8841,7 +8851,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of bytes read from or written to the device per second",
           "fieldConfig": {
@@ -8951,7 +8961,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_read_bytes_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_read_bytes_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Read",
               "range": true,
@@ -8961,7 +8971,7 @@
             {
               "editorMode": "code",
               "exemplar": false,
-              "expr": "rate(node_disk_written_bytes_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_written_bytes_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "instant": false,
               "legendFormat": "{{device}} - Write",
@@ -8976,7 +8986,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Average time for requests issued to the device to be served. This includes the time spent by the requests in queue and the time spent servicing them.",
           "fieldConfig": {
@@ -9086,7 +9096,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_read_time_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) / (rate(node_disk_reads_completed_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) > 0)",
+              "expr": "rate(node_disk_read_time_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval]) / (rate(node_disk_reads_completed_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval]) > 0)",
               "interval": "",
               "legendFormat": "{{device}} - Read",
               "range": true,
@@ -9095,7 +9105,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_write_time_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) / (rate(node_disk_writes_completed_total{instance=\"$node\",job=\"$job\"}[$__rate_interval]) > 0)",
+              "expr": "rate(node_disk_write_time_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval]) / (rate(node_disk_writes_completed_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval]) > 0)",
               "interval": "",
               "legendFormat": "{{device}} - Write",
               "range": true,
@@ -9109,7 +9119,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Percentage of time the disk spent actively processing I/O operations, including general I/O, discards (TRIM), and write cache flushes",
           "fieldConfig": {
@@ -9208,7 +9218,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_io_time_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_io_time_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}} - General IO",
               "range": true,
@@ -9217,7 +9227,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_discard_time_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_discard_time_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}} - Discard/TRIM",
               "range": true,
@@ -9226,7 +9236,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_flush_requests_time_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_flush_requests_time_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}} - Flush (write cache)",
               "range": true,
@@ -9240,7 +9250,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Average queue length of the requests that were issued to the device",
           "fieldConfig": {
@@ -9339,7 +9349,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_io_time_weighted_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_io_time_weighted_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}}",
               "range": true,
@@ -9353,7 +9363,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of in-progress I/O requests at the time of sampling (active requests in the disk queue)",
           "fieldConfig": {
@@ -9452,7 +9462,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_disk_io_now{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_disk_io_now{instance=\"$server\",job=\"integrations/unix\"}",
               "interval": "",
               "legendFormat": "{{device}}",
               "range": true,
@@ -9466,7 +9476,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of read and write requests merged per second that were queued to the device",
           "fieldConfig": {
@@ -9576,7 +9586,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_reads_merged_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_reads_merged_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "legendFormat": "{{device}} - Read",
               "range": true,
               "refId": "A",
@@ -9584,7 +9594,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_writes_merged_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_writes_merged_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "legendFormat": "{{device}} - Write",
               "range": true,
               "refId": "B",
@@ -9597,7 +9607,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Per-second rate of discard (TRIM) and flush (write cache) operations. Useful for monitoring low-level disk activity on SSDs and advanced storage",
           "fieldConfig": {
@@ -9695,7 +9705,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_discards_completed_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_discards_completed_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}} - Discards completed",
               "range": true,
@@ -9704,7 +9714,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_discards_merged_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_discards_merged_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}} - Discards merged",
               "range": true,
@@ -9713,7 +9723,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_flush_requests_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_flush_requests_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}} - Flush",
               "range": true,
@@ -9727,7 +9737,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Shows how many disk sectors are discarded (TRIMed) per second. Useful for monitoring SSD behavior and storage efficiency",
           "fieldConfig": {
@@ -9825,7 +9835,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_disk_discarded_sectors_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_disk_discarded_sectors_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "{{device}}",
               "range": true,
@@ -9839,7 +9849,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of free file nodes (inodes) available per mounted filesystem. A low count may prevent file creation even if disk space is available",
           "fieldConfig": {
@@ -9922,7 +9932,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_filesystem_files_free{instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
+              "expr": "node_filesystem_files_free{instance=\"$server\",job=\"integrations/unix\",fstype!~'rootfs'}",
               "format": "time_series",
               "legendFormat": "{{mountpoint}}",
               "range": true,
@@ -9936,7 +9946,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Indicates filesystems mounted in read-only mode or reporting device-level I/O errors.",
           "fieldConfig": {
@@ -10020,7 +10030,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_filesystem_readonly{instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
+              "expr": "node_filesystem_readonly{instance=\"$server\",job=\"integrations/unix\",fstype!~'rootfs'}",
               "format": "time_series",
               "legendFormat": "{{mountpoint}} - ReadOnly",
               "range": true,
@@ -10029,7 +10039,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_filesystem_device_error{instance=\"$node\",job=\"$job\",fstype!~'rootfs|tmpfs'}",
+              "expr": "node_filesystem_device_error{instance=\"$server\",job=\"integrations/unix\",fstype!~'rootfs|tmpfs'}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{mountpoint}} - Device error",
@@ -10044,7 +10054,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of file nodes (inodes) available per mounted filesystem. Reflects maximum file capacity regardless of disk size",
           "fieldConfig": {
@@ -10127,7 +10137,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_filesystem_files{instance=\"$node\",job=\"$job\",fstype!~'rootfs'}",
+              "expr": "node_filesystem_files{instance=\"$server\",job=\"integrations/unix\",fstype!~'rootfs'}",
               "format": "time_series",
               "legendFormat": "{{mountpoint}}",
               "range": true,
@@ -10155,7 +10165,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of network packets received and transmitted per second, by interface.",
           "fieldConfig": {
@@ -10251,7 +10261,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_packets_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_packets_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{device}} - Rx in",
@@ -10261,7 +10271,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_packets_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_transmit_packets_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{device}} - Tx out",
@@ -10276,7 +10286,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of packet-level errors for each network interface. Receive errors may indicate physical or driver issues; transmit errors may reflect collisions or hardware faults",
           "fieldConfig": {
@@ -10372,7 +10382,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_errs_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_errs_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -10381,7 +10391,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_errs_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_transmit_errs_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -10395,7 +10405,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of dropped packets per network interface. Receive drops can indicate buffer overflow or driver issues; transmit drops may result from outbound congestion or queuing limits",
           "fieldConfig": {
@@ -10491,7 +10501,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_drop_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_drop_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -10500,7 +10510,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_drop_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_transmit_drop_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -10514,7 +10524,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of received packets that could not be processed due to missing protocol or handler in the kernel. May indicate unsupported traffic or misconfiguration",
           "fieldConfig": {
@@ -10597,7 +10607,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_nohandler_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_nohandler_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -10611,7 +10621,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of frame errors on received packets, typically caused by physical layer issues such as bad cables, duplex mismatches, or hardware problems",
           "fieldConfig": {
@@ -10694,7 +10704,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_frame_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_frame_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -10708,7 +10718,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Tracks FIFO buffer overrun errors on network interfaces. These occur when incoming or outgoing packets are dropped due to queue or buffer overflows, often indicating congestion or hardware limits",
           "fieldConfig": {
@@ -10804,7 +10814,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_fifo_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_fifo_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -10813,7 +10823,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_fifo_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_transmit_fifo_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -10827,7 +10837,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of packet collisions detected during transmission. Mostly relevant on half-duplex or legacy Ethernet networks",
           "fieldConfig": {
@@ -10923,7 +10933,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_colls_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_transmit_colls_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -10937,7 +10947,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of carrier errors during transmission. These typically indicate physical layer issues like faulty cabling or duplex mismatches",
           "fieldConfig": {
@@ -11033,7 +11043,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_carrier_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_transmit_carrier_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -11047,7 +11057,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of compressed network packets received and transmitted per interface. These are common in low-bandwidth or special interfaces like PPP or SLIP",
           "fieldConfig": {
@@ -11143,7 +11153,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_compressed_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_compressed_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -11152,7 +11162,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_network_transmit_compressed_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_transmit_compressed_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Tx out",
               "range": true,
@@ -11166,7 +11176,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of incoming multicast packets received per network interface. Multicast is used by protocols such as mDNS, SSDP, and some streaming or cluster services",
           "fieldConfig": {
@@ -11249,7 +11259,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_network_receive_multicast_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_network_receive_multicast_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Rx in",
               "range": true,
@@ -11263,7 +11273,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of ARP entries per interface. Useful for detecting excessive ARP traffic or table growth due to scanning or misconfiguration",
           "fieldConfig": {
@@ -11346,7 +11356,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_arp_entries{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_arp_entries{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "{{ device }} ARP Table",
               "range": true,
@@ -11360,7 +11370,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Current and maximum connection tracking entries used by Netfilter (nf_conntrack). High usage approaching the limit may cause packet drops or connection issues",
           "fieldConfig": {
@@ -11473,7 +11483,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_nf_conntrack_entries{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_nf_conntrack_entries{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "NF conntrack entries",
               "range": true,
@@ -11482,7 +11492,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_nf_conntrack_entries_limit{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_nf_conntrack_entries_limit{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "NF conntrack limit",
               "range": true,
@@ -11496,7 +11506,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of link-down transitions (flaps) per interface. Repeated flaps usually indicate a faulty cable, SFP, or switch port. The negative series shows link-down state: 0 when the carrier is present and -1 when it is absent.",
           "fieldConfig": {
@@ -11601,7 +11611,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "increase(node_network_carrier_down_changes_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "increase(node_network_carrier_down_changes_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "{{device}} - Link flaps",
               "range": true,
@@ -11610,7 +11620,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_network_carrier{instance=\"$node\",job=\"$job\"} - 1",
+              "expr": "node_network_carrier{instance=\"$server\",job=\"integrations/unix\"} - 1",
               "format": "time_series",
               "legendFormat": "{{device}} - Down state",
               "range": true,
@@ -11624,7 +11634,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Maximum speed of each network interface as reported by the operating system. This is a static hardware capability, not current throughput. A value of -1 means unknown speed",
           "fieldConfig": {
@@ -11684,7 +11694,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_network_speed_bytes{instance=\"$node\",job=\"$job\"} * 8",
+              "expr": "node_network_speed_bytes{instance=\"$server\",job=\"integrations/unix\"} * 8",
               "format": "time_series",
               "legendFormat": "{{ device }}",
               "range": true,
@@ -11698,7 +11708,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "MTU (Maximum Transmission Unit) in bytes for each network interface. Affects packet size and transmission efficiency",
           "fieldConfig": {
@@ -11757,7 +11767,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_network_mtu_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_network_mtu_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "{{ device }}",
               "range": true,
@@ -11785,7 +11795,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Tracks TCP socket usage per node",
           "fieldConfig": {
@@ -11869,7 +11879,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP_alloc{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_TCP_alloc{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 Allocated Sockets",
@@ -11879,7 +11889,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP_inuse{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_TCP_inuse{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 In-Use Sockets",
@@ -11889,7 +11899,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP_orphan{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_TCP_orphan{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 Orphaned Sockets",
@@ -11899,7 +11909,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP_tw{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_TCP_tw{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 TIME_WAIT Sockets",
@@ -11909,7 +11919,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP6_inuse{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_TCP6_inuse{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "IPv6 In-Use Sockets",
               "range": true,
@@ -11923,7 +11933,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of UDP and UDPLite sockets currently in use",
           "fieldConfig": {
@@ -12007,7 +12017,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_sockstat_UDPLITE_inuse{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_UDPLITE_inuse{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDPLite - In-Use Sockets",
@@ -12017,7 +12027,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_UDP_inuse{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_UDP_inuse{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP - In-Use Sockets",
@@ -12027,7 +12037,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_UDPLITE6_inuse{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_UDPLITE6_inuse{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "IPv6 UDPLite - In-Use Sockets",
               "range": true,
@@ -12036,7 +12046,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_UDP6_inuse{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_UDP6_inuse{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "IPv6 UDP - In-Use Sockets",
               "range": true,
@@ -12050,7 +12060,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Total number of sockets currently in use across all protocols (TCP, UDP, UNIX, etc.), as reported by /proc/net/sockstat",
           "fieldConfig": {
@@ -12134,7 +12144,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_sockstat_sockets_used{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_sockets_used{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Total sockets",
@@ -12149,7 +12159,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of FRAG and RAW sockets currently in use. RAW sockets are used for custom protocols or tools like ping; FRAG sockets are used internally for IP packet defragmentation",
           "fieldConfig": {
@@ -12233,7 +12243,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_sockstat_FRAG_inuse{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_FRAG_inuse{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 FRAG - In-Use Sockets",
@@ -12243,7 +12253,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_RAW_inuse{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_RAW_inuse{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 RAW - In-Use Sockets",
@@ -12253,7 +12263,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_FRAG6_inuse{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_FRAG6_inuse{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "IPv6 FRAG - In-Use Sockets",
               "range": true,
@@ -12262,7 +12272,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_RAW6_inuse{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_RAW6_inuse{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "IPv6 RAW - In-Use Sockets",
               "range": true,
@@ -12276,7 +12286,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Kernel memory used by TCP, UDP, and IP fragmentation buffers",
           "fieldConfig": {
@@ -12360,7 +12370,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP_mem_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_TCP_mem_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "TCP",
@@ -12370,7 +12380,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_UDP_mem_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_UDP_mem_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "UDP",
@@ -12380,7 +12390,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_FRAG_memory{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_FRAG_memory{instance=\"$server\",job=\"integrations/unix\"}",
               "interval": "",
               "legendFormat": "Fragmentation",
               "range": true,
@@ -12393,7 +12403,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Average memory used per socket (TCP/UDP). Helps tune net.ipv4.tcp_rmem / tcp_wmem",
           "fieldConfig": {
@@ -12477,7 +12487,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP_mem_bytes{instance=\"$node\",job=\"$job\"} / (node_sockstat_TCP_inuse{instance=\"$node\",job=\"$job\"} > 0)",
+              "expr": "node_sockstat_TCP_mem_bytes{instance=\"$server\",job=\"integrations/unix\"} / (node_sockstat_TCP_inuse{instance=\"$server\",job=\"integrations/unix\"} > 0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "TCP",
@@ -12487,7 +12497,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_UDP_mem_bytes{instance=\"$node\",job=\"$job\"} / (node_sockstat_UDP_inuse{instance=\"$node\",job=\"$job\"} > 0)",
+              "expr": "node_sockstat_UDP_mem_bytes{instance=\"$server\",job=\"integrations/unix\"} / (node_sockstat_UDP_inuse{instance=\"$server\",job=\"integrations/unix\"} > 0)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "UDP",
@@ -12502,7 +12512,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "TCP/UDP socket memory usage in kernel (in pages)",
           "fieldConfig": {
@@ -12586,7 +12596,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_sockstat_TCP_mem{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_TCP_mem{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "TCP",
@@ -12596,7 +12606,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_sockstat_UDP_mem{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_sockstat_UDP_mem{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "UDP",
@@ -12611,7 +12621,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Packets processed and dropped by the softnet network stack per CPU. Drops may indicate CPU saturation or network driver limitations",
           "fieldConfig": {
@@ -12707,7 +12717,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_softnet_processed_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_softnet_processed_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{cpu}} - Processed",
@@ -12717,7 +12727,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_softnet_dropped_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_softnet_dropped_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{cpu}} - Dropped",
@@ -12732,7 +12742,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "How often the kernel was unable to process all packets in the softnet queue before time ran out. Frequent squeezes may indicate CPU contention or driver inefficiency",
           "fieldConfig": {
@@ -12819,7 +12829,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_softnet_times_squeezed_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_softnet_times_squeezed_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{cpu}} - Times Squeezed",
@@ -12834,7 +12844,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Times each CPU was woken up by Receive Packet Steering (RPS) to process packets steered from other CPUs, and packets dropped for exceeding the flow limit",
           "fieldConfig": {
@@ -12937,7 +12947,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_softnet_received_rps_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_softnet_received_rps_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{cpu}} - RPS Wakeups",
@@ -12947,7 +12957,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_softnet_flow_limit_count_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_softnet_flow_limit_count_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CPU {{cpu}} - Dropped",
@@ -12976,7 +12986,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of octets sent and received at the IP layer, as reported by /proc/net/netstat",
           "fieldConfig": {
@@ -13072,7 +13082,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_IpExt_InOctets{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_IpExt_InOctets{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 Rx in",
@@ -13082,7 +13092,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_IpExt_OutOctets{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_IpExt_OutOctets{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv4 Tx out",
               "range": true,
@@ -13091,7 +13101,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Ip6_InOctets{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Ip6_InOctets{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 Rx in",
               "range": true,
@@ -13100,7 +13110,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Ip6_OutOctets{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Ip6_OutOctets{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 Tx out",
               "range": true,
@@ -13114,7 +13124,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of TCP segments sent and received per second, including data and control segments",
           "fieldConfig": {
@@ -13213,7 +13223,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Tcp_InSegs{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Tcp_InSegs{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "instant": false,
               "interval": "",
@@ -13223,7 +13233,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Tcp_OutSegs{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Tcp_OutSegs{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "TCP Tx out",
@@ -13238,7 +13248,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of UDP datagrams sent and received per second, based on /proc/net/snmp",
           "fieldConfig": {
@@ -13333,7 +13343,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp_InDatagrams{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp_InDatagrams{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP Rx in",
@@ -13343,7 +13353,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp_OutDatagrams{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp_OutDatagrams{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP Tx out",
@@ -13353,7 +13363,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp6_InDatagrams{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp6_InDatagrams{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 UDP Rx in",
               "range": true,
@@ -13362,7 +13372,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp6_OutDatagrams{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp6_OutDatagrams{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 UDP Tx out",
               "range": true,
@@ -13376,7 +13386,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of ICMP messages sent and received per second, including error and control messages",
           "fieldConfig": {
@@ -13475,7 +13485,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Icmp_InMsgs{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Icmp_InMsgs{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 ICMP Rx in",
@@ -13485,7 +13495,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Icmp_OutMsgs{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Icmp_OutMsgs{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 ICMP Tx out",
@@ -13495,7 +13505,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Icmp6_InMsgs{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Icmp6_InMsgs{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 ICMP Rx in",
               "range": true,
@@ -13504,7 +13514,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Icmp6_OutMsgs{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Icmp6_OutMsgs{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 ICMP Tx out",
               "range": true,
@@ -13518,7 +13528,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Tracks various TCP error and congestion-related events, including retransmissions, timeouts, dropped connections, and buffer issues",
           "fieldConfig": {
@@ -13601,7 +13611,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_ListenOverflows{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_ListenOverflows{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Listen Overflows",
@@ -13611,7 +13621,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_ListenDrops{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_ListenDrops{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Listen Drops",
@@ -13621,7 +13631,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_TCPSynRetrans{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_TCPSynRetrans{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "SYN Retransmits",
@@ -13631,7 +13641,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Tcp_RetransSegs{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Tcp_RetransSegs{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "Segment Retransmits",
               "range": true,
@@ -13639,7 +13649,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Tcp_InErrs{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Tcp_InErrs{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "Receive Errors",
               "range": true,
@@ -13647,7 +13657,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Tcp_OutRsts{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Tcp_OutRsts{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "RST Sent",
               "range": true,
@@ -13655,7 +13665,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_TCPRcvQDrop{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_TCPRcvQDrop{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "Receive Queue Drops",
               "range": true,
@@ -13663,7 +13673,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_TCPOFOQueue{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_TCPOFOQueue{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "Out-of-order Queued",
               "range": true,
@@ -13671,7 +13681,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_TCPTimeouts{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_TCPTimeouts{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "TCP Timeouts",
               "range": true,
@@ -13684,7 +13694,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of UDP and UDPLite datagram delivery errors, including missing listeners, buffer overflows, and protocol-specific issues",
           "fieldConfig": {
@@ -13770,7 +13780,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp_InErrors{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp_InErrors{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP Rx in Errors",
@@ -13780,7 +13790,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp_NoPorts{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp_NoPorts{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP No Listener",
@@ -13790,7 +13800,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_UdpLite_InErrors{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_UdpLite_InErrors{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "interval": "",
               "legendFormat": "IPv4 UDPLite Rx in Errors",
               "range": true,
@@ -13798,7 +13808,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp_RcvbufErrors{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp_RcvbufErrors{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP Rx in Buffer Errors",
@@ -13808,7 +13818,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp_SndbufErrors{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp_SndbufErrors{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP Tx out Buffer Errors",
@@ -13818,7 +13828,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp6_InErrors{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp6_InErrors{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 UDP Rx in Errors",
               "range": true,
@@ -13827,7 +13837,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp6_NoPorts{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp6_NoPorts{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 UDP No Listener",
               "range": true,
@@ -13836,7 +13846,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_UdpLite6_InErrors{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_UdpLite6_InErrors{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 UDPLite Rx in Errors",
               "range": true,
@@ -13845,7 +13855,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp6_RcvbufErrors{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp6_RcvbufErrors{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 UDP Rx in Buffer Errors",
               "range": true,
@@ -13854,7 +13864,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Udp6_SndbufErrors{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Udp6_SndbufErrors{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 UDP Tx out Buffer Errors",
               "range": true,
@@ -13868,7 +13878,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of incoming ICMP messages that contained protocol-specific errors, such as bad checksums or invalid lengths",
           "fieldConfig": {
@@ -13950,7 +13960,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Icmp_InErrors{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Icmp_InErrors{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 ICMP Rx In",
@@ -13960,7 +13970,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Icmp6_InErrors{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Icmp6_InErrors{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "legendFormat": "IPv6 ICMP Rx In",
               "range": true,
@@ -13974,7 +13984,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of TCP SYN cookies sent, validated, and failed. These are used to protect against SYN flood attacks and manage TCP handshake resources under load",
           "fieldConfig": {
@@ -14072,7 +14082,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_SyncookiesFailed{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_SyncookiesFailed{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "SYN Cookies Failed",
@@ -14082,7 +14092,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_SyncookiesRecv{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_SyncookiesRecv{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "SYN Cookies Validated",
@@ -14092,7 +14102,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_TcpExt_SyncookiesSent{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_TcpExt_SyncookiesSent{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "SYN Cookies Sent",
@@ -14107,7 +14117,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of currently established TCP connections",
           "fieldConfig": {
@@ -14190,7 +14200,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_netstat_Tcp_CurrEstab{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_netstat_Tcp_CurrEstab{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Current Connections",
@@ -14205,7 +14215,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Memory currently queued in the UDP receive (RX) and transmit (TX) buffers. A growing queue may indicate a bottleneck",
           "fieldConfig": {
@@ -14287,7 +14297,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_udp_queues{instance=\"$node\",job=\"$job\",ip=\"v4\",queue=\"rx\"}",
+              "expr": "node_udp_queues{instance=\"$server\",job=\"integrations/unix\",ip=\"v4\",queue=\"rx\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP Rx in Queue",
@@ -14297,7 +14307,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_udp_queues{instance=\"$node\",job=\"$job\",ip=\"v4\",queue=\"tx\"}",
+              "expr": "node_udp_queues{instance=\"$server\",job=\"integrations/unix\",ip=\"v4\",queue=\"tx\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "IPv4 UDP Tx out Queue",
@@ -14307,7 +14317,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_udp_queues{instance=\"$node\",job=\"$job\",ip=\"v6\",queue=\"rx\"}",
+              "expr": "node_udp_queues{instance=\"$server\",job=\"integrations/unix\",ip=\"v6\",queue=\"rx\"}",
               "format": "time_series",
               "legendFormat": "IPv6 UDP Rx in Queue",
               "range": true,
@@ -14316,7 +14326,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_udp_queues{instance=\"$node\",job=\"$job\",ip=\"v6\",queue=\"tx\"}",
+              "expr": "node_udp_queues{instance=\"$server\",job=\"integrations/unix\",ip=\"v6\",queue=\"tx\"}",
               "format": "time_series",
               "legendFormat": "IPv6 UDP Tx out Queue",
               "range": true,
@@ -14330,7 +14340,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of TCP connection initiations per second. 'Active' opens are initiated by this host. 'Passive' opens are accepted from incoming connections",
           "fieldConfig": {
@@ -14413,7 +14423,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Tcp_ActiveOpens{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Tcp_ActiveOpens{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Active Opens",
@@ -14423,7 +14433,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "rate(node_netstat_Tcp_PassiveOpens{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(node_netstat_Tcp_PassiveOpens{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Passive Opens",
@@ -14438,7 +14448,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of TCP sockets in key connection states. Requires the --collector.tcpstat flag on node_exporter",
           "fieldConfig": {
@@ -14522,7 +14532,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{state=\"established\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{state=\"established\",instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Established",
@@ -14532,7 +14542,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{state=\"fin_wait2\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{state=\"fin_wait2\",instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "FIN_WAIT2",
@@ -14542,7 +14552,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{state=\"listen\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{state=\"listen\",instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Listen",
@@ -14552,7 +14562,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{state=\"time_wait\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{state=\"time_wait\",instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "TIME_WAIT",
@@ -14562,7 +14572,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{state=\"close_wait\", instance=\"$node\", job=\"$job\"}",
+              "expr": "node_tcp_connection_states{state=\"close_wait\", instance=\"$server\", job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "CLOSE_WAIT",
@@ -14577,7 +14587,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Transient TCP connection states. These are typically short-lived during connection establishment and teardown",
           "fieldConfig": {
@@ -14661,7 +14671,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{state=\"syn_sent\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{state=\"syn_sent\",instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "SYN_SENT",
               "range": true,
@@ -14670,7 +14680,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{state=\"syn_recv\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{state=\"syn_recv\",instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "SYN_RECV",
               "range": true,
@@ -14679,7 +14689,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{state=\"fin_wait1\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{state=\"fin_wait1\",instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "FIN_WAIT1",
               "range": true,
@@ -14688,7 +14698,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{state=\"close\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{state=\"close\",instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "CLOSE",
               "range": true,
@@ -14697,7 +14707,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{state=\"last_ack\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{state=\"last_ack\",instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "LAST_ACK",
               "range": true,
@@ -14706,7 +14716,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{state=\"closing\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{state=\"closing\",instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "CLOSING",
               "range": true,
@@ -14720,7 +14730,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "TCP socket queue sizes. High rx_queued_bytes indicates application not reading fast enough. High tx_queued_bytes indicates network congestion or slow receiver",
           "fieldConfig": {
@@ -14803,7 +14813,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{state=\"rx_queued_bytes\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{state=\"rx_queued_bytes\",instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "RX Queued (waiting to be read)",
               "range": true,
@@ -14812,7 +14822,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "node_tcp_connection_states{state=\"tx_queued_bytes\",instance=\"$node\",job=\"$job\"}",
+              "expr": "node_tcp_connection_states{state=\"tx_queued_bytes\",instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "legendFormat": "TX Queued (waiting to be sent)",
               "range": true,
@@ -14840,7 +14850,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Duration of each individual collector executed during a Node Exporter scrape. Useful for identifying slow or failing collectors",
           "fieldConfig": {
@@ -14926,7 +14936,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_scrape_collector_duration_seconds{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_scrape_collector_duration_seconds{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{collector}}",
@@ -14941,7 +14951,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Rate of CPU time used by the process exposing this metric (user + system mode)",
           "fieldConfig": {
@@ -15023,7 +15033,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "rate(process_cpu_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+              "expr": "rate(process_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
               "format": "time_series",
               "interval": "",
               "legendFormat": "Process CPU Usage",
@@ -15038,7 +15048,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Tracks the memory usage of the process exposing this metric (e.g., node_exporter), including resident memory (RSS), current virtual memory and maximum virtual memory limit. The limit is shown in the legend and tooltip but hidden from the graph to preserve scale.",
           "fieldConfig": {
@@ -15167,7 +15177,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "process_virtual_memory_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "process_virtual_memory_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "interval": "",
               "legendFormat": "Virtual Memory",
               "range": true,
@@ -15176,7 +15186,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "process_virtual_memory_max_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "process_virtual_memory_max_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "interval": "",
               "legendFormat": "Virtual Memory Limit",
               "range": true,
@@ -15185,7 +15195,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "process_resident_memory_bytes{instance=\"$node\",job=\"$job\"}",
+              "expr": "process_resident_memory_bytes{instance=\"$server\",job=\"integrations/unix\"}",
               "interval": "",
               "legendFormat": "Resident Memory (RSS)",
               "range": true,
@@ -15199,7 +15209,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Number of file descriptors used by the exporter process versus its configured limit. The limit is shown in the legend and tooltip but hidden from the graph to preserve scale.",
           "fieldConfig": {
@@ -15328,7 +15338,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "process_max_fds{instance=\"$node\",job=\"$job\"}",
+              "expr": "process_max_fds{instance=\"$server\",job=\"integrations/unix\"}",
               "interval": "",
               "legendFormat": "Maximum open file descriptors",
               "range": true,
@@ -15337,7 +15347,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "process_open_fds{instance=\"$node\",job=\"$job\"}",
+              "expr": "process_open_fds{instance=\"$server\",job=\"integrations/unix\"}",
               "interval": "",
               "legendFormat": "Open file descriptors",
               "range": true,
@@ -15351,7 +15361,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${ds_prometheus}"
+            "uid": "${DS_PROMETHEUS}"
           },
           "description": "Shows whether each Node Exporter collector scraped successfully (1 = success, 0 = failure), and whether the textfile collector returned an error.",
           "fieldConfig": {
@@ -15416,7 +15426,7 @@
           "targets": [
             {
               "editorMode": "code",
-              "expr": "node_scrape_collector_success{instance=\"$node\",job=\"$job\"}",
+              "expr": "node_scrape_collector_success{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{collector}}",
@@ -15426,7 +15436,7 @@
             },
             {
               "editorMode": "code",
-              "expr": "1 - node_textfile_scrape_error{instance=\"$node\",job=\"$job\"}",
+              "expr": "1 - node_textfile_scrape_error{instance=\"$server\",job=\"integrations/unix\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "textfile",
@@ -15452,72 +15462,24 @@
     "list": [
       {
         "current": {},
-        "includeAll": false,
-        "label": "Datasource",
-        "name": "ds_prometheus",
-        "options": [],
-        "query": "prometheus",
-        "refresh": 1,
-        "regex": "",
-        "type": "datasource"
-      },
-      {
-        "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "${ds_prometheus}"
+          "uid": "${DS_PROMETHEUS}"
         },
-        "definition": "",
+        "definition": "label_values(node_uname_info{job=\"integrations/unix\"}, instance)",
+        "hide": 0,
         "includeAll": false,
-        "label": "Job",
-        "name": "job",
+        "label": "Server",
+        "multi": false,
+        "name": "server",
         "options": [],
         "query": {
-          "query": "label_values(node_uname_info, job)",
-          "refId": "Prometheus-job-Variable-Query"
+          "query": "label_values(node_uname_info{job=\"integrations/unix\"}, instance)",
+          "refId": "Prometheus-server-Variable-Query"
         },
         "refresh": 1,
         "regex": "",
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${ds_prometheus}"
-        },
-        "definition": "label_values(node_uname_info{job=\"$job\"}, nodename)",
-        "includeAll": false,
-        "label": "Nodename",
-        "name": "nodename",
-        "options": [],
-        "query": {
-          "query": "label_values(node_uname_info{job=\"$job\"}, nodename)",
-          "refId": "Prometheus-nodename-Variable-Query"
-        },
-        "refresh": 1,
-        "regex": "",
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${ds_prometheus}"
-        },
-        "definition": "label_values(node_uname_info{job=\"$job\", nodename=\"$nodename\"}, instance)",
-        "includeAll": false,
-        "label": "Instance",
-        "name": "node",
-        "options": [],
-        "query": {
-          "query": "label_values(node_uname_info{job=\"$job\", nodename=\"$nodename\"}, instance)",
-          "refId": "Prometheus-node-Variable-Query"
-        },
-        "refresh": 1,
-        "regex": "",
+        "skipUrlSync": false,
         "sort": 1,
         "type": "query"
       }

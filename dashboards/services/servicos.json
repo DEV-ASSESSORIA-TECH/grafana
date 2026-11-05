@@ -211,13 +211,13 @@
         },
         "colorMode": "value",
         "graphMode": "none",
-        "justifyMode": "auto",
+        "justifyMode": "center",
         "textMode": "value_and_name",
-        "orientation": "horizontal",
+        "orientation": "vertical",
         "wideLayout": true,
         "showPercentChange": false,
         "text": {
-          "titleSize": 14,
+          "titleSize": 12,
           "valueSize": 22
         }
       },
@@ -267,13 +267,171 @@
         "x": 0,
         "y": 1,
         "w": 6,
-        "h": 4
+        "h": 3
       }
     },
     {
       "id": 4,
       "type": "stat",
-      "title": "Menor disp. 30d",
+      "title": "Quedas",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "displayName": "",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "vertical",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "text": {
+          "titleSize": 11,
+          "valueSize": 22
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum (sum_over_time(((monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 0) > bool (monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} offset 1m == bool 0))[$__range:1m]))",
+          "range": false,
+          "instant": true,
+          "format": "time_series",
+          "refId": "A"
+        }
+      ],
+      "description": "Quantas vezes algum serviço passou para DOWN no período do dashboard (amostra por minuto: quedas menores que 1 min podem não aparecer).",
+      "gridPos": {
+        "x": 6,
+        "y": 1,
+        "w": 3,
+        "h": 3
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Erros do Kuma",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "displayName": "",
+          "decimals": 0,
+          "links": [
+            {
+              "title": "Ver os erros",
+              "url": "/d/${__dashboard.uid}?from=${__from}&to=${__to}&${criticidade:queryparam}&${exposicao:queryparam}&${grupo:queryparam}&viewPanel=900",
+              "targetBlank": false
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "vertical",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "text": {
+          "titleSize": 11,
+          "valueSize": 22
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({job=\"docker\",compose_project=\"uptime\",compose_service=\"kuma\"} |= \"PROMETHEUS\" |= \"ERROR\" [$__range])) or vector(0)",
+          "range": false,
+          "instant": true,
+          "queryType": "instant",
+          "legendFormat": "erros",
+          "refId": "A"
+        }
+      ],
+      "description": "Linhas de erro do Kuma ao publicar métricas no período. Diferente de zero: alguma tag foi criada depois do último restart e os monitores com ela sumiram das métricas (não aparecem neste dashboard). Correção: reiniciar o container do Kuma.",
+      "gridPos": {
+        "x": 9,
+        "y": 1,
+        "w": 3,
+        "h": 3
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Pior disp. 30d",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -319,12 +477,12 @@
         "graphMode": "none",
         "justifyMode": "center",
         "textMode": "value_and_name",
-        "orientation": "auto",
+        "orientation": "vertical",
         "wideLayout": true,
         "showPercentChange": false,
         "text": {
-          "titleSize": 12,
-          "valueSize": 20
+          "titleSize": 11,
+          "valueSize": 22
         }
       },
       "targets": [
@@ -342,176 +500,18 @@
           "refId": "A"
         }
       ],
-      "description": "Disponibilidade calculada pelo próprio Kuma na janela de 30 dias (não depende do histórico do Prometheus).",
+      "description": "Menor disponibilidade em 30 dias, calculada pelo próprio Kuma (não depende do histórico do Prometheus).",
       "gridPos": {
-        "x": 6,
+        "x": 12,
         "y": 1,
         "w": 4,
-        "h": 4
-      }
-    },
-    {
-      "id": 5,
-      "type": "stat",
-      "title": "",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "mappings": [],
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 1
-              }
-            ]
-          },
-          "displayName": "Quedas no período",
-          "decimals": 0
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "textMode": "value_and_name",
-        "orientation": "auto",
-        "wideLayout": true,
-        "showPercentChange": false,
-        "text": {
-          "titleSize": 12,
-          "valueSize": 20
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "editorMode": "code",
-          "expr": "sum (sum_over_time(((monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 0) > bool (monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} offset 1m == bool 0))[$__range:1m]))",
-          "range": false,
-          "instant": true,
-          "format": "time_series",
-          "refId": "A"
-        }
-      ],
-      "description": "Quantas vezes algum serviço passou para DOWN no período do dashboard (amostra por minuto: quedas menores que 1 min podem não aparecer).",
-      "gridPos": {
-        "x": 10,
-        "y": 1,
-        "w": 4,
-        "h": 2
-      }
-    },
-    {
-      "id": 6,
-      "type": "stat",
-      "title": "",
-      "datasource": {
-        "type": "loki",
-        "uid": "${DS_LOKI}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "mappings": [],
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          },
-          "displayName": "Exportação do Kuma",
-          "decimals": 0,
-          "links": [
-            {
-              "title": "Ver os erros",
-              "url": "/d/${__dashboard.uid}?from=${__from}&to=${__to}&${criticidade:queryparam}&${exposicao:queryparam}&${grupo:queryparam}&viewPanel=900",
-              "targetBlank": false
-            }
-          ]
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "textMode": "value_and_name",
-        "orientation": "auto",
-        "wideLayout": true,
-        "showPercentChange": false,
-        "text": {
-          "titleSize": 12,
-          "valueSize": 20
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "${DS_LOKI}"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({job=\"docker\",compose_project=\"uptime\",compose_service=\"kuma\"} |= \"PROMETHEUS\" |= \"ERROR\" [$__range])) or vector(0)",
-          "range": false,
-          "instant": true,
-          "queryType": "instant",
-          "legendFormat": "erros",
-          "refId": "A"
-        }
-      ],
-      "description": "Erros do Kuma ao publicar métricas no período. Diferente de zero: alguma tag foi criada depois do último restart e os monitores com ela sumiram das métricas (não aparecem neste dashboard). Correção: reiniciar o container do Kuma.",
-      "gridPos": {
-        "x": 10,
-        "y": 3,
-        "w": 4,
-        "h": 2
+        "h": 3
       }
     },
     {
       "id": 7,
       "type": "stat",
-      "title": "Próximo certificado",
+      "title": "Próx. certificado",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -557,12 +557,12 @@
         "graphMode": "none",
         "justifyMode": "center",
         "textMode": "value_and_name",
-        "orientation": "auto",
+        "orientation": "vertical",
         "wideLayout": true,
         "showPercentChange": false,
         "text": {
-          "titleSize": 12,
-          "valueSize": 20
+          "titleSize": 11,
+          "valueSize": 22
         }
       },
       "targets": [
@@ -582,16 +582,16 @@
       ],
       "description": "Dias até vencer o certificado TLS que expira primeiro.",
       "gridPos": {
-        "x": 14,
+        "x": 16,
         "y": 1,
-        "w": 5,
-        "h": 4
+        "w": 4,
+        "h": 3
       }
     },
     {
       "id": 8,
       "type": "stat",
-      "title": "Resposta mais lenta",
+      "title": "Mais lenta",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -637,12 +637,12 @@
         "graphMode": "none",
         "justifyMode": "center",
         "textMode": "value_and_name",
-        "orientation": "auto",
+        "orientation": "vertical",
         "wideLayout": true,
         "showPercentChange": false,
         "text": {
-          "titleSize": 12,
-          "valueSize": 20
+          "titleSize": 11,
+          "valueSize": 22
         }
       },
       "targets": [
@@ -660,12 +660,12 @@
           "refId": "A"
         }
       ],
-      "description": "Tempo de resposta da última verificação, o maior entre os serviços filtrados.",
+      "description": "Maior tempo de resposta na última verificação, entre os serviços filtrados.",
       "gridPos": {
-        "x": 19,
+        "x": 20,
         "y": 1,
-        "w": 5,
-        "h": 4
+        "w": 4,
+        "h": 3
       }
     },
     {
@@ -678,7 +678,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 5
+        "y": 4
       }
     },
     {
@@ -772,7 +772,7 @@
       "description": "Monitores de grupo do Kuma: ficam DOWN quando algum membro cai. Não respondem aos filtros.",
       "gridPos": {
         "x": 0,
-        "y": 6,
+        "y": 5,
         "w": 8,
         "h": 3
       }
@@ -851,7 +851,7 @@
       "description": "Disponibilidade do grupo inteiro calculada pelo Kuma.",
       "gridPos": {
         "x": 8,
-        "y": 6,
+        "y": 5,
         "w": 8,
         "h": 3
       }
@@ -930,7 +930,7 @@
       "description": "Disponibilidade do grupo inteiro calculada pelo Kuma.",
       "gridPos": {
         "x": 16,
-        "y": 6,
+        "y": 5,
         "w": 8,
         "h": 3
       }
@@ -945,7 +945,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 8
       }
     },
     {
@@ -956,7 +956,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Estado de cada serviço no período. Vermelho = DOWN, laranja = PENDENTE, azul = manutenção.",
+      "description": "Estado de cada serviço no período. Vermelho = DOWN, laranja = PENDENTE, azul = manutenção. Falta de dados de até 5 min (restart do Kuma) é preenchida com o último estado; buraco maior = Kuma sem publicar.",
       "fieldConfig": {
         "defaults": {
           "mappings": [
@@ -1034,7 +1034,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "max by (monitor_name) (monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"})",
+          "expr": "max by (monitor_name) (last_over_time(monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"}[5m]))",
           "range": true,
           "instant": false,
           "format": "time_series",
@@ -1044,7 +1044,7 @@
       ],
       "gridPos": {
         "x": 0,
-        "y": 10,
+        "y": 9,
         "w": 24,
         "h": 9
       }
@@ -1059,7 +1059,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 18
       }
     },
     {
@@ -1238,6 +1238,17 @@
                         "text": "MANUTENÇÃO",
                         "color": "#1F3A5F",
                         "index": 3
+                      }
+                    }
+                  },
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null+nan",
+                      "result": {
+                        "text": "-",
+                        "index": 0,
+                        "color": "transparent"
                       }
                     }
                   }
@@ -1675,7 +1686,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum by (monitor_name, monitor_url, criticidade, exposicao, grupo) (sum_over_time(((monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 0) > bool (monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} offset 1m == bool 0))[$__range:1m]))",
+          "expr": "sum by (monitor_name) (sum_over_time(((monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 0) > bool (monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} offset 1m == bool 0))[$__range:1m])) + on (monitor_name) group_left (monitor_url, criticidade, exposicao, grupo) (0 * max by (monitor_name, monitor_url, criticidade, exposicao, grupo) (monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"}))",
           "range": false,
           "instant": true,
           "format": "table",
@@ -1717,7 +1728,7 @@
       ],
       "gridPos": {
         "x": 0,
-        "y": 20,
+        "y": 19,
         "w": 24,
         "h": 12
       }
@@ -1732,7 +1743,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 32
+        "y": 31
       }
     },
     {
@@ -1807,7 +1818,7 @@
       ],
       "gridPos": {
         "x": 0,
-        "y": 33,
+        "y": 32,
         "w": 16,
         "h": 9
       }
@@ -1886,7 +1897,7 @@
       ],
       "gridPos": {
         "x": 16,
-        "y": 33,
+        "y": 32,
         "w": 8,
         "h": 9
       }
@@ -1901,7 +1912,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 42
+        "y": 41
       }
     },
     {
@@ -1941,7 +1952,7 @@
       "pluginVersion": "11.6.1",
       "gridPos": {
         "x": 0,
-        "y": 43,
+        "y": 42,
         "w": 24,
         "h": 8
       }
@@ -2032,7 +2043,7 @@
           ],
           "gridPos": {
             "x": 0,
-            "y": 52,
+            "y": 51,
             "w": 4,
             "h": 2
           }
@@ -2101,7 +2112,7 @@
           ],
           "gridPos": {
             "x": 0,
-            "y": 54,
+            "y": 53,
             "w": 4,
             "h": 2
           }
@@ -2172,7 +2183,7 @@
           "description": "Desde o último restart do Kuma. Tag criada depois disso não aparece nas métricas até reiniciar.",
           "gridPos": {
             "x": 0,
-            "y": 56,
+            "y": 55,
             "w": 4,
             "h": 2
           }
@@ -2265,7 +2276,7 @@
           ],
           "gridPos": {
             "x": 4,
-            "y": 52,
+            "y": 51,
             "w": 10,
             "h": 6
           }
@@ -2375,7 +2386,7 @@
           ],
           "gridPos": {
             "x": 14,
-            "y": 52,
+            "y": 51,
             "w": 10,
             "h": 6
           }
@@ -2385,7 +2396,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 51
+        "y": 50
       }
     }
   ],

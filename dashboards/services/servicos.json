@@ -348,7 +348,7 @@
     {
       "id": 5,
       "type": "stat",
-      "title": "Erros do Kuma",
+      "title": "Erros",
       "datasource": {
         "type": "loki",
         "uid": "${DS_LOKI}"

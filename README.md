@@ -19,10 +19,12 @@ Dashboards Grafana da infraestrutura e os contratos de dados que eles consomem.
 | Servidores Linux | `servers-linux` | `integrations/unix` | `systemd-journal` |
 | Servidores Windows | `servers-windows` | `integrations/windows` | `windows-eventlog` |
 | Hypervisors | `hypervisors` | `integrations/hypervisor` (inventário) + `integrations/hyperv` (contadores) | `hyperv-eventlog` |
+| Serviços | `servicos` | `uptime-kuma` | `docker` (container do Kuma) |
 
 ## Convenções
 
 - Uma variável de seleção: **Server** nos servidores, **Host** nos hypervisors (`instance`). Job e datasource ficam fixos no JSON.
+- Serviços filtra pelas tags do Uptime Kuma (**Criticidade**, **Exposição**, **Grupo**). Tag nova no Kuma exige reiniciar o container (ver contrato `uptime-kuma`).
 - Datasources entram via `__inputs` (`DS_PROMETHEUS`, `DS_LOKI`): o Grafana pede na importação.
 - Toda consulta fixa o `job`. Toda métrica (Prometheus) e label (Loki) usada precisa existir no contrato desse job — o CI falha caso contrário.
 - Os dashboards seguem o mesmo layout: **Resumo** (medidores + status) → **CPU / Memória / Disco** → **Rede** (placa principal) → **Logs** → seções de detalhe recolhidas.

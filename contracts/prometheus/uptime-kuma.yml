@@ -1,7 +1,7 @@
 # Contrato observado para consumidores de dashboards; nao provisionar este YAML no Grafana.
 schema_version: 2
 kind: observability_contract
-version: 0.2.0
+version: 0.3.0
 id: uptime-kuma
 title: Uptime Kuma / disponibilidade e certificados
 status: observed_baseline
@@ -40,10 +40,46 @@ identity:
     - window
   monitor_hostname_null_is_string: true
   host_label_present: false
+  tag_labels:
+    observed_at_utc: '2026-11-05T19:50:48Z'
+    producer: Uptime Kuma 2.5.8 server/prometheus.js (tags do monitor viram labels)
+    labels:
+      criticidade:
+        - alta
+        - critica
+      exposicao:
+        - cloudflare
+        - direta
+        - interna
+      grupo:
+        - aplicacao
+        - infraestrutura
+        - externo
+    absent_on: monitor_type=group (grupos nao tem tags)
+    rules:
+      - O Kuma monta a lista de labels so na inicializacao. Tag NOVA exige reiniciar o container; ate la, os
+        monitores com ela somem de todas as metricas (erro "Added label ... is not included in initial labelset" no log).
+      - Mudar o valor de uma tag existente nao exige restart.
+      - Nome e valor passam por [a-zA-Z0-9_] (acentos e espacos sao removidos). Usar ASCII minusculo.
+      - Tag sem valor vira label vazio (igual a ausente no Prometheus). Usar sempre nome + valor.
+      - Uma tag por monitor; repetir a tag junta os valores num label so.
+    loki_check: count_over_time({job="docker",compose_project="uptime",compose_service="kuma"} |= "PROMETHEUS" |= "ERROR" [1h])
 grafana_variables:
   syntax: Grafana label_values, nao PromQL da API
   monitor_id:
     query: label_values(monitor_status{job="uptime-kuma",monitor_type!="group"}, monitor_id)
+    multi: true
+    all_value: .*
+  criticidade:
+    query: label_values(monitor_status{job="uptime-kuma",monitor_type!="group"}, criticidade)
+    multi: true
+    all_value: .*
+  exposicao:
+    query: label_values(monitor_status{job="uptime-kuma",monitor_type!="group"}, exposicao)
+    multi: true
+    all_value: .*
+  grupo:
+    query: label_values(monitor_status{job="uptime-kuma",monitor_type!="group"}, grupo)
     multi: true
     all_value: .*
   window:
@@ -425,7 +461,9 @@ query_recipes:
     notes:
       - Nao confundir com o estado de cada monitor.
 limitations:
-  - 'Foram exportadas 12 entidades: 9 http e 3 group. Contar tudo como 12 servicos duplica a estrutura de agrupamento.'
+  - 'Em 2026-11-05 sao 14 entidades: 11 http e 3 group. Contar tudo como servicos duplica a estrutura de agrupamento.'
+  - O Kuma nao exporta o grupo (pai) de cada monitor; a ligacao monitor -> grupo vem da tag grupo, mantida a mao.
+  - Prometheus tinha ~1,2 dia de historico do Kuma em 2026-11-05; disponibilidade longa deve vir de monitor_uptime_ratio.
   - Os estados numericos dos monitores nao constam de series.json; nao foi possivel afirmar quais verificacoes estavam
     up/down.
   - As janelas observadas sao 1d, 30d e 365d. Sua presenca nao demonstra que a coleta possui 365 dias completos

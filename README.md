@@ -24,7 +24,8 @@ Dashboards Grafana da infraestrutura e os contratos de dados que eles consomem.
 - Só existe a variável **Server** (`instance`). Job e datasource ficam fixos no JSON.
 - Datasources entram via `__inputs` (`DS_PROMETHEUS`, `DS_LOKI`): o Grafana pede na importação.
 - Toda consulta fixa o `job`. Toda métrica (Prometheus) e label (Loki) usada precisa existir no contrato desse job — o CI falha caso contrário.
-- Os dashboards seguem o mesmo layout: **Resumo** → **CPU / Memória / Rede / Disco** → **Logs** → seções de detalhe recolhidas.
+- Os dashboards seguem o mesmo layout: **Resumo** (medidores + status) → **CPU / Memória / Disco** → **Rede** (placa principal) → **Logs** → seções de detalhe recolhidas.
+- Bytes em base 1024 (GiB, MiB/s) nos dois dashboards; rede em bits/s.
 - Títulos em português; termos técnicos (Load, Commit, IOPS, Swap, PSI...) ficam em inglês.
 
 ## Validar

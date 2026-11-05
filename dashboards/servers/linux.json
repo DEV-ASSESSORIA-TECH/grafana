@@ -65,6 +65,12 @@
       "id": "logs",
       "name": "Logs",
       "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
     }
   ],
   "annotations": {
@@ -144,10 +150,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 3,
         "x": 0,
-        "y": 1
+        "y": 1,
+        "w": 4,
+        "h": 4
       },
       "id": 323,
       "options": {
@@ -161,7 +167,7 @@
         "maxVizHeight": 300,
         "minVizHeight": 10,
         "minVizWidth": 0,
-        "namePlacement": "auto",
+        "namePlacement": "left",
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
@@ -180,7 +186,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "rate(node_pressure_cpu_waiting_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
+          "expr": "rate(node_pressure_cpu_waiting_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[5m])",
           "format": "time_series",
           "instant": true,
           "legendFormat": "CPU",
@@ -191,7 +197,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "rate(node_pressure_memory_waiting_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
+          "expr": "rate(node_pressure_memory_waiting_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[5m])",
           "format": "time_series",
           "instant": true,
           "legendFormat": "Mem",
@@ -202,7 +208,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "rate(node_pressure_io_waiting_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])",
+          "expr": "rate(node_pressure_io_waiting_seconds_total{instance=\"$server\",job=\"integrations/unix\"}[5m])",
           "format": "time_series",
           "instant": true,
           "legendFormat": "I/O",
@@ -260,10 +266,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "x": 4,
+        "y": 1,
         "w": 3,
-        "x": 3,
-        "y": 1
+        "h": 4
       },
       "id": 20,
       "options": {
@@ -286,7 +292,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\",instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])))",
+          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\",instance=\"$server\",job=\"integrations/unix\"}[5m])))",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -343,10 +349,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "x": 7,
+        "y": 1,
         "w": 3,
-        "x": 6,
-        "y": 1
+        "h": 4
       },
       "id": 155,
       "options": {
@@ -416,10 +422,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "x": 10,
+        "y": 1,
         "w": 3,
-        "x": 9,
-        "y": 1
+        "h": 4
       },
       "id": 16,
       "options": {
@@ -499,10 +505,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "x": 13,
+        "y": 1,
         "w": 3,
-        "x": 12,
-        "y": 1
+        "h": 4
       },
       "id": 21,
       "options": {
@@ -536,380 +542,295 @@
       "type": "gauge"
     },
     {
+      "id": 348,
+      "type": "stat",
+      "title": "Coleta",
+      "description": "Se o Prometheus está recebendo as métricas deste servidor.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Percentual usado do filesystem raiz (/).",
       "fieldConfig": {
         "defaults": {
+          "unit": "short",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "OK",
+                  "color": "green",
+                  "index": 0
+                },
+                "0": {
+                  "text": "falha",
+                  "color": "red",
+                  "index": 1
+                }
+              }
+            },
+            {
+              "type": "special",
+              "options": {
+                "match": "null+nan",
+                "result": {
+                  "text": "sem dados",
+                  "index": 0,
+                  "color": "red"
+                }
+              }
+            }
+          ],
           "color": {
             "mode": "thresholds"
           },
-          "decimals": 1,
-          "mappings": [
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
-                }
-              },
-              "type": "special"
-            }
-          ],
-          "max": 100,
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "dark-green"
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "text": {
+          "titleSize": 12,
+          "valueSize": 20
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "up{job=\"integrations/unix\",instance=\"$server\"}",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        }
+      ],
+      "gridPos": {
+        "x": 16,
+        "y": 1,
+        "w": 3,
+        "h": 2
+      }
+    },
+    {
+      "id": 349,
+      "type": "stat",
+      "title": "Sistema",
+      "description": "Distribuição/versão do sistema operacional.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "name",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "text": {
+          "titleSize": 12,
+          "valueSize": 14
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "node_os_info{job=\"integrations/unix\",instance=\"$server\"}",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "time_series",
+          "legendFormat": "{{pretty_name}}"
+        }
+      ],
+      "gridPos": {
+        "x": 19,
+        "y": 1,
+        "w": 3,
+        "h": 2
+      }
+    },
+    {
+      "id": 350,
+      "type": "stat",
+      "title": "Erros (24h)",
+      "description": "Linhas de log com nível de erro ou crítico nas últimas 24h. Detalhes na seção Logs.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "match": "null+nan",
+                "result": {
+                  "text": "0",
+                  "index": 0,
+                  "color": "green"
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
               },
               {
                 "color": "orange",
-                "value": 80
+                "value": 1
               },
               {
                 "color": "red",
-                "value": 90
+                "value": 50
               }
             ]
           },
-          "unit": "percent"
+          "decimals": 0
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 4,
-        "w": 3,
-        "x": 15,
-        "y": 1
-      },
-      "id": 154,
       "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
         "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
-      },
-      "pluginVersion": "11.6.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "(\n  (node_filesystem_size_bytes{instance=\"$server\", job=\"integrations/unix\", mountpoint=\"/\", fstype!=\"rootfs\"}\n   - node_filesystem_avail_bytes{instance=\"$server\", job=\"integrations/unix\", mountpoint=\"/\", fstype!=\"rootfs\"})\n  / node_filesystem_size_bytes{instance=\"$server\", job=\"integrations/unix\", mountpoint=\"/\", fstype!=\"rootfs\"}\n) * 100\n",
-          "format": "time_series",
-          "instant": true,
-          "range": false,
-          "refId": "A",
-          "step": 240
-        }
-      ],
-      "title": "RootFS em uso",
-      "type": "gauge"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
-                }
-              },
-              "type": "special"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              }
-            ]
-          },
-          "unit": "short",
-          "displayName": "Núcleos"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 2,
-        "w": 2,
-        "x": 18,
-        "y": 1
-      },
-      "id": 14,
-      "maxDataPoints": 100,
-      "options": {
-        "colorMode": "none",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
+        "wideLayout": true,
         "showPercentChange": false,
-        "textMode": "value_and_name",
-        "wideLayout": false,
         "text": {
           "titleSize": 12,
           "valueSize": 20
         }
       },
-      "pluginVersion": "11.6.1",
       "targets": [
         {
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "count(count(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}) by (cpu))",
-          "instant": true,
-          "legendFormat": "__auto",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
           },
-          "decimals": 0,
-          "mappings": [
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
-                }
-              },
-              "type": "special"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "bytes",
-          "displayName": "RAM total"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 2,
-        "w": 2,
-        "x": 20,
-        "y": 1
-      },
-      "id": 75,
-      "maxDataPoints": 100,
-      "options": {
-        "colorMode": "none",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "value_and_name",
-        "wideLayout": false,
-        "text": {
-          "titleSize": 12,
-          "valueSize": 20
-        }
-      },
-      "pluginVersion": "11.6.1",
-      "targets": [
-        {
           "editorMode": "code",
-          "exemplar": false,
-          "expr": "node_memory_MemTotal_bytes{instance=\"$server\",job=\"integrations/unix\"}",
-          "instant": true,
-          "range": false,
+          "expr": "sum(count_over_time({job=\"systemd-journal\", host=\"$server\", level=~\"(?i)(emerg|alert|crit|critical|err|error|fatal)\"} [24h]))",
           "refId": "A",
-          "step": 240
-        }
-      ],
-      "title": "",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 0,
-          "mappings": [
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
-                }
-              },
-              "type": "special"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "bytes",
-          "displayName": "Swap total"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 2,
-        "w": 2,
-        "x": 22,
-        "y": 1
-      },
-      "id": 18,
-      "maxDataPoints": 100,
-      "options": {
-        "colorMode": "none",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "value_and_name",
-        "wideLayout": false,
-        "text": {
-          "titleSize": 12,
-          "valueSize": 20
-        }
-      },
-      "pluginVersion": "11.6.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "node_memory_SwapTotal_bytes{instance=\"$server\",job=\"integrations/unix\"}",
-          "instant": true,
           "range": false,
-          "refId": "A",
-          "step": 240
+          "instant": true,
+          "queryType": "instant"
         }
       ],
-      "title": "",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 0,
-          "mappings": [
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
-                }
-              },
-              "type": "special"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "bytes",
-          "displayName": "RootFS total"
-        },
-        "overrides": []
-      },
       "gridPos": {
-        "h": 2,
+        "x": 16,
+        "y": 3,
         "w": 3,
-        "x": 18,
-        "y": 3
+        "h": 2
+      }
+    },
+    {
+      "id": 351,
+      "type": "stat",
+      "title": "Falhas systemd",
+      "description": "Unidades systemd em estado failed (lista na seção Systemd).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
       },
-      "id": 23,
-      "maxDataPoints": 100,
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
       "options": {
-        "colorMode": "none",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -917,29 +838,38 @@
           "fields": "",
           "values": false
         },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
         "showPercentChange": false,
-        "textMode": "value_and_name",
-        "wideLayout": false,
         "text": {
           "titleSize": 12,
           "valueSize": 20
         }
       },
-      "pluginVersion": "11.6.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
-          "exemplar": false,
-          "expr": "node_filesystem_size_bytes{instance=\"$server\",job=\"integrations/unix\",mountpoint=\"/\",fstype!=\"rootfs\"}",
-          "format": "time_series",
-          "instant": true,
-          "range": false,
+          "expr": "count(node_systemd_unit_state{job=\"integrations/unix\",instance=\"$server\",state=\"failed\"} == 1) or (0 * count(node_systemd_units{job=\"integrations/unix\",instance=\"$server\"}))",
           "refId": "A",
-          "step": 240
+          "range": false,
+          "instant": true,
+          "format": "time_series"
         }
       ],
-      "title": "",
-      "type": "stat"
+      "gridPos": {
+        "x": 19,
+        "y": 3,
+        "w": 3,
+        "h": 2
+      }
     },
     {
       "datasource": {
@@ -973,16 +903,15 @@
               }
             ]
           },
-          "unit": "s",
-          "displayName": "Ligado há"
+          "unit": "s"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 2,
-        "w": 3,
-        "x": 21,
-        "y": 3
+        "x": 22,
+        "y": 1,
+        "w": 2,
+        "h": 2
       },
       "id": 15,
       "maxDataPoints": 100,
@@ -1000,7 +929,7 @@
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "value_and_name",
+        "textMode": "value",
         "wideLayout": false,
         "text": {
           "titleSize": 12,
@@ -1019,68 +948,31 @@
           "step": 240
         }
       ],
-      "title": "",
+      "title": "Ligado há",
       "type": "stat"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 5
-      },
-      "id": 263,
-      "panels": [],
-      "title": "CPU / Memória / Rede / Disco",
-      "type": "row"
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Tempo de CPU por tipo de atividade.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 40,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "percent"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
+          "mappings": [
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "N/A"
+                }
+              },
+              "type": "special"
             }
-          },
-          "links": [],
-          "mappings": [],
-          "min": 0,
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1089,35 +981,122 @@
               }
             ]
           },
-          "unit": "percentunit"
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "x": 22,
+        "y": 3,
+        "w": 2,
+        "h": 2
+      },
+      "id": 14,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": false,
+        "text": {
+          "titleSize": 12,
+          "valueSize": 20
+        }
+      },
+      "pluginVersion": "11.6.1",
+      "targets": [
+        {
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "count(count(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\"}) by (cpu))",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Núcleos",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 24,
+        "h": 1
+      },
+      "id": 263,
+      "panels": [],
+      "title": "CPU / Memória / Disco",
+      "type": "row"
+    },
+    {
+      "id": 352,
+      "type": "timeseries",
+      "title": "CPU",
+      "description": "CPU em uso, de 0 a 100% da capacidade do servidor. Aplicações: programas e serviços rodando o próprio código (user mode). Sistema: kernel, drivers, disco e rede (kernel mode + IRQs). Espera de disco: CPU parada aguardando I/O (iowait). Roubada pelo hypervisor: tempo que a VM pediu CPU e o host não entregou (steal).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 60,
+            "showPoints": "never",
+            "spanNulls": false,
+            "gradientMode": "none",
+            "lineInterpolation": "linear",
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              }
+            ]
+          },
+          "min": 0,
+          "max": 100
         },
         "overrides": [
           {
             "matcher": {
               "id": "byName",
-              "options": "Iowait"
+              "options": "Aplicações"
             },
             "properties": [
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#890F02",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Ocioso"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "#052B51",
-                  "mode": "fixed"
+                  "mode": "fixed",
+                  "fixedColor": "#5794F2"
                 }
               }
             ]
@@ -1131,8 +1110,8 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#EAB839",
-                  "mode": "fixed"
+                  "mode": "fixed",
+                  "fixedColor": "#FADE2A"
                 }
               }
             ]
@@ -1140,14 +1119,14 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Usuário"
+              "options": "Espera de disco"
             },
             "properties": [
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#0A437C",
-                  "mode": "fixed"
+                  "mode": "fixed",
+                  "fixedColor": "#F2495C"
                 }
               }
             ]
@@ -1155,102 +1134,681 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Outros"
+              "options": "Roubada pelo hypervisor"
             },
             "properties": [
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#6D1F62",
-                  "mode": "fixed"
+                  "mode": "fixed",
+                  "fixedColor": "#B877D9"
                 }
               }
             ]
           }
         ]
       },
-      "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 0,
-        "y": 6
-      },
-      "id": 77,
       "options": {
         "legend": {
-          "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true,
-          "width": 250
+          "calcs": [
+            "mean",
+            "max"
+          ]
         },
         "tooltip": {
-          "hideZeros": false,
           "mode": "multi",
-          "sort": "desc"
+          "sort": "desc",
+          "hideZeros": false
         }
       },
-      "pluginVersion": "11.6.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
-          "exemplar": false,
-          "expr": "avg(rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\", mode=\"system\"}[$__rate_interval]))",
-          "format": "time_series",
-          "instant": false,
-          "legendFormat": "Sistema",
-          "range": true,
+          "expr": "100 * sum(rate(node_cpu_seconds_total{job=\"integrations/unix\",instance=\"$server\",mode=~\"user|nice\"}[$__rate_interval])) / scalar(count(count by (cpu) (node_cpu_seconds_total{job=\"integrations/unix\",instance=\"$server\"})))",
           "refId": "A",
-          "step": 240
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "legendFormat": "Aplicações"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
-          "expr": "avg(rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\", mode=\"user\"}[$__rate_interval]))",
-          "format": "time_series",
-          "legendFormat": "Usuário",
-          "range": true,
+          "expr": "100 * sum(rate(node_cpu_seconds_total{job=\"integrations/unix\",instance=\"$server\",mode=~\"system|irq|softirq\"}[$__rate_interval])) / scalar(count(count by (cpu) (node_cpu_seconds_total{job=\"integrations/unix\",instance=\"$server\"})))",
           "refId": "B",
-          "step": 240
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "legendFormat": "Sistema"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
-          "expr": "avg(rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\", mode=\"iowait\"}[$__rate_interval]))",
-          "format": "time_series",
-          "legendFormat": "Iowait",
-          "range": true,
+          "expr": "100 * sum(rate(node_cpu_seconds_total{job=\"integrations/unix\",instance=\"$server\",mode=~\"iowait\"}[$__rate_interval])) / scalar(count(count by (cpu) (node_cpu_seconds_total{job=\"integrations/unix\",instance=\"$server\"})))",
           "refId": "C",
-          "step": 240
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "legendFormat": "Espera de disco"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
-          "expr": "avg(sum without(mode) (rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\", mode=~\".*irq\"}[$__rate_interval])))",
-          "format": "time_series",
-          "legendFormat": "IRQs",
-          "range": true,
+          "expr": "100 * sum(rate(node_cpu_seconds_total{job=\"integrations/unix\",instance=\"$server\",mode=~\"steal\"}[$__rate_interval])) / scalar(count(count by (cpu) (node_cpu_seconds_total{job=\"integrations/unix\",instance=\"$server\"})))",
           "refId": "D",
-          "step": 240
-        },
-        {
-          "editorMode": "code",
-          "expr": "avg(sum without (mode) (rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\",  mode!='idle',mode!='user',mode!='system',mode!='iowait',mode!='irq',mode!='softirq'}[$__rate_interval])))",
-          "format": "time_series",
-          "legendFormat": "Outros",
           "range": true,
-          "refId": "E",
-          "step": 240
-        },
-        {
-          "editorMode": "code",
-          "expr": "avg(rate(node_cpu_seconds_total{instance=\"$server\",job=\"integrations/unix\", mode=\"idle\"}[$__rate_interval]))",
+          "instant": false,
           "format": "time_series",
-          "legendFormat": "Ocioso",
-          "range": true,
-          "refId": "F",
-          "step": 240
+          "legendFormat": "Roubada pelo hypervisor"
         }
       ],
-      "title": "CPU",
-      "type": "timeseries"
+      "gridPos": {
+        "x": 0,
+        "y": 6,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "id": 353,
+      "type": "table",
+      "title": "Armazenamento",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Um volume por linha. A barra mostra o ocupado; o trecho vazio é o livre. Enche em: previsão pela tendência das últimas 24h; estável = não enche em menos de 90 dias.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "decimals": 1,
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mountpoint"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Volume"
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #D"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Ocupado / livre"
+              },
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 100
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "color"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 80
+                    },
+                    {
+                      "color": "red",
+                      "value": 90
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #C"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Ocupado"
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Livre"
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Total"
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #E"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Enche em"
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null+nan",
+                      "result": {
+                        "text": "estável",
+                        "index": 0,
+                        "color": "green"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1209600
+                    },
+                    {
+                      "color": "text",
+                      "value": 2592000
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        },
+        "sortBy": [
+          {
+            "displayName": "Ocupado / livre",
+            "desc": true
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "max by (mountpoint) (node_filesystem_size_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"})",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "max by (mountpoint) (node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"})",
+          "refId": "B",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "max by (mountpoint) (node_filesystem_size_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"} - node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"})",
+          "refId": "C",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "max by (mountpoint) (100 * (1 - node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"} / node_filesystem_size_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"}))",
+          "refId": "D",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "max by (mountpoint) ((node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"} / (-deriv(node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"}[1d]) > 0)) < 7776000)",
+          "refId": "E",
+          "range": false,
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "pattern": "^(mountpoint|Value #[A-E])$"
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "mountpoint": 0,
+              "Value #D": 1,
+              "Value #C": 2,
+              "Value #B": 3,
+              "Value #A": 4,
+              "Value #E": 5
+            }
+          }
+        }
+      ],
+      "gridPos": {
+        "x": 12,
+        "y": 6,
+        "w": 12,
+        "h": 5
+      }
+    },
+    {
+      "id": 354,
+      "type": "stat",
+      "title": "Menor espaço livre",
+      "description": "Espaço livre no volume com menos espaço.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "text": {
+          "titleSize": 12,
+          "valueSize": 20
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "min(node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"})",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        }
+      ],
+      "gridPos": {
+        "x": 12,
+        "y": 11,
+        "w": 4,
+        "h": 3
+      }
+    },
+    {
+      "id": 355,
+      "type": "stat",
+      "title": "I/O ocupado (máx.)",
+      "description": "Fração do tempo em que o disco mais ocupado esteve atendendo I/O nos últimos 5 min. Perto de 100% = disco saturado.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.7
+              },
+              {
+                "color": "red",
+                "value": 0.9
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "text": {
+          "titleSize": 12,
+          "valueSize": 20
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "max(rate(node_disk_io_time_seconds_total{job=\"integrations/unix\",instance=\"$server\"}[5m]))",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        }
+      ],
+      "gridPos": {
+        "x": 16,
+        "y": 11,
+        "w": 4,
+        "h": 3
+      }
+    },
+    {
+      "id": 356,
+      "type": "stat",
+      "title": "Enche primeiro em",
+      "description": "Previsão para o volume que vai encher antes, pela tendência das últimas 24h. Estável = nenhum enche em menos de 90 dias.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "match": "null+nan",
+                "result": {
+                  "text": "estável",
+                  "index": 0,
+                  "color": "green"
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1209600
+              },
+              {
+                "color": "green",
+                "value": 2592000
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "text": {
+          "titleSize": 12,
+          "valueSize": 20
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "min(max by (mountpoint) ((node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"} / (-deriv(node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"}[1d]) > 0)) < 7776000))",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "time_series"
+        }
+      ],
+      "gridPos": {
+        "x": 20,
+        "y": 11,
+        "w": 4,
+        "h": 3
+      }
     },
     {
       "datasource": {
@@ -1383,10 +1941,10 @@
         ]
       },
       "gridPos": {
-        "h": 7,
+        "x": 0,
+        "y": 14,
         "w": 12,
-        "x": 12,
-        "y": 6
+        "h": 8
       },
       "id": 78,
       "options": {
@@ -1455,65 +2013,81 @@
       "type": "timeseries"
     },
     {
+      "id": 357,
+      "type": "timeseries",
+      "title": "Leitura / escrita",
+      "description": "Bytes lidos e escritos por segundo nos discos físicos (sem contar LVM/dm de novo). Escrita para baixo.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Tráfego por interface em bits/s (Tx para baixo).",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
+          "unit": "binBps",
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 40,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
             "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
+            "fillOpacity": 15,
+            "showPoints": "never",
             "spanNulls": false,
+            "gradientMode": "none",
+            "lineInterpolation": "linear",
             "stacking": {
-              "group": "A",
-              "mode": "none"
+              "mode": "none",
+              "group": "A"
             },
             "thresholdsStyle": {
               "mode": "off"
             }
           },
-          "links": [],
-          "mappings": [],
+          "color": {
+            "mode": "palette-classic"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "transparent",
+                "value": null
               }
             ]
-          },
-          "unit": "bps"
+          }
         },
         "overrides": [
           {
             "matcher": {
-              "id": "byRegexp",
-              "options": "/.*Tx.*/"
+              "id": "byName",
+              "options": "Leitura"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#73BF69"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Escrita"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FADE2A"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Escrita"
             },
             "properties": [
               {
@@ -1524,143 +2098,564 @@
           }
         ]
       },
-      "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 0,
-        "y": 13
-      },
-      "id": 74,
       "options": {
         "legend": {
-          "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
         },
         "tooltip": {
-          "hideZeros": false,
           "mode": "multi",
-          "sort": "desc"
+          "sort": "desc",
+          "hideZeros": false
         }
       },
-      "pluginVersion": "11.6.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
-          "expr": "rate(node_network_receive_bytes_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])*8",
-          "format": "time_series",
-          "legendFormat": "Rx {{device}}",
-          "range": true,
+          "expr": "sum(rate(node_disk_read_bytes_total{job=\"integrations/unix\",instance=\"$server\",device!~\"dm-.*|md.*|loop.*|sr.*\"}[$__rate_interval]))",
           "refId": "A",
-          "step": 240
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "legendFormat": "Leitura"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
-          "expr": "rate(node_network_transmit_bytes_total{instance=\"$server\",job=\"integrations/unix\"}[$__rate_interval])*8",
-          "format": "time_series",
-          "legendFormat": "Tx {{device}}",
-          "range": true,
+          "expr": "sum(rate(node_disk_written_bytes_total{job=\"integrations/unix\",instance=\"$server\",device!~\"dm-.*|md.*|loop.*|sr.*\"}[$__rate_interval]))",
           "refId": "B",
-          "step": 240
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "legendFormat": "Escrita"
         }
       ],
-      "title": "Tráfego de rede",
-      "type": "timeseries"
+      "gridPos": {
+        "x": 12,
+        "y": 14,
+        "w": 6,
+        "h": 8
+      }
     },
     {
+      "id": 358,
+      "type": "timeseries",
+      "title": "Latência de disco",
+      "description": "Tempo médio por operação. Acima de 20 ms (linha tracejada) de forma sustentada indica disco lento ou saturado.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Percentual usado de cada filesystem montado.",
       "fieldConfig": {
         "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "gradientMode": "none",
+            "lineInterpolation": "linear",
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
           "color": {
             "mode": "palette-classic"
           },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.02
+              }
+            ]
+          },
+          "min": 0
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Leitura"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#73BF69"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Escrita"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FADE2A"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc",
+          "hideZeros": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(node_disk_read_time_seconds_total{job=\"integrations/unix\",instance=\"$server\",device!~\"dm-.*|md.*|loop.*|sr.*\"}[$__rate_interval])) / sum(rate(node_disk_reads_completed_total{job=\"integrations/unix\",instance=\"$server\",device!~\"dm-.*|md.*|loop.*|sr.*\"}[$__rate_interval]))",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "legendFormat": "Leitura"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(node_disk_write_time_seconds_total{job=\"integrations/unix\",instance=\"$server\",device!~\"dm-.*|md.*|loop.*|sr.*\"}[$__rate_interval])) / sum(rate(node_disk_writes_completed_total{job=\"integrations/unix\",instance=\"$server\",device!~\"dm-.*|md.*|loop.*|sr.*\"}[$__rate_interval]))",
+          "refId": "B",
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "legendFormat": "Escrita"
+        }
+      ],
+      "gridPos": {
+        "x": 18,
+        "y": 14,
+        "w": 6,
+        "h": 8
+      }
+    },
+    {
+      "type": "row",
+      "title": "Rede",
+      "collapsed": false,
+      "id": 359,
+      "panels": [],
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      }
+    },
+    {
+      "id": 360,
+      "type": "timeseries",
+      "title": "Tráfego de rede",
+      "description": "Tráfego da placa principal em bits/s; Tx para baixo. Ficam de fora lo, docker*, br-*, veth*, tailscale*, virbr* e outras interfaces virtuais.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 40,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
             "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
+            "fillOpacity": 25,
+            "showPoints": "never",
             "spanNulls": false,
+            "gradientMode": "none",
+            "lineInterpolation": "linear",
             "stacking": {
-              "group": "A",
-              "mode": "none"
+              "mode": "none",
+              "group": "A"
             },
             "thresholdsStyle": {
               "mode": "off"
             }
           },
-          "links": [],
-          "mappings": [],
-          "max": 100,
-          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "transparent",
+                "value": null
               }
             ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/^Tx .*/"
+            },
+            "properties": [
+              {
+                "id": "custom.transform",
+                "value": "negative-Y"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc",
+          "hideZeros": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
           },
-          "unit": "percent"
+          "editorMode": "code",
+          "expr": "rate(node_network_receive_bytes_total{job=\"integrations/unix\",instance=\"$server\",device!~\"lo|docker.*|br-.*|veth.*|tailscale.*|virbr.*|vnet.*|cni.*|flannel.*|cali.*|vxlan.*|wg.*|tun.*|tap.*|kube.*|zt.*\"}[$__rate_interval]) * 8",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "legendFormat": "Rx {{device}}"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "rate(node_network_transmit_bytes_total{job=\"integrations/unix\",instance=\"$server\",device!~\"lo|docker.*|br-.*|veth.*|tailscale.*|virbr.*|vnet.*|cni.*|flannel.*|cali.*|vxlan.*|wg.*|tun.*|tap.*|kube.*|zt.*\"}[$__rate_interval]) * 8",
+          "refId": "B",
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "legendFormat": "Tx {{device}}"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 23,
+        "w": 18,
+        "h": 6
+      }
+    },
+    {
+      "id": 361,
+      "type": "stat",
+      "title": "Link",
+      "description": "Estado do link da placa principal.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "up",
+                  "color": "green",
+                  "index": 0
+                },
+                "0": {
+                  "text": "down",
+                  "color": "red",
+                  "index": 1
+                }
+              }
+            },
+            {
+              "type": "special",
+              "options": {
+                "match": "null+nan",
+                "result": {
+                  "text": "sem dados",
+                  "index": 0,
+                  "color": "red"
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 12,
-        "y": 13
-      },
-      "id": 152,
       "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "text": {
+          "titleSize": 12,
+          "valueSize": 20
         }
       },
-      "pluginVersion": "11.6.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "editorMode": "code",
-          "expr": "((node_filesystem_size_bytes{instance=\"$server\", job=\"integrations/unix\", fstype!~'rootfs'} - node_filesystem_avail_bytes{instance=\"$server\", job=\"integrations/unix\", fstype!~'rootfs'}) / node_filesystem_size_bytes{instance=\"$server\", job=\"integrations/unix\", fstype!~'rootfs'}) * 100",
-          "format": "time_series",
-          "legendFormat": "{{mountpoint}}",
-          "range": true,
+          "expr": "node_network_up{job=\"integrations/unix\",instance=\"$server\",device!~\"lo|docker.*|br-.*|veth.*|tailscale.*|virbr.*|vnet.*|cni.*|flannel.*|cali.*|vxlan.*|wg.*|tun.*|tap.*|kube.*|zt.*\"}",
           "refId": "A",
-          "step": 240
+          "range": false,
+          "instant": true,
+          "format": "time_series",
+          "legendFormat": "{{device}}"
         }
       ],
-      "title": "Uso de disco",
-      "type": "timeseries"
+      "gridPos": {
+        "x": 18,
+        "y": 23,
+        "w": 6,
+        "h": 2
+      }
+    },
+    {
+      "id": 362,
+      "type": "stat",
+      "title": "Quedas do link (24h)",
+      "description": "Quantas vezes o link caiu nas últimas 24h.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "text": {
+          "titleSize": 12,
+          "valueSize": 20
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "round(increase(node_network_carrier_down_changes_total{job=\"integrations/unix\",instance=\"$server\",device!~\"lo|docker.*|br-.*|veth.*|tailscale.*|virbr.*|vnet.*|cni.*|flannel.*|cali.*|vxlan.*|wg.*|tun.*|tap.*|kube.*|zt.*\"}[24h]))",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "time_series",
+          "legendFormat": "{{device}}"
+        }
+      ],
+      "gridPos": {
+        "x": 18,
+        "y": 25,
+        "w": 6,
+        "h": 2
+      }
+    },
+    {
+      "id": 363,
+      "type": "stat",
+      "title": "Velocidade do link",
+      "description": "Velocidade negociada da placa. Placas virtio podem não informar.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "match": "null+nan",
+                "result": {
+                  "text": "não informada",
+                  "index": 0
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "value",
+        "orientation": "auto",
+        "wideLayout": true,
+        "showPercentChange": false,
+        "text": {
+          "titleSize": 12,
+          "valueSize": 20
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "node_network_speed_bytes{job=\"integrations/unix\",instance=\"$server\",device!~\"lo|docker.*|br-.*|veth.*|tailscale.*|virbr.*|vnet.*|cni.*|flannel.*|cali.*|vxlan.*|wg.*|tun.*|tap.*|kube.*|zt.*\"} * 8 > 0",
+          "refId": "A",
+          "range": false,
+          "instant": true,
+          "format": "time_series",
+          "legendFormat": "{{device}}"
+        }
+      ],
+      "gridPos": {
+        "x": 18,
+        "y": 27,
+        "w": 6,
+        "h": 2
+      }
     },
     {
       "type": "row",
@@ -1672,7 +2667,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 20
+        "y": 29
       }
     },
     {
@@ -1684,10 +2679,10 @@
         "uid": "${DS_LOKI}"
       },
       "gridPos": {
-        "h": 7,
-        "w": 24,
         "x": 0,
-        "y": 21
+        "y": 30,
+        "w": 24,
+        "h": 7
       },
       "fieldConfig": {
         "defaults": {
@@ -1701,13 +2696,77 @@
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/^(info|information|notice|Information|Info|INFO|Notice)$/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#73BF69"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/^(debug|Debug|DEBUG|Verbose|verbose)$/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#5794F2"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/^(warn|warning|Warning|WARNING|Warn)$/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FF9830"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/^(err|error|crit|critical|alert|emerg|fatal|Error|ERROR|Critical|CRITICAL)$/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F2495C"
+                }
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "legend": {
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true
+          "showLegend": true,
+          "calcs": [
+            "sum"
+          ]
         },
         "tooltip": {
           "mode": "multi",
@@ -1725,7 +2784,9 @@
           "legendFormat": "{{level}}",
           "expr": "sum by (level) (count_over_time({job=\"systemd-journal\", host=\"$server\"} [$__auto]))"
         }
-      ]
+      ],
+      "interval": "1m",
+      "description": "Linhas de log por minuto, por nível. Vermelho = erro/crítico, laranja = aviso."
     },
     {
       "type": "logs",
@@ -1736,10 +2797,10 @@
         "uid": "${DS_LOKI}"
       },
       "gridPos": {
-        "h": 12,
-        "w": 24,
         "x": 0,
-        "y": 28
+        "y": 37,
+        "w": 24,
+        "h": 12
       },
       "options": {
         "showTime": true,
@@ -1769,7 +2830,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 40
+        "y": 49
       },
       "id": 265,
       "panels": [
@@ -3327,7 +4388,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 41
+        "y": 50
       },
       "id": 266,
       "panels": [
@@ -5408,7 +6469,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 43
+        "y": 51
       },
       "id": 312,
       "panels": [
@@ -6378,7 +7439,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 44
+        "y": 52
       },
       "id": 269,
       "panels": [
@@ -6854,7 +7915,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 45
+        "y": 53
       },
       "id": 304,
       "panels": [
@@ -7082,7 +8143,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 46
+        "y": 54
       },
       "id": 296,
       "panels": [
@@ -7298,6 +8359,71 @@
           ],
           "title": "Systemd Units State",
           "type": "timeseries"
+        },
+        {
+          "id": 380,
+          "type": "table",
+          "title": "Unidades com falha",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "description": "Unidades systemd em estado failed. Vazio = nenhuma falha.",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "node_systemd_unit_state{job=\"integrations/unix\",instance=\"$server\",state=\"failed\"} == 1",
+              "refId": "A",
+              "range": false,
+              "instant": true,
+              "format": "table"
+            }
+          ],
+          "transformations": [
+            {
+              "id": "filterFieldsByName",
+              "options": {
+                "include": {
+                  "pattern": "^(name|type|state)$"
+                }
+              }
+            },
+            {
+              "id": "organize",
+              "options": {
+                "renameByName": {
+                  "name": "Unidade",
+                  "type": "Tipo",
+                  "state": "Estado"
+                }
+              }
+            }
+          ],
+          "gridPos": {
+            "x": 12,
+            "y": 4228,
+            "w": 12,
+            "h": 10
+          }
         }
       ],
       "title": "Systemd",
@@ -7309,7 +8435,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 47
+        "y": 55
       },
       "id": 270,
       "panels": [
@@ -8754,7 +9880,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 48
+        "y": 56
       },
       "id": 272,
       "panels": [
@@ -10287,7 +11413,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 49
+        "y": 57
       },
       "id": 273,
       "panels": [
@@ -11478,7 +12604,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 50
+        "y": 58
       },
       "id": 274,
       "panels": [
@@ -12938,7 +14064,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 51
+        "y": 59
       },
       "id": 279,
       "panels": [
@@ -13182,5 +14308,20 @@
   "version": 105,
   "weekStart": "",
   "gnetId": 1860,
-  "description": "Node exporter (integrations/unix) + journal no Loki. Baseado no Node Exporter Full (gnet 1860)."
+  "description": "Node exporter (integrations/unix) + journal no Loki. Baseado no Node Exporter Full (gnet 1860).",
+  "links": [
+    {
+      "type": "dashboards",
+      "tags": [
+        "windows",
+        "servers"
+      ],
+      "asDropdown": false,
+      "includeVars": false,
+      "keepTime": true,
+      "targetBlank": false,
+      "title": "Servidores Windows",
+      "icon": "external link"
+    }
+  ]
 }

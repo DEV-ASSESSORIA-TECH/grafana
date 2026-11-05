@@ -977,6 +977,40 @@ metric_groups:
         baseline_instances: 1
         instances_missing: 0
         series_returned: 1
+units_validated:
+  validated_at: '2026-11-05'
+  method: consultas instantaneas no srv-host01 cruzando contadores (soma das VMs + raiz = processadores logicos)
+  cpu_time:
+    unit: segundos de CPU (rate = CPUs ocupadas)
+    metrics:
+      - windows_hyperv_hypervisor_logical_processor_total_run_time_total
+      - windows_hyperv_hypervisor_logical_processor_time_total
+      - windows_hyperv_hypervisor_root_virtual_processor_time_total
+      - windows_hyperv_hypervisor_root_virtual_processor_total_run_time_total
+      - windows_hyperv_hypervisor_virtual_processor_total_run_time_total
+    evidence: rate VMs (1.093) + raiz (0.277) = 1.371 ~ processadores logicos (1.410); guest+hypervisor = run_time
+    host_cpu_pct: 100 * sum(rate(windows_hyperv_hypervisor_logical_processor_total_run_time_total[5m])) / count(windows_hyperv_hypervisor_logical_processor_total_run_time_total)
+    vm_cpu_pct: 100 * sum by (vm) (rate(windows_hyperv_hypervisor_virtual_processor_total_run_time_total[5m])) / count by (vm) (windows_hyperv_hypervisor_virtual_processor_total_run_time_total)
+    caveat: O estado idle nao fecha 100% (soma dos estados 14 de 32 CPUs). Usar run_time / numero de CPUs, nunca 1 - idle.
+  windows_root_cpu_on_host:
+    finding: windows_cpu_time_total (job integrations/windows) no host Hyper-V mostrou 57% ocupado com o host real em 4%
+      e a raiz em 0.9%. A CPU vista pelo Windows do host nao e confiavel; usar os contadores do hypervisor.
+  vcpu_count:
+    evidence: count by (vm) de virtual_processor = hypervisor_vm_cpus do inventario nas 18 VMs ligadas
+  storage_bytes:
+    unit: bytes acumulados (contador, apesar do nome sem _total)
+    metrics:
+      - windows_hyperv_virtual_storage_device_bytes_read
+      - windows_hyperv_virtual_storage_device_bytes_written
+    evidence: rate 587 KiB/s; bruto 3.9 TB em ~1 semana
+  vswitch_bytes:
+    unit: bytes acumulados (contador)
+    metrics:
+      - windows_hyperv_vswitch_bytes_total
+    evidence: rate 2.5 Mb/s
+  pending:
+    - windows_hyperv_hypervisor_virtual_processor_cpu_wait_time_per_dispatch_total (bruto ~60 a 7500, nao parece acumulado)
+    - windows_hyperv_virtual_storage_device_latency_seconds (bruto 4.1e11, nao e segundos instantaneos)
 query_recipes:
   - id: observed_vm_vcpu_counts
     title: vCPUs observadas por host e VM

@@ -93,7 +93,6 @@
   "description": "windows_exporter (integrations/windows). Baseado no Windows Exporter Dashboard (gnet 21697).",
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "gnetId": 21697,
   "graphTooltip": 1,
   "id": null,
   "links": [
@@ -199,7 +198,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "windows_system_processor_queue_length{job=\"integrations/windows\",instance=\"$server\"} / scalar(count(count by (core) (windows_cpu_time_total{job=\"integrations/windows\",instance=\"$server\"})))",
+          "expr": "avg_over_time(windows_system_processor_queue_length{job=\"integrations/windows\",instance=\"$server\"}[5m]) / scalar(count(count by (core) (windows_cpu_time_total{job=\"integrations/windows\",instance=\"$server\"})))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "CPU",
@@ -312,7 +311,7 @@
           "step": 240
         }
       ],
-      "title": "CPU em uso",
+      "title": "CPU",
       "type": "gauge"
     },
     {
@@ -320,7 +319,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Threads esperando CPU por núcleo (Processor Queue Length). Equivalente aproximado ao load do Linux; sustentado acima de 100% indica saturação.",
+      "description": "Média de 5 min de threads esperando CPU, por núcleo (Processor Queue Length). Equivalente aproximado ao load do Linux; sustentado acima de 100% indica saturação.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -387,7 +386,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "100 * scalar(windows_system_processor_queue_length{job=\"integrations/windows\",instance=\"$server\"}) / count(count by (core) (windows_cpu_time_total{job=\"integrations/windows\",instance=\"$server\"}))",
+          "expr": "100 * scalar(avg_over_time(windows_system_processor_queue_length{job=\"integrations/windows\",instance=\"$server\"}[5m])) / count(count by (core) (windows_cpu_time_total{job=\"integrations/windows\",instance=\"$server\"}))",
           "format": "time_series",
           "instant": true,
           "range": false,
@@ -468,7 +467,7 @@
           "step": 240
         }
       ],
-      "title": "RAM em uso",
+      "title": "RAM",
       "type": "gauge"
     },
     {
@@ -551,14 +550,14 @@
           "step": 240
         }
       ],
-      "title": "Commit em uso",
+      "title": "Commit",
       "type": "gauge"
     },
     {
       "id": 364,
       "type": "stat",
-      "title": "Coleta",
-      "description": "Se o Prometheus está recebendo as métricas deste servidor.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -605,7 +604,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "displayName": "Coleta"
         },
         "overrides": []
       },
@@ -620,7 +620,7 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
@@ -653,8 +653,8 @@
     {
       "id": 365,
       "type": "stat",
-      "title": "Sistema",
-      "description": "Distribuição/versão do sistema operacional.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -674,7 +674,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "displayName": "${__field.labels.os}"
         },
         "overrides": []
       },
@@ -705,7 +706,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "label_replace(windows_os_info{job=\"integrations/windows\",instance=\"$server\"}, \"os\", \"$1\", \"product\", \"Microsoft Windows (.*)\")",
+          "expr": "label_replace(windows_os_info{job=\"integrations/windows\",instance=\"$server\"}, \"os\", \"$3\", \"product\", \"(Microsoft )?(Windows )?(.+)\")",
           "refId": "A",
           "range": false,
           "instant": true,
@@ -723,8 +724,8 @@
     {
       "id": 366,
       "type": "stat",
-      "title": "Erros (24h)",
-      "description": "Linhas de log com nível de erro ou crítico nas últimas 24h. Detalhes na seção Logs.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "loki",
         "uid": "${DS_LOKI}"
@@ -765,7 +766,8 @@
               }
             ]
           },
-          "decimals": 0
+          "decimals": 0,
+          "displayName": "Erros (24h)"
         },
         "overrides": []
       },
@@ -780,7 +782,7 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
@@ -813,8 +815,8 @@
     {
       "id": 367,
       "type": "stat",
-      "title": "Serviços c/ falha",
-      "description": "Serviços de início automático que não estão rodando (lista na seção Sistema e serviços).",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -839,7 +841,8 @@
               }
             ]
           },
-          "decimals": 0
+          "decimals": 0,
+          "displayName": "Serviços c/ falha"
         },
         "overrides": []
       },
@@ -854,7 +857,7 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
@@ -916,7 +919,8 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "s",
+          "displayName": "Ligado há"
         },
         "overrides": []
       },
@@ -942,7 +946,7 @@
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "value",
+        "textMode": "value_and_name",
         "wideLayout": false,
         "text": {
           "titleSize": 12,
@@ -961,7 +965,7 @@
           "step": 240
         }
       ],
-      "title": "Ligado há",
+      "title": "",
       "type": "stat"
     },
     {
@@ -994,7 +998,8 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "short",
+          "displayName": "Núcleos"
         },
         "overrides": []
       },
@@ -1020,7 +1025,7 @@
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "value",
+        "textMode": "value_and_name",
         "wideLayout": false,
         "text": {
           "titleSize": 12,
@@ -1039,7 +1044,7 @@
           "refId": "A"
         }
       ],
-      "title": "Núcleos",
+      "title": "",
       "type": "stat"
     },
     {
@@ -1059,7 +1064,7 @@
       "id": 368,
       "type": "timeseries",
       "title": "CPU",
-      "description": "CPU em uso, de 0 a 100% da capacidade do servidor. Aplicações: programas e serviços rodando o próprio código (user mode). Sistema: kernel e drivers (privileged mode; já inclui interrupções e DPC).",
+      "description": "CPU em uso, de 0 a 100% da capacidade do servidor. Aplicações: programas e serviços rodando o próprio código (user mode). Sistema: kernel e drivers (privileged mode; já inclui interrupções e DPC). Em host Hyper-V, mostra só o sistema do host (partição raiz), não o consumo das VMs.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -3033,7 +3038,7 @@
     },
     {
       "type": "row",
-      "title": "Rede",
+      "title": "Detalhes: rede",
       "collapsed": true,
       "id": 219,
       "panels": [
@@ -3328,7 +3333,7 @@
     },
     {
       "type": "row",
-      "title": "Armazenamento",
+      "title": "Detalhes: armazenamento por volume",
       "collapsed": true,
       "id": 220,
       "panels": [
@@ -3395,7 +3400,7 @@
           },
           "gridPos": {
             "x": 0,
-            "y": 43,
+            "y": 52,
             "w": 12,
             "h": 9
           },
@@ -3439,7 +3444,7 @@
               "range": true
             }
           ],
-          "title": "Leitura / escrita",
+          "title": "Leitura / escrita por volume",
           "type": "timeseries"
         },
         {
@@ -3505,7 +3510,7 @@
           },
           "gridPos": {
             "x": 12,
-            "y": 43,
+            "y": 52,
             "w": 12,
             "h": 9
           },
@@ -3549,13 +3554,13 @@
               "range": true
             }
           ],
-          "title": "IOPS",
+          "title": "IOPS por volume",
           "type": "timeseries"
         },
         {
           "id": 47,
           "type": "timeseries",
-          "title": "Latência",
+          "title": "Latência por volume",
           "description": "Tempo medio por operacao. Acima de ~20 ms sustentado merece atencao.",
           "datasource": {
             "type": "prometheus",
@@ -3611,82 +3616,10 @@
           ],
           "gridPos": {
             "x": 0,
-            "y": 52,
+            "y": 61,
             "w": 12,
             "h": 9
           }
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "red",
-                    "value": null
-                  },
-                  {
-                    "color": "#EAB839",
-                    "value": 2
-                  },
-                  {
-                    "color": "#6ED0E0",
-                    "value": 5
-                  },
-                  {
-                    "color": "purple",
-                    "value": 15
-                  }
-                ]
-              },
-              "unit": "bytes"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "x": 12,
-            "y": 52,
-            "w": 12,
-            "h": 9
-          },
-          "hideTimeOverride": false,
-          "id": 15,
-          "options": {
-            "minVizHeight": 75,
-            "minVizWidth": 75,
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "mean"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showThresholdLabels": false,
-            "showThresholdMarkers": true,
-            "sizing": "auto"
-          },
-          "pluginVersion": "11.1.3",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "expr": "windows_logical_disk_free_bytes{job=\"integrations/windows\",instance=\"$server\",volume=~\"[A-Z]:\"}",
-              "legendFormat": "{{volume}}",
-              "refId": "A",
-              "range": true
-            }
-          ],
-          "title": "Espaço livre por volume",
-          "type": "gauge"
         }
       ],
       "gridPos": {
@@ -4149,33 +4082,10 @@
     ]
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-6h",
     "to": "now"
   },
-  "timepicker": {
-    "refresh_intervals": [
-      "10s",
-      "30s",
-      "1m",
-      "5m",
-      "15m",
-      "30m",
-      "1h",
-      "2h",
-      "1d"
-    ],
-    "time_options": [
-      "5m",
-      "15m",
-      "1h",
-      "6h",
-      "12h",
-      "24h",
-      "2d",
-      "7d",
-      "30d"
-    ]
-  },
+  "timepicker": {},
   "timezone": "browser",
   "title": "Servidores Windows",
   "uid": "servers-windows",

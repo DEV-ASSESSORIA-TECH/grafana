@@ -300,7 +300,7 @@
           "step": 240
         }
       ],
-      "title": "CPU em uso",
+      "title": "CPU",
       "type": "gauge"
     },
     {
@@ -456,7 +456,7 @@
           "step": 240
         }
       ],
-      "title": "RAM em uso",
+      "title": "RAM",
       "type": "gauge"
     },
     {
@@ -538,14 +538,14 @@
           "step": 240
         }
       ],
-      "title": "Swap em uso",
+      "title": "Swap",
       "type": "gauge"
     },
     {
       "id": 348,
       "type": "stat",
-      "title": "Coleta",
-      "description": "Se o Prometheus está recebendo as métricas deste servidor.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -592,7 +592,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "displayName": "Coleta"
         },
         "overrides": []
       },
@@ -607,7 +608,7 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
@@ -640,8 +641,8 @@
     {
       "id": 349,
       "type": "stat",
-      "title": "Sistema",
-      "description": "Distribuição/versão do sistema operacional.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -661,7 +662,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "displayName": "${__field.labels.pretty_name}"
         },
         "overrides": []
       },
@@ -710,8 +712,8 @@
     {
       "id": 350,
       "type": "stat",
-      "title": "Erros (24h)",
-      "description": "Linhas de log com nível de erro ou crítico nas últimas 24h. Detalhes na seção Logs.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "loki",
         "uid": "${DS_LOKI}"
@@ -752,7 +754,8 @@
               }
             ]
           },
-          "decimals": 0
+          "decimals": 0,
+          "displayName": "Erros (24h)"
         },
         "overrides": []
       },
@@ -767,7 +770,7 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
@@ -800,8 +803,8 @@
     {
       "id": 351,
       "type": "stat",
-      "title": "Falhas systemd",
-      "description": "Unidades systemd em estado failed (lista na seção Systemd).",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -826,7 +829,8 @@
               }
             ]
           },
-          "decimals": 0
+          "decimals": 0,
+          "displayName": "Falhas systemd"
         },
         "overrides": []
       },
@@ -841,7 +845,7 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
@@ -903,7 +907,8 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "s",
+          "displayName": "Ligado há"
         },
         "overrides": []
       },
@@ -929,7 +934,7 @@
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "value",
+        "textMode": "value_and_name",
         "wideLayout": false,
         "text": {
           "titleSize": 12,
@@ -948,7 +953,7 @@
           "step": 240
         }
       ],
-      "title": "Ligado há",
+      "title": "",
       "type": "stat"
     },
     {
@@ -981,7 +986,8 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "short",
+          "displayName": "Núcleos"
         },
         "overrides": []
       },
@@ -1007,7 +1013,7 @@
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "value",
+        "textMode": "value_and_name",
         "wideLayout": false,
         "text": {
           "titleSize": 12,
@@ -1026,7 +1032,7 @@
           "refId": "A"
         }
       ],
-      "title": "Núcleos",
+      "title": "",
       "type": "stat"
     },
     {
@@ -3114,7 +3120,7 @@
               "step": 240
             }
           ],
-          "title": "CPU",
+          "title": "CPU por modo (detalhe)",
           "type": "timeseries"
         },
         {
@@ -9871,7 +9877,7 @@
           "type": "timeseries"
         }
       ],
-      "title": "Armazenamento",
+      "title": "Detalhes: armazenamento",
       "type": "row"
     },
     {
@@ -14298,7 +14304,7 @@
     ]
   },
   "time": {
-    "from": "now-24h",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {},
@@ -14307,7 +14313,6 @@
   "uid": "servers-linux",
   "version": 105,
   "weekStart": "",
-  "gnetId": 1860,
   "description": "Node exporter (integrations/unix) + journal no Loki. Baseado no Node Exporter Full (gnet 1860).",
   "links": [
     {

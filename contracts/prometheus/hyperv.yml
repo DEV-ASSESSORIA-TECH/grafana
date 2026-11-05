@@ -43,11 +43,11 @@ identity:
   vm_label_is_case_sensitive: true
   native_vm_id_label_observed: false
   guest_join:
-    status: candidate_only
-    method: comparar vm.lower() com instance dos jobs unix/windows
-    runtime_join_implemented: false
-    note: Nao renomear instance do hypervisor como nome do convidado. Uma tabela de mapeamento validada e necessaria
-      para joins duraveis.
+    status: implemented_via_inventory
+    method: usar hypervisor_vm_info.guest_host do job integrations/hypervisor (ver hypervisor.yml)
+    runtime_join_implemented: true
+    note: Nao renomear instance do hypervisor como nome do convidado. Disco e rede por VM tambem sao ligados pelo
+      inventario (hypervisor_vm_disk_info.device, hypervisor_vm_network_info.adapter).
 grafana_variables:
   syntax: Grafana label_values, nao PromQL da API
   instance:

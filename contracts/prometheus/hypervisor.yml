@@ -1,0 +1,190 @@
+# Contrato observado para consumidores de dashboards; nao provisionar este YAML no Grafana.
+schema_version: 2
+kind: observability_contract
+version: 0.1.0
+id: hypervisor
+title: Hypervisor / inventario de VMs (formato neutro)
+status: observed_baseline
+observed_at_utc: '2026-11-05T14:39:00Z'
+job: integrations/hypervisor
+source:
+  producer: DEV-ASSESSORIA-TECH/scripts monitoring/alloy/windows/hypervisor-inventory.ps1
+  producer_version: f562e97
+  collection: tarefa agendada a cada 1 min (SYSTEM) -> textfile\hypervisor.prom -> prometheus.exporter.windows "hypervisor"
+    (textfile) -> scrape 60s
+  platforms:
+    hyperv: implementado
+  note: Formato neutro (hypervisor_*). Outras plataformas devem publicar os mesmos nomes e labels, com platform proprio.
+references:
+  common: common.yml
+  platform_counters:
+    hyperv: hyperv.yml
+snapshot:
+  job: integrations/hypervisor
+  hosts_observed:
+    - srv-host01
+  hosts_pending:
+    - srv-host01-mtc
+  vms: 21
+  vms_running: 18
+  vms_off: 3
+  guest_kvp: 18
+  name_matches_guest: 18
+  inventory_duration_seconds: 11
+identity:
+  target_key:
+    - job
+    - instance
+  instance_means: hypervisor_host
+  host_label: host
+  vm_key:
+    - instance
+    - vm
+  vm_label_is_case_sensitive: true
+  vm_id: GUID da VM em maiusculas (label vm_id em hypervisor_vm_info)
+  guest_join:
+    status: implemented
+    label: guest_host (hypervisor_vm_info)
+    method: hostname do convidado via KVP, em minusculas, igual ao instance dos jobs integrations/windows e
+      integrations/unix
+    fallback: guest_source=cache (ultimo KVP visto) ou vm_name (nome da VM em minusculas, sem confirmacao)
+    guest_kind: windows | linux | unknown (unknown = VM nunca vista ligada pelo inventario)
+  counter_join:
+    hyperv:
+      disk: hypervisor_vm_disk_info.device = windows_hyperv_virtual_storage_device_*.device
+      network: hypervisor_vm_network_info.adapter = windows_hyperv_virtual_network_adapter_*.adapter
+      match_label: device_match / adapter_match = exact | suffix | none
+      note: suffix = contador com nome antigo (disco movido ou VM renomeada com ela ligada; atualiza ao reiniciar).
+        none = VM desligada (sem contador).
+grafana_variables:
+  syntax: Grafana label_values, nao PromQL da API
+  host:
+    query: label_values(up{job="integrations/hypervisor"}, instance)
+    multi: false
+metric_groups:
+  inventory_health:
+    title: Saude do inventario
+    metrics_observed:
+      - hypervisor_inventory_success
+      - hypervisor_inventory_problems
+      - hypervisor_inventory_duration_seconds
+      - hypervisor_inventory_timestamp_seconds
+      - up
+    labels: {}
+    interpretation: success=0 publica so este grupo (sem dados de VM). timestamp antigo = tarefa parada.
+  host:
+    title: Host
+    metrics_observed:
+      - hypervisor_host_info
+      - hypervisor_host_cpus
+      - hypervisor_host_memory_bytes
+    labels:
+      hypervisor_host_info:
+        - platform
+        - version
+  vm_identity:
+    title: Identidade e estado das VMs (inclui desligadas)
+    metrics_observed:
+      - hypervisor_vm_info
+      - hypervisor_vm_state
+      - hypervisor_vm_critical
+      - hypervisor_vm_name_matches_guest
+      - hypervisor_vm_heartbeat
+    labels:
+      hypervisor_vm_info:
+        - vm
+        - vm_id
+        - platform
+        - generation
+        - config
+        - guest_host
+        - guest_os
+        - guest_kind
+        - guest_source
+      hypervisor_vm_state:
+        - vm
+        - state
+    state_values:
+      - running
+      - 'off'
+      - saved
+      - paused
+      - starting
+      - stopping
+      - other
+    interpretation: hypervisor_vm_state e one-hot (1 no estado vigente, 0 nos demais); contar VMs com == 1.
+      heartbeat so existe com a VM ligada e o servico de integracao ativo. name_matches_guest so existe quando o
+      convidado foi identificado (kvp ou cache).
+  vm_config:
+    title: Configuracao e uso das VMs
+    metrics_observed:
+      - hypervisor_vm_uptime_seconds
+      - hypervisor_vm_cpus
+      - hypervisor_vm_memory_startup_bytes
+      - hypervisor_vm_memory_assigned_bytes
+      - hypervisor_vm_memory_maximum_bytes
+      - hypervisor_vm_dynamic_memory
+      - hypervisor_vm_checkpoints
+    labels:
+      all:
+        - vm
+    interpretation: memory_assigned = 0 com a VM desligada. memory_maximum so existe com memoria dinamica (nenhuma
+      VM observada usa).
+  vm_disks:
+    title: Discos virtuais
+    metrics_observed:
+      - hypervisor_vm_disk_info
+      - hypervisor_vm_disk_size_bytes
+      - hypervisor_vm_disk_file_bytes
+    labels:
+      hypervisor_vm_disk_info:
+        - vm
+        - path
+        - device
+        - device_match
+        - controller
+        - type
+      hypervisor_vm_disk_size_bytes:
+        - vm
+        - path
+    interpretation: size = tamanho maximo provisionado; file = espaco ocupado no volume do host (VHDX dinamico
+      cresce ate size). Os .vmgs e ISOs dos contadores do Hyper-V nao entram no inventario.
+  vm_network:
+    title: Placas de rede virtuais
+    metrics_observed:
+      - hypervisor_vm_network_info
+    labels:
+      hypervisor_vm_network_info:
+        - vm
+        - name
+        - adapter
+        - adapter_match
+        - adapter_id
+        - switch
+        - mac
+        - ipv4
+    interpretation: Os contadores do Hyper-V tambem trazem a placa do host no vSwitch e a placa fisica; estas nao
+      aparecem no inventario (nao sao VM).
+query_recipes:
+  - id: vms_by_state
+    title: VMs por estado
+    promql: sum by (state) (hypervisor_vm_state{job="integrations/hypervisor",instance="$host"} == 1)
+  - id: vcpu_overcommit
+    title: vCPUs das VMs ligadas por CPU logica do host
+    promql: sum(hypervisor_vm_cpus{job="integrations/hypervisor",instance="$host"} and on (vm) (hypervisor_vm_state{job="integrations/hypervisor",instance="$host",state="running"}
+      == 1)) / scalar(hypervisor_host_cpus{job="integrations/hypervisor",instance="$host"})
+  - id: vm_disk_read_rate
+    title: Leitura por VM (contadores do Hyper-V ligados pelo inventario)
+    promql: sum by (vm) (rate(windows_hyperv_virtual_storage_device_bytes_read{job="integrations/hyperv",instance="$host"}[5m])
+      * on (device) group_left (vm) group by (device, vm) (hypervisor_vm_disk_info{job="integrations/hypervisor",instance="$host"}))
+    notes:
+      - Confirmar se bytes_read e contador antes de fixar rate (contrato hyperv nao trouxe TYPE).
+limitations:
+  - Observado em um host (srv-host01). srv-host01-mtc ja publica os contadores do Hyper-V; inventario pendente de
+    reaplicacao.
+  - Sistema do convidado de VM nunca vista ligada pelo inventario fica unknown; o hostname cai no nome da VM.
+  - Atualizacao a cada 1 min; estado de VM pode atrasar ate ~2 min (tarefa + scrape).
+change_policy:
+  baseline_counts_are_fixed_requirements: false
+  require_new_metrics_before_using_in_dashboard: true
+  preserve_raw_labels: true

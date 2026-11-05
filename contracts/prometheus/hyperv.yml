@@ -1029,8 +1029,9 @@ units_validated:
       - windows_hyperv_virtual_storage_device_queue_length
       - windows_hyperv_virtual_storage_device_operations_read_total
       - windows_hyperv_virtual_storage_device_operations_written_total
-    evidence: rate(latency)/ops = 2657 -> 0.27 ms por operacao, compativel com a latencia de leitura do D: medida pelo
-      Windows (0.20 ms). Lei de Little confere - 57.8 ops/s x 0.27 ms = fila media 0.015 = rate(queue_length) x 1e-7.
+    evidence: 'rate(latency)/ops = 2657 -> 0.27 ms por operacao, compativel com a latencia de leitura do volume D:
+      medida pelo Windows (0.20 ms). Lei de Little confere - 57.8 ops/s x 0.27 ms = fila media 0.015 = rate(queue_length)
+      x 1e-7.'
     avg_latency_seconds: 1e-7 * sum(rate(windows_hyperv_virtual_storage_device_latency_seconds[5m])) / sum(rate(windows_hyperv_virtual_storage_device_operations_read_total[5m]) + rate(windows_hyperv_virtual_storage_device_operations_written_total[5m]))
     avg_queue: 1e-7 * rate(windows_hyperv_virtual_storage_device_queue_length[5m])
     caveat: O fator 1e-7 vem da frequencia do contador de desempenho do Windows (10 MHz no Windows Server 2016+).

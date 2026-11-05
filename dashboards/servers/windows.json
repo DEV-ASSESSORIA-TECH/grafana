@@ -237,7 +237,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "CPU ocupada, média de todos os núcleos.",
+      "description": "CPU ocupada, média de todos os núcleos. Em host Hyper-V usa os contadores do hypervisor (CPU física real, incluindo as VMs): o Windows do host mede a própria CPU de forma incorreta.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -304,7 +304,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "100 * (1 - avg(rate(windows_cpu_time_total{job=\"integrations/windows\",instance=\"$server\",mode=\"idle\"}[5m])))",
+          "expr": "(100 * sum(rate(windows_hyperv_hypervisor_logical_processor_total_run_time_total{job=\"integrations/hyperv\",instance=\"$server\"}[5m])) / count(windows_hyperv_hypervisor_logical_processor_total_run_time_total{job=\"integrations/hyperv\",instance=\"$server\"})) or (100 * (1 - avg(rate(windows_cpu_time_total{job=\"integrations/windows\",instance=\"$server\",mode=\"idle\"}[5m]))))",
           "instant": true,
           "range": false,
           "refId": "A",
@@ -1066,7 +1066,7 @@
       "id": 368,
       "type": "timeseries",
       "title": "CPU",
-      "description": "CPU em uso, de 0 a 100% da capacidade do servidor. Aplicações: programas e serviços rodando o próprio código (user mode). Sistema: kernel e drivers (privileged mode; já inclui interrupções e DPC). Em host Hyper-V, mostra só o sistema do host (partição raiz), não o consumo das VMs.",
+      "description": "CPU em uso, de 0 a 100% da capacidade do servidor. Aplicações: programas e serviços rodando o próprio código (user mode). Sistema: kernel e drivers (privileged mode; já inclui interrupções e DPC). Em host Hyper-V, mostra só o sistema do host (partição raiz), não o consumo das VMs. Em host Hyper-V, a linha laranja é a CPU física real (contadores do hypervisor); as áreas são o que o Windows do host enxerga e ficam distorcidas.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1135,6 +1135,36 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "CPU física (host Hyper-V)"
+            },
+            "properties": [
+              {
+                "id": "custom.stacking",
+                "value": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 2
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FF9830"
+                }
+              }
+            ]
           }
         ]
       },
@@ -1180,6 +1210,19 @@
           "instant": false,
           "format": "time_series",
           "legendFormat": "Sistema"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "range": true,
+          "instant": false,
+          "format": "time_series",
+          "expr": "100 * sum(rate(windows_hyperv_hypervisor_logical_processor_total_run_time_total{job=\"integrations/hyperv\",instance=\"$server\"}[$__rate_interval])) / count(windows_hyperv_hypervisor_logical_processor_total_run_time_total{job=\"integrations/hyperv\",instance=\"$server\"})",
+          "legendFormat": "CPU física (host Hyper-V)",
+          "refId": "C"
         }
       ],
       "gridPos": {

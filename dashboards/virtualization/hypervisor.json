@@ -219,14 +219,14 @@
         },
         "colorMode": "value",
         "graphMode": "none",
-        "justifyMode": "center",
+        "justifyMode": "auto",
         "textMode": "value_and_name",
-        "orientation": "auto",
+        "orientation": "horizontal",
         "wideLayout": true,
         "showPercentChange": false,
         "text": {
-          "titleSize": 12,
-          "valueSize": 26
+          "titleSize": 14,
+          "valueSize": 22
         }
       },
       "targets": [
@@ -447,7 +447,7 @@
           "refId": "A"
         }
       ],
-      "title": "RAM do host",
+      "title": "RAM",
       "type": "gauge"
     },
     {
@@ -533,7 +533,7 @@
           "refId": "A"
         }
       ],
-      "title": "Disputa de CPU",
+      "title": "Disputa",
       "type": "gauge"
     },
     {
@@ -546,31 +546,20 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "s",
           "mappings": [
             {
               "type": "value",
               "options": {
-                "1": {
-                  "text": "OK",
-                  "color": "green",
+                "-1": {
+                  "text": "falhou",
+                  "color": "red",
                   "index": 0
                 },
-                "0": {
-                  "text": "falha",
+                "-2": {
+                  "text": "sem dados",
                   "color": "red",
                   "index": 1
-                }
-              }
-            },
-            {
-              "type": "special",
-              "options": {
-                "match": "null+nan",
-                "result": {
-                  "text": "parado",
-                  "index": 0,
-                  "color": "red"
                 }
               }
             }
@@ -582,12 +571,21 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "text",
+                "color": "green",
                 "value": null
+              },
+              {
+                "color": "orange",
+                "value": 180
+              },
+              {
+                "color": "red",
+                "value": 600
               }
             ]
           },
-          "displayName": "Inventário"
+          "displayName": "Inventário",
+          "decimals": 0
         },
         "overrides": []
       },
@@ -618,7 +616,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "hypervisor_inventory_success{job=\"integrations/hypervisor\",instance=\"$host\"} and (time() - hypervisor_inventory_timestamp_seconds{job=\"integrations/hypervisor\",instance=\"$host\"} < 300)",
+          "expr": "((time() - hypervisor_inventory_timestamp_seconds{job=\"integrations/hypervisor\",instance=\"$host\"}) and on () (hypervisor_inventory_success{job=\"integrations/hypervisor\",instance=\"$host\"} == 1)) or on () (hypervisor_inventory_success{job=\"integrations/hypervisor\",instance=\"$host\"} - 1) or on () vector(-2)",
           "range": false,
           "instant": true,
           "format": "time_series",
@@ -643,7 +641,18 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "mappings": [],
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "nenhuma",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            }
+          ],
           "color": {
             "mode": "thresholds"
           },
@@ -787,7 +796,18 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "mappings": [],
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "nenhum",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            }
+          ],
           "color": {
             "mode": "thresholds"
           },
@@ -872,7 +892,18 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "mappings": [],
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "nenhum",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            }
+          ],
           "color": {
             "mode": "thresholds"
           },
@@ -2366,7 +2397,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 185
+                "value": 165
               },
               {
                 "id": "links",
@@ -2415,7 +2446,7 @@
                       "to": 9.999,
                       "result": {
                         "text": "ligada",
-                        "color": "green",
+                        "color": "transparent",
                         "index": 0
                       }
                     }
@@ -2427,7 +2458,7 @@
                       "to": 8.999,
                       "result": {
                         "text": "ligando",
-                        "color": "blue",
+                        "color": "#1F3A5F",
                         "index": 1
                       }
                     }
@@ -2439,7 +2470,7 @@
                       "to": 7.999,
                       "result": {
                         "text": "desligando",
-                        "color": "orange",
+                        "color": "#4A3415",
                         "index": 2
                       }
                     }
@@ -2451,7 +2482,7 @@
                       "to": 6.999,
                       "result": {
                         "text": "pausada",
-                        "color": "orange",
+                        "color": "#4A3415",
                         "index": 3
                       }
                     }
@@ -2463,7 +2494,7 @@
                       "to": 5.999,
                       "result": {
                         "text": "salva",
-                        "color": "orange",
+                        "color": "#4A3415",
                         "index": 4
                       }
                     }
@@ -2475,7 +2506,7 @@
                       "to": 4.999,
                       "result": {
                         "text": "outro",
-                        "color": "orange",
+                        "color": "#4A3415",
                         "index": 5
                       }
                     }
@@ -2487,7 +2518,7 @@
                       "to": 0.999,
                       "result": {
                         "text": "desligada",
-                        "color": "#6E7480",
+                        "color": "#4A1A22",
                         "index": 6
                       }
                     }
@@ -2497,7 +2528,9 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-text"
+                  "type": "color-background",
+                  "mode": "basic",
+                  "applyToRow": true
                 }
               }
             ]
@@ -2533,7 +2566,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 95
+                "value": 85
               }
             ]
           },
@@ -2548,8 +2581,8 @@
                 "value": "Sistema"
               },
               {
-                "id": "custom.minWidth",
-                "value": 190
+                "id": "custom.width",
+                "value": 165
               }
             ]
           },
@@ -2631,7 +2664,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 115
+                "value": 105
               }
             ]
           },
@@ -2687,7 +2720,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 75
+                "value": 70
               }
             ]
           },
@@ -2731,7 +2764,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 95
+                "value": 90
               }
             ]
           },
@@ -2755,7 +2788,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 80
+                "value": 75
               }
             ]
           },
@@ -2775,7 +2808,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 90
+                "value": 85
               }
             ]
           },
@@ -2841,7 +2874,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 120
+                "value": 110
               }
             ]
           },
@@ -3023,7 +3056,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "max by (vm, guest_os, guest_host, dash) (label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind!=\"unknown\"}, \"dash\", \"servers-windows\", \"guest_kind\", \"windows\"), \"dash\", \"servers-linux\", \"guest_kind\", \"linux\") or label_replace(label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind=\"unknown\"}, \"instance\", \"$1\", \"guest_host\", \"(.*)\") and on (instance) last_over_time(windows_os_info{job=\"integrations/windows\"}[30d]), \"dash\", \"servers-windows\", \"\", \"\"), \"guest_os\", \"Windows (último visto)\", \"\", \"\") or label_replace(label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind=\"unknown\"}, \"instance\", \"$1\", \"guest_host\", \"(.*)\") and on (instance) last_over_time(node_os_info{job=\"integrations/unix\"}[30d]), \"dash\", \"servers-linux\", \"\", \"\"), \"guest_os\", \"Linux (último visto)\", \"\", \"\") or label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind=\"unknown\"} unless on (vm) (label_replace(label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind=\"unknown\"}, \"instance\", \"$1\", \"guest_host\", \"(.*)\") and on (instance) last_over_time(windows_os_info{job=\"integrations/windows\"}[30d]), \"dash\", \"servers-windows\", \"\", \"\"), \"guest_os\", \"Windows (último visto)\", \"\", \"\") or label_replace(label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind=\"unknown\"}, \"instance\", \"$1\", \"guest_host\", \"(.*)\") and on (instance) last_over_time(node_os_info{job=\"integrations/unix\"}[30d]), \"dash\", \"servers-linux\", \"\", \"\"), \"guest_os\", \"Linux (último visto)\", \"\", \"\")), \"dash\", \"hypervisors\", \"\", \"\"), \"guest_os\", \"desconhecido\", \"\", \"\"))",
+          "expr": "label_replace(label_replace(max by (vm, guest_os, guest_host, dash) (label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind!=\"unknown\"}, \"dash\", \"servers-windows\", \"guest_kind\", \"windows\"), \"dash\", \"servers-linux\", \"guest_kind\", \"linux\") or label_replace(label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind=\"unknown\"}, \"instance\", \"$1\", \"guest_host\", \"(.*)\") and on (instance) last_over_time(windows_os_info{job=\"integrations/windows\"}[30d]), \"dash\", \"servers-windows\", \"\", \"\"), \"guest_os\", \"Windows (último visto)\", \"\", \"\") or label_replace(label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind=\"unknown\"}, \"instance\", \"$1\", \"guest_host\", \"(.*)\") and on (instance) last_over_time(node_os_info{job=\"integrations/unix\"}[30d]), \"dash\", \"servers-linux\", \"\", \"\"), \"guest_os\", \"Linux (último visto)\", \"\", \"\") or label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind=\"unknown\"} unless on (vm) (label_replace(label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind=\"unknown\"}, \"instance\", \"$1\", \"guest_host\", \"(.*)\") and on (instance) last_over_time(windows_os_info{job=\"integrations/windows\"}[30d]), \"dash\", \"servers-windows\", \"\", \"\"), \"guest_os\", \"Windows (último visto)\", \"\", \"\") or label_replace(label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind=\"unknown\"}, \"instance\", \"$1\", \"guest_host\", \"(.*)\") and on (instance) last_over_time(node_os_info{job=\"integrations/unix\"}[30d]), \"dash\", \"servers-linux\", \"\", \"\"), \"guest_os\", \"Linux (último visto)\", \"\", \"\")), \"dash\", \"hypervisors\", \"\", \"\"), \"guest_os\", \"desconhecido\", \"\", \"\")), \"guest_os\", \"Windows Server $1\", \"guest_os\", \"Windows Server ([0-9]+) .*\"), \"guest_os\", \"Debian\", \"guest_os\", \"Debian.*\")",
           "range": false,
           "instant": true,
           "format": "table",
@@ -3068,7 +3101,7 @@
         "x": 0,
         "y": 23,
         "w": 24,
-        "h": 22
+        "h": 14
       }
     },
     {
@@ -3081,7 +3114,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 45
+        "y": 37
       }
     },
     {
@@ -3159,7 +3192,7 @@
       ],
       "gridPos": {
         "x": 0,
-        "y": 46,
+        "y": 38,
         "w": 8,
         "h": 7
       }
@@ -3239,7 +3272,7 @@
       ],
       "gridPos": {
         "x": 8,
-        "y": 46,
+        "y": 38,
         "w": 8,
         "h": 7
       }
@@ -3319,7 +3352,7 @@
       ],
       "gridPos": {
         "x": 16,
-        "y": 46,
+        "y": 38,
         "w": 8,
         "h": 7
       }
@@ -3334,7 +3367,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 53
+        "y": 45
       }
     },
     {
@@ -3370,7 +3403,7 @@
       ],
       "gridPos": {
         "x": 0,
-        "y": 54,
+        "y": 46,
         "w": 24,
         "h": 9
       },
@@ -3457,7 +3490,7 @@
           ],
           "gridPos": {
             "x": 0,
-            "y": 64,
+            "y": 56,
             "w": 12,
             "h": 8
           }
@@ -3537,7 +3570,7 @@
           ],
           "gridPos": {
             "x": 12,
-            "y": 64,
+            "y": 56,
             "w": 12,
             "h": 8
           }
@@ -3547,7 +3580,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 63
+        "y": 55
       }
     },
     {
@@ -3631,7 +3664,7 @@
           ],
           "gridPos": {
             "x": 0,
-            "y": 65,
+            "y": 57,
             "w": 12,
             "h": 8
           }
@@ -3711,7 +3744,7 @@
           ],
           "gridPos": {
             "x": 12,
-            "y": 65,
+            "y": 57,
             "w": 12,
             "h": 8
           }
@@ -3721,7 +3754,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 64
+        "y": 56
       }
     },
     {
@@ -3818,7 +3851,7 @@
           ],
           "gridPos": {
             "x": 0,
-            "y": 66,
+            "y": 58,
             "w": 24,
             "h": 8
           }
@@ -3828,7 +3861,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 65
+        "y": 57
       }
     },
     {
@@ -3938,7 +3971,7 @@
           ],
           "gridPos": {
             "x": 0,
-            "y": 67,
+            "y": 59,
             "w": 12,
             "h": 8
           }
@@ -4032,7 +4065,7 @@
           ],
           "gridPos": {
             "x": 12,
-            "y": 67,
+            "y": 59,
             "w": 12,
             "h": 8
           }
@@ -4042,7 +4075,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 66
+        "y": 58
       }
     }
   ],

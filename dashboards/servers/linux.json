@@ -909,7 +909,7 @@
               }
             ]
           },
-          "unit": "s",
+          "unit": "suffix: dias",
           "displayName": "Ligado há"
         },
         "overrides": []
@@ -948,7 +948,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "node_time_seconds{instance=\"$server\",job=\"integrations/unix\"} - node_boot_time_seconds{instance=\"$server\",job=\"integrations/unix\"}",
+          "expr": "(node_time_seconds{instance=\"$server\",job=\"integrations/unix\"} - node_boot_time_seconds{instance=\"$server\",job=\"integrations/unix\"}) / 86400",
           "instant": true,
           "range": false,
           "refId": "A",
@@ -1405,11 +1405,11 @@
               },
               {
                 "id": "unit",
-                "value": "s"
+                "value": "suffix: dias"
               },
               {
                 "id": "decimals",
-                "value": 0
+                "value": 1
               },
               {
                 "id": "mappings",
@@ -1444,11 +1444,11 @@
                     },
                     {
                       "color": "orange",
-                      "value": 1209600
+                      "value": 14
                     },
                     {
                       "color": "text",
-                      "value": 2592000
+                      "value": 30
                     }
                   ]
                 }
@@ -1539,7 +1539,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "max by (mountpoint) ((node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"} / (-deriv(node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"}[1d]) > 0)) < 7776000)",
+          "expr": "(max by (mountpoint) ((node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"} / (-deriv(node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"}[1d]) > 0)) < 7776000)) / 86400",
           "refId": "E",
           "range": false,
           "instant": true,
@@ -1583,8 +1583,8 @@
     {
       "id": 354,
       "type": "stat",
-      "title": "Menor espaço livre",
-      "description": "Espaço livre no volume com menos espaço.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1605,7 +1605,8 @@
               }
             ]
           },
-          "decimals": 1
+          "decimals": 1,
+          "displayName": "Menor espaço livre"
         },
         "overrides": []
       },
@@ -1620,7 +1621,7 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
@@ -1653,8 +1654,8 @@
     {
       "id": 355,
       "type": "stat",
-      "title": "I/O ocupado (máx.)",
-      "description": "Fração do tempo em que o disco mais ocupado esteve atendendo I/O nos últimos 5 min. Perto de 100% = disco saturado.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1683,7 +1684,8 @@
               }
             ]
           },
-          "decimals": 0
+          "decimals": 0,
+          "displayName": "I/O ocupado (máx.)"
         },
         "overrides": []
       },
@@ -1698,7 +1700,7 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
@@ -1731,24 +1733,23 @@
     {
       "id": 356,
       "type": "stat",
-      "title": "Enche primeiro em",
-      "description": "Previsão para o volume que vai encher antes, pela tendência das últimas 24h. Estável = nenhum enche em menos de 90 dias.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
+          "unit": "suffix: dias",
           "mappings": [
             {
-              "type": "special",
+              "type": "value",
               "options": {
-                "match": "null+nan",
-                "result": {
+                "-1": {
                   "text": "estável",
-                  "index": 0,
-                  "color": "green"
+                  "color": "green",
+                  "index": 0
                 }
               }
             }
@@ -1765,15 +1766,16 @@
               },
               {
                 "color": "orange",
-                "value": 1209600
+                "value": 14
               },
               {
                 "color": "green",
-                "value": 2592000
+                "value": 30
               }
             ]
           },
-          "decimals": 0
+          "decimals": 1,
+          "displayName": "Enche primeiro em"
         },
         "overrides": []
       },
@@ -1788,7 +1790,7 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
@@ -1804,7 +1806,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "min(max by (mountpoint) ((node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"} / (-deriv(node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"}[1d]) > 0)) < 7776000))",
+          "expr": "((min(max by (mountpoint) ((node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"} / (-deriv(node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"}[1d]) > 0)) < 7776000))) / 86400) or on () vector(-1)",
           "refId": "A",
           "range": false,
           "instant": true,

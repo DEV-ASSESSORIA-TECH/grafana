@@ -725,7 +725,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
+          "unit": "suffix: dias",
           "mappings": [],
           "color": {
             "mode": "thresholds"
@@ -771,7 +771,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "time() - windows_system_boot_time_timestamp{job=\"integrations/windows\",instance=\"$host\"}",
+          "expr": "(time() - windows_system_boot_time_timestamp{job=\"integrations/windows\",instance=\"$host\"}) / 86400",
           "range": false,
           "instant": true,
           "format": "time_series",
@@ -833,7 +833,7 @@
           "links": [
             {
               "title": "Ver erros e críticos (24h)",
-              "url": "/d/hypervisors?var-host=${host}&var-nivel=critical%7Cerror&viewPanel=panel-31&from=now-24h&to=now",
+              "url": "/d/hypervisors?var-host=${host}&var-nivel=critical%7Cerror&viewPanel=panel-30&from=now-24h&to=now",
               "targetBlank": false
             }
           ]
@@ -1178,7 +1178,7 @@
       "gridPos": {
         "x": 0,
         "y": 6,
-        "w": 12,
+        "w": 10,
         "h": 8
       }
     },
@@ -1300,16 +1300,16 @@
         }
       ],
       "gridPos": {
-        "x": 12,
+        "x": 10,
         "y": 6,
-        "w": 8,
+        "w": 9,
         "h": 8
       }
     },
     {
       "id": 16,
       "type": "stat",
-      "title": "",
+      "title": "Folga de memória",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1319,7 +1319,8 @@
           "unit": "bytes",
           "mappings": [],
           "color": {
-            "mode": "thresholds"
+            "mode": "fixed",
+            "fixedColor": "text"
           },
           "thresholds": {
             "mode": "absolute",
@@ -1330,10 +1331,57 @@
               }
             ]
           },
-          "displayName": "Memória livre",
           "decimals": 1
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Falta"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 0.001
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "range",
+                    "options": {
+                      "from": null,
+                      "to": 0,
+                      "result": {
+                        "text": "cabe",
+                        "color": "green",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "reduceOptions": {
@@ -1345,13 +1393,13 @@
         },
         "colorMode": "value",
         "graphMode": "none",
-        "justifyMode": "center",
+        "justifyMode": "auto",
         "textMode": "value_and_name",
-        "orientation": "auto",
+        "orientation": "horizontal",
         "wideLayout": true,
         "showPercentChange": false,
         "text": {
-          "titleSize": 12,
+          "titleSize": 13,
           "valueSize": 20
         }
       },
@@ -1366,83 +1414,22 @@
           "range": false,
           "instant": true,
           "format": "time_series",
+          "legendFormat": "Livre",
           "refId": "A"
-        }
-      ],
-      "gridPos": {
-        "x": 20,
-        "y": 6,
-        "w": 4,
-        "h": 4
-      }
-    },
-    {
-      "id": 17,
-      "type": "stat",
-      "title": "",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "bytes",
-          "mappings": [
-            {
-              "type": "range",
-              "options": {
-                "from": null,
-                "to": 0,
-                "result": {
-                  "text": "cabe",
-                  "color": "green",
-                  "index": 0
-                }
-              }
-            }
-          ],
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 0.001
-              }
-            ]
-          },
-          "displayName": "Falta p/ ligar desligadas",
-          "decimals": 1
         },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(hypervisor_vm_memory_startup_bytes{job=\"integrations/hypervisor\",instance=\"$host\"} and on (vm) (hypervisor_vm_state{job=\"integrations/hypervisor\",instance=\"$host\",state=\"running\"} == 0)) or vector(0)",
+          "range": false,
+          "instant": true,
+          "format": "time_series",
+          "legendFormat": "Desligadas pedem",
+          "refId": "B"
         },
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "textMode": "value_and_name",
-        "orientation": "auto",
-        "wideLayout": true,
-        "showPercentChange": false,
-        "text": {
-          "titleSize": 12,
-          "valueSize": 20
-        }
-      },
-      "targets": [
         {
           "datasource": {
             "type": "prometheus",
@@ -1453,19 +1440,20 @@
           "range": false,
           "instant": true,
           "format": "time_series",
-          "refId": "A"
+          "legendFormat": "Falta",
+          "refId": "C"
         }
       ],
-      "description": "Memória que falta para ligar todas as VMs desligadas (memória inicial somada - memória livre do host). 'cabe' = há memória livre suficiente.",
+      "description": "Livre: memória física livre no host. Desligadas pedem: memória inicial somada das VMs desligadas. Falta: quanto faltaria para ligar todas ('cabe' = há memória suficiente).",
       "gridPos": {
-        "x": 20,
-        "y": 10,
-        "w": 4,
-        "h": 4
+        "x": 19,
+        "y": 6,
+        "w": 5,
+        "h": 8
       }
     },
     {
-      "id": 18,
+      "id": 17,
       "type": "table",
       "title": "Armazenamento do host",
       "datasource": {
@@ -1636,11 +1624,11 @@
               },
               {
                 "id": "unit",
-                "value": "s"
+                "value": "suffix: dias"
               },
               {
                 "id": "decimals",
-                "value": 0
+                "value": 1
               },
               {
                 "id": "mappings",
@@ -1675,11 +1663,11 @@
                     },
                     {
                       "color": "orange",
-                      "value": 1209600
+                      "value": 14
                     },
                     {
                       "color": "text",
-                      "value": 2592000
+                      "value": 30
                     }
                   ]
                 }
@@ -1770,7 +1758,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "max by (volume) ((windows_logical_disk_free_bytes{job=\"integrations/windows\",instance=\"$host\",volume=~\"[A-Z]:\"} / (-deriv(windows_logical_disk_free_bytes{job=\"integrations/windows\",instance=\"$host\",volume=~\"[A-Z]:\"}[1d]) > 0)) < 7776000)",
+          "expr": "(max by (volume) ((windows_logical_disk_free_bytes{job=\"integrations/windows\",instance=\"$host\",volume=~\"[A-Z]:\"} / (-deriv(windows_logical_disk_free_bytes{job=\"integrations/windows\",instance=\"$host\",volume=~\"[A-Z]:\"}[1d]) > 0)) < 7776000)) / 86400",
           "refId": "E",
           "range": false,
           "instant": true,
@@ -1808,14 +1796,14 @@
         "x": 0,
         "y": 14,
         "w": 12,
-        "h": 5
+        "h": 6
       }
     },
     {
-      "id": 19,
+      "id": 18,
       "type": "stat",
-      "title": "Menor espaço livre",
-      "description": "Espaço livre no volume com menos espaço.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1836,7 +1824,8 @@
               }
             ]
           },
-          "decimals": 1
+          "decimals": 1,
+          "displayName": "Menor espaço livre"
         },
         "overrides": []
       },
@@ -1851,7 +1840,7 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
@@ -1876,16 +1865,16 @@
       ],
       "gridPos": {
         "x": 0,
-        "y": 19,
+        "y": 20,
         "w": 4,
         "h": 3
       }
     },
     {
-      "id": 20,
+      "id": 19,
       "type": "stat",
-      "title": "I/O ocupado (máx.)",
-      "description": "Fração do tempo em que o disco mais ocupado esteve atendendo I/O nos últimos 5 min. Perto de 100% = disco saturado.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1914,7 +1903,8 @@
               }
             ]
           },
-          "decimals": 0
+          "decimals": 0,
+          "displayName": "I/O ocupado (máx.)"
         },
         "overrides": []
       },
@@ -1929,7 +1919,7 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
@@ -1954,32 +1944,31 @@
       ],
       "gridPos": {
         "x": 4,
-        "y": 19,
+        "y": 20,
         "w": 4,
         "h": 3
       }
     },
     {
-      "id": 21,
+      "id": 20,
       "type": "stat",
-      "title": "Enche primeiro em",
-      "description": "Previsão para o volume que vai encher antes, pela tendência das últimas 24h. Estável = nenhum enche em menos de 90 dias.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
+          "unit": "suffix: dias",
           "mappings": [
             {
-              "type": "special",
+              "type": "value",
               "options": {
-                "match": "null+nan",
-                "result": {
+                "-1": {
                   "text": "estável",
-                  "index": 0,
-                  "color": "green"
+                  "color": "green",
+                  "index": 0
                 }
               }
             }
@@ -1996,15 +1985,16 @@
               },
               {
                 "color": "orange",
-                "value": 1209600
+                "value": 14
               },
               {
                 "color": "green",
-                "value": 2592000
+                "value": 30
               }
             ]
           },
-          "decimals": 0
+          "decimals": 1,
+          "displayName": "Enche primeiro em"
         },
         "overrides": []
       },
@@ -2019,7 +2009,7 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
@@ -2035,7 +2025,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "min(max by (volume) ((windows_logical_disk_free_bytes{job=\"integrations/windows\",instance=\"$host\",volume=~\"[A-Z]:\"} / (-deriv(windows_logical_disk_free_bytes{job=\"integrations/windows\",instance=\"$host\",volume=~\"[A-Z]:\"}[1d]) > 0)) < 7776000))",
+          "expr": "((min(max by (volume) ((windows_logical_disk_free_bytes{job=\"integrations/windows\",instance=\"$host\",volume=~\"[A-Z]:\"} / (-deriv(windows_logical_disk_free_bytes{job=\"integrations/windows\",instance=\"$host\",volume=~\"[A-Z]:\"}[1d]) > 0)) < 7776000))) / 86400) or on () vector(-1)",
           "refId": "A",
           "range": false,
           "instant": true,
@@ -2044,13 +2034,13 @@
       ],
       "gridPos": {
         "x": 8,
-        "y": 19,
+        "y": 20,
         "w": 4,
         "h": 3
       }
     },
     {
-      "id": 22,
+      "id": 21,
       "type": "table",
       "title": "Provisionamento dos discos virtuais",
       "datasource": {
@@ -2066,7 +2056,8 @@
             "align": "auto",
             "cellOptions": {
               "type": "auto"
-            }
+            },
+            "minWidth": 70
           }
         },
         "overrides": [
@@ -2081,8 +2072,8 @@
                 "value": "Volume"
               },
               {
-                "id": "custom.width",
-                "value": 70
+                "id": "custom.minWidth",
+                "value": 60
               }
             ]
           },
@@ -2247,7 +2238,7 @@
       }
     },
     {
-      "id": 23,
+      "id": 22,
       "type": "timeseries",
       "title": "Rede do vSwitch",
       "description": "Tráfego do switch virtual (todas as VMs e o host) em bits/s; Tx para baixo.",
@@ -2348,24 +2339,24 @@
         "x": 12,
         "y": 18,
         "w": 12,
-        "h": 4
+        "h": 5
       }
     },
     {
       "type": "row",
       "title": "Máquinas virtuais",
       "collapsed": false,
-      "id": 24,
+      "id": 23,
       "panels": [],
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 23
       }
     },
     {
-      "id": 25,
+      "id": 24,
       "type": "table",
       "title": "",
       "datasource": {
@@ -2380,7 +2371,8 @@
             "cellOptions": {
               "type": "auto"
             },
-            "filterable": false
+            "filterable": false,
+            "minWidth": 50
           },
           "decimals": 1
         },
@@ -2397,7 +2389,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 165
+                "value": 135
               },
               {
                 "id": "links",
@@ -2433,8 +2425,8 @@
                 "value": "Estado"
               },
               {
-                "id": "custom.width",
-                "value": 90
+                "id": "custom.minWidth",
+                "value": 65
               },
               {
                 "id": "mappings",
@@ -2543,11 +2535,15 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Ligada há"
+                "value": "Ligada"
               },
               {
                 "id": "unit",
-                "value": "s"
+                "value": "suffix: dias"
+              },
+              {
+                "id": "decimals",
+                "value": 1
               },
               {
                 "id": "mappings",
@@ -2565,8 +2561,8 @@
                 ]
               },
               {
-                "id": "custom.width",
-                "value": 85
+                "id": "custom.minWidth",
+                "value": 75
               }
             ]
           },
@@ -2582,7 +2578,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 165
+                "value": 145
               }
             ]
           },
@@ -2601,8 +2597,8 @@
                 "value": 0
               },
               {
-                "id": "custom.width",
-                "value": 55
+                "id": "custom.minWidth",
+                "value": 38
               }
             ]
           },
@@ -2663,8 +2659,8 @@
                 }
               },
               {
-                "id": "custom.width",
-                "value": 105
+                "id": "custom.minWidth",
+                "value": 80
               }
             ]
           },
@@ -2719,8 +2715,8 @@
                 }
               },
               {
-                "id": "custom.width",
-                "value": 70
+                "id": "custom.minWidth",
+                "value": 60
               }
             ]
           },
@@ -2732,7 +2728,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Memória"
+                "value": "RAM"
               },
               {
                 "id": "unit",
@@ -2743,8 +2739,8 @@
                 "value": 0
               },
               {
-                "id": "custom.width",
-                "value": 80
+                "id": "custom.minWidth",
+                "value": 50
               }
             ]
           },
@@ -2763,8 +2759,8 @@
                 "value": "binBps"
               },
               {
-                "id": "custom.width",
-                "value": 90
+                "id": "custom.minWidth",
+                "value": 95
               }
             ]
           },
@@ -2776,19 +2772,15 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Latência"
+                "value": "Rede"
               },
               {
                 "id": "unit",
-                "value": "s"
+                "value": "bps"
               },
               {
-                "id": "decimals",
-                "value": 0
-              },
-              {
-                "id": "custom.width",
-                "value": 75
+                "id": "custom.minWidth",
+                "value": 85
               }
             ]
           },
@@ -2800,27 +2792,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Rede"
-              },
-              {
-                "id": "unit",
-                "value": "bps"
-              },
-              {
-                "id": "custom.width",
-                "value": 85
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Value #J"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "VHDX alocado"
+                "value": "VHDX"
               },
               {
                 "id": "unit",
@@ -2873,15 +2845,15 @@
                 }
               },
               {
-                "id": "custom.width",
-                "value": 110
+                "id": "custom.minWidth",
+                "value": 85
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "Value #K"
+              "options": "Value #J"
             },
             "properties": [
               {
@@ -2893,8 +2865,8 @@
                 "value": 0
               },
               {
-                "id": "custom.width",
-                "value": 105
+                "id": "custom.minWidth",
+                "value": 108
               }
             ]
           }
@@ -2936,7 +2908,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "max by (vm) (hypervisor_vm_uptime_seconds{job=\"integrations/hypervisor\",instance=\"$host\"} > 0)",
+          "expr": "max by (vm) (hypervisor_vm_uptime_seconds{job=\"integrations/hypervisor\",instance=\"$host\"} > 0) / 86400",
           "range": false,
           "instant": true,
           "format": "table",
@@ -3008,7 +2980,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "1e-7 * sum by (vm) (rate(windows_hyperv_virtual_storage_device_latency_seconds{job=\"integrations/hyperv\",instance=\"$host\"}[5m]) * on (device) group_left (vm) group by (device, vm) (hypervisor_vm_disk_info{job=\"integrations/hypervisor\",instance=\"$host\"})) / sum by (vm) ((rate(windows_hyperv_virtual_storage_device_operations_read_total{job=\"integrations/hyperv\",instance=\"$host\"}[5m]) + rate(windows_hyperv_virtual_storage_device_operations_written_total{job=\"integrations/hyperv\",instance=\"$host\"}[5m])) * on (device) group_left (vm) group by (device, vm) (hypervisor_vm_disk_info{job=\"integrations/hypervisor\",instance=\"$host\"}))",
+          "expr": "8 * sum by (vm) ((rate(windows_hyperv_virtual_network_adapter_received_bytes_total{job=\"integrations/hyperv\",instance=\"$host\"}[5m]) + rate(windows_hyperv_virtual_network_adapter_sent_bytes_total{job=\"integrations/hyperv\",instance=\"$host\"}[5m])) * on (adapter) group_left (vm) group by (adapter, vm) (hypervisor_vm_network_info{job=\"integrations/hypervisor\",instance=\"$host\"}))",
           "range": false,
           "instant": true,
           "format": "table",
@@ -3020,7 +2992,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "8 * sum by (vm) ((rate(windows_hyperv_virtual_network_adapter_received_bytes_total{job=\"integrations/hyperv\",instance=\"$host\"}[5m]) + rate(windows_hyperv_virtual_network_adapter_sent_bytes_total{job=\"integrations/hyperv\",instance=\"$host\"}[5m])) * on (adapter) group_left (vm) group by (adapter, vm) (hypervisor_vm_network_info{job=\"integrations/hypervisor\",instance=\"$host\"}))",
+          "expr": "100 * sum by (vm) (hypervisor_vm_disk_file_bytes{job=\"integrations/hypervisor\",instance=\"$host\"}) / sum by (vm) (hypervisor_vm_disk_size_bytes{job=\"integrations/hypervisor\",instance=\"$host\"})",
           "range": false,
           "instant": true,
           "format": "table",
@@ -3032,7 +3004,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "100 * sum by (vm) (hypervisor_vm_disk_file_bytes{job=\"integrations/hypervisor\",instance=\"$host\"}) / sum by (vm) (hypervisor_vm_disk_size_bytes{job=\"integrations/hypervisor\",instance=\"$host\"})",
+          "expr": "max by (vm) (hypervisor_vm_checkpoints{job=\"integrations/hypervisor\",instance=\"$host\"})",
           "range": false,
           "instant": true,
           "format": "table",
@@ -3044,23 +3016,11 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "max by (vm) (hypervisor_vm_checkpoints{job=\"integrations/hypervisor\",instance=\"$host\"})",
-          "range": false,
-          "instant": true,
-          "format": "table",
-          "refId": "K"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "editorMode": "code",
           "expr": "label_replace(label_replace(max by (vm, guest_os, guest_host, dash) (label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind!=\"unknown\"}, \"dash\", \"servers-windows\", \"guest_kind\", \"windows\"), \"dash\", \"servers-linux\", \"guest_kind\", \"linux\") or label_replace(label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind=\"unknown\"}, \"instance\", \"$1\", \"guest_host\", \"(.*)\") and on (instance) last_over_time(windows_os_info{job=\"integrations/windows\"}[30d]), \"dash\", \"servers-windows\", \"\", \"\"), \"guest_os\", \"Windows (último visto)\", \"\", \"\") or label_replace(label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind=\"unknown\"}, \"instance\", \"$1\", \"guest_host\", \"(.*)\") and on (instance) last_over_time(node_os_info{job=\"integrations/unix\"}[30d]), \"dash\", \"servers-linux\", \"\", \"\"), \"guest_os\", \"Linux (último visto)\", \"\", \"\") or label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind=\"unknown\"} unless on (vm) (label_replace(label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind=\"unknown\"}, \"instance\", \"$1\", \"guest_host\", \"(.*)\") and on (instance) last_over_time(windows_os_info{job=\"integrations/windows\"}[30d]), \"dash\", \"servers-windows\", \"\", \"\"), \"guest_os\", \"Windows (último visto)\", \"\", \"\") or label_replace(label_replace(label_replace(hypervisor_vm_info{job=\"integrations/hypervisor\",instance=\"$host\",guest_kind=\"unknown\"}, \"instance\", \"$1\", \"guest_host\", \"(.*)\") and on (instance) last_over_time(node_os_info{job=\"integrations/unix\"}[30d]), \"dash\", \"servers-linux\", \"\", \"\"), \"guest_os\", \"Linux (último visto)\", \"\", \"\")), \"dash\", \"hypervisors\", \"\", \"\"), \"guest_os\", \"desconhecido\", \"\", \"\")), \"guest_os\", \"Windows Server $1\", \"guest_os\", \"Windows Server ([0-9]+) .*\"), \"guest_os\", \"Debian\", \"guest_os\", \"Debian.*\")",
           "range": false,
           "instant": true,
           "format": "table",
-          "refId": "L"
+          "refId": "K"
         }
       ],
       "transformations": [
@@ -3072,7 +3032,7 @@
           "id": "filterFieldsByName",
           "options": {
             "include": {
-              "pattern": "^(vm|guest_os|guest_host|dash|Value #[A-K])$"
+              "pattern": "^(vm|guest_os|guest_host|dash|Value #[A-J])$"
             }
           }
         },
@@ -3091,15 +3051,14 @@
               "Value #G": 8,
               "Value #H": 9,
               "Value #I": 10,
-              "Value #J": 11,
-              "Value #K": 12
+              "Value #J": 11
             }
           }
         }
       ],
       "gridPos": {
         "x": 0,
-        "y": 23,
+        "y": 24,
         "w": 24,
         "h": 14
       }
@@ -3108,17 +3067,17 @@
       "type": "row",
       "title": "Quem consome",
       "collapsed": false,
-      "id": 26,
+      "id": 25,
       "panels": [],
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 37
+        "y": 38
       }
     },
     {
-      "id": 27,
+      "id": 26,
       "type": "timeseries",
       "title": "CPU por VM",
       "description": "As 5 VMs que mais usaram CPU física (% do host).",
@@ -3192,13 +3151,13 @@
       ],
       "gridPos": {
         "x": 0,
-        "y": 38,
+        "y": 39,
         "w": 8,
         "h": 7
       }
     },
     {
-      "id": 28,
+      "id": 27,
       "type": "timeseries",
       "title": "Disco por VM",
       "description": "As 5 VMs com mais leitura + escrita.",
@@ -3272,13 +3231,13 @@
       ],
       "gridPos": {
         "x": 8,
-        "y": 38,
+        "y": 39,
         "w": 8,
         "h": 7
       }
     },
     {
-      "id": 29,
+      "id": 28,
       "type": "timeseries",
       "title": "Rede por VM",
       "description": "As 5 VMs com mais tráfego (Rx + Tx).",
@@ -3352,7 +3311,7 @@
       ],
       "gridPos": {
         "x": 16,
-        "y": 38,
+        "y": 39,
         "w": 8,
         "h": 7
       }
@@ -3361,19 +3320,19 @@
       "type": "row",
       "title": "Eventos das VMs (Hyper-V)",
       "collapsed": false,
-      "id": 30,
+      "id": 29,
       "panels": [],
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 45
+        "y": 46
       }
     },
     {
       "type": "logs",
       "title": "Eventos do Hyper-V (VMMS / Worker)",
-      "id": 31,
+      "id": 30,
       "datasource": {
         "type": "loki",
         "uid": "${DS_LOKI}"
@@ -3403,7 +3362,7 @@
       ],
       "gridPos": {
         "x": 0,
-        "y": 46,
+        "y": 47,
         "w": 24,
         "h": 9
       },
@@ -3413,10 +3372,10 @@
       "type": "row",
       "title": "Detalhes: CPU",
       "collapsed": true,
-      "id": 34,
+      "id": 33,
       "panels": [
         {
-          "id": 32,
+          "id": 31,
           "type": "timeseries",
           "title": "Disputa por VM",
           "description": "% do tempo esperando CPU física, por VM. Até 2%: folgado.",
@@ -3490,13 +3449,13 @@
           ],
           "gridPos": {
             "x": 0,
-            "y": 56,
+            "y": 57,
             "w": 12,
             "h": 8
           }
         },
         {
-          "id": 33,
+          "id": 32,
           "type": "timeseries",
           "title": "CPU por VM (% das próprias vCPUs)",
           "description": "Uso de CPU de cada VM em relação às vCPUs dela.",
@@ -3570,7 +3529,7 @@
           ],
           "gridPos": {
             "x": 12,
-            "y": 56,
+            "y": 57,
             "w": 12,
             "h": 8
           }
@@ -3580,17 +3539,17 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 55
+        "y": 56
       }
     },
     {
       "type": "row",
       "title": "Detalhes: discos virtuais",
       "collapsed": true,
-      "id": 37,
+      "id": 36,
       "panels": [
         {
-          "id": 35,
+          "id": 34,
           "type": "timeseries",
           "title": "Latência por disco virtual",
           "description": "Latência média por operação em cada VHDX (média de 100 ns convertida).",
@@ -3664,13 +3623,13 @@
           ],
           "gridPos": {
             "x": 0,
-            "y": 57,
+            "y": 58,
             "w": 12,
             "h": 8
           }
         },
         {
-          "id": 36,
+          "id": 35,
           "type": "timeseries",
           "title": "Fila por disco virtual",
           "description": "Fila média de I/O em cada VHDX.",
@@ -3744,7 +3703,7 @@
           ],
           "gridPos": {
             "x": 12,
-            "y": 57,
+            "y": 58,
             "w": 12,
             "h": 8
           }
@@ -3754,17 +3713,17 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 56
+        "y": 57
       }
     },
     {
       "type": "row",
       "title": "Detalhes: rede",
       "collapsed": true,
-      "id": 39,
+      "id": 38,
       "panels": [
         {
-          "id": 38,
+          "id": 37,
           "type": "timeseries",
           "title": "Descartes no vSwitch",
           "description": "Pacotes descartados por segundo no switch virtual. O normal é zero.",
@@ -3851,7 +3810,7 @@
           ],
           "gridPos": {
             "x": 0,
-            "y": 58,
+            "y": 59,
             "w": 24,
             "h": 8
           }
@@ -3861,17 +3820,17 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 57
+        "y": 58
       }
     },
     {
       "type": "row",
       "title": "Saúde da coleta",
       "collapsed": true,
-      "id": 42,
+      "id": 41,
       "panels": [
         {
-          "id": 40,
+          "id": 39,
           "type": "timeseries",
           "title": "Inventário de VMs",
           "description": "1 = execução concluída. Duração em segundos (limite 60 s).",
@@ -3971,13 +3930,13 @@
           ],
           "gridPos": {
             "x": 0,
-            "y": 59,
+            "y": 60,
             "w": 12,
             "h": 8
           }
         },
         {
-          "id": 41,
+          "id": 40,
           "type": "timeseries",
           "title": "Coleta do Hyper-V",
           "description": "1 = Alloy coletando os contadores do Hyper-V e o inventário.",
@@ -4065,7 +4024,7 @@
           ],
           "gridPos": {
             "x": 12,
-            "y": 59,
+            "y": 60,
             "w": 12,
             "h": 8
           }
@@ -4075,7 +4034,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 58
+        "y": 59
       }
     }
   ],

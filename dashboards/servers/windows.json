@@ -755,7 +755,14 @@
             ]
           },
           "decimals": 0,
-          "displayName": "Erros (24h)"
+          "displayName": "Erros (24h)",
+          "links": [
+            {
+              "title": "Ver erros e críticos (24h)",
+              "url": "/d/servers-windows?var-server=${server}&var-nivel=critical%7Cerror&viewPanel=panel-51&from=now-24h&to=now",
+              "targetBlank": false
+            }
+          ]
         },
         "overrides": []
       },
@@ -830,7 +837,14 @@
             ]
           },
           "decimals": 0,
-          "displayName": "Falhas"
+          "displayName": "Falhas",
+          "links": [
+            {
+              "title": "Ver lista",
+              "url": "/d/servers-windows?var-server=${server}&viewPanel=panel-48&from=${__from}&to=${__to}",
+              "targetBlank": false
+            }
+          ]
         },
         "overrides": []
       },
@@ -861,7 +875,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "count((windows_service_state{job=\"integrations/windows\",instance=\"$server\",state!=\"running\",name!~\"(?i)(gupdate|gupdatem|GoogleUpdater.*|edgeupdate|edgeupdatem|MicrosoftEdgeElevationService|sppsvc|RemoteRegistry|MapsBroker|tiledatamodelsvc|CDPSvc|BITS|wuauserv|UsoSvc|DoSvc|WaaSMedicSvc|TrustedInstaller|clr_optimization_.*|stisvc|WbioSrvc|ShellHWDetection|sedsvc|InventorySvc|MMS|asus.*|OneSyncSvc_.*|CDPUserSvc_.*|cbdhsvc_.*|WpnUserService_.*)\"} == 1) and on (name) (windows_service_start_mode{job=\"integrations/windows\",instance=\"$server\",start_mode=\"auto\"} == 1)) or (0 * count(windows_service_state{job=\"integrations/windows\",instance=\"$server\",state=\"running\"} == 1))",
+          "expr": "count((windows_service_state{job=\"integrations/windows\",instance=\"$server\",state!=\"running\",name!~\"(?i)(gupdate|gupdatem|GoogleUpdater.*|edgeupdate|edgeupdatem|MicrosoftEdgeElevationService|sppsvc|RemoteRegistry|MapsBroker|tiledatamodelsvc|CDPSvc|BITS|wuauserv|UsoSvc|DoSvc|WaaSMedicSvc|TrustedInstaller|clr_optimization_.*|stisvc|WbioSrvc|ShellHWDetection|sedsvc|InventorySvc|MMS|asus.*|OneSyncSvc_.*|CDPUserSvc_.*|cbdhsvc_.*|WpnUserService_.*|AppXSvc)\"} == 1) and on (name) (windows_service_start_mode{job=\"integrations/windows\",instance=\"$server\",start_mode=\"auto\"} == 1)) or (0 * count(windows_service_state{job=\"integrations/windows\",instance=\"$server\",state=\"running\"} == 1))",
           "refId": "A",
           "range": false,
           "instant": true,
@@ -1942,7 +1956,7 @@
       "id": 373,
       "type": "timeseries",
       "title": "Leitura / escrita",
-      "description": "Bytes lidos e escritos por segundo, somando as unidades com letra. Escrita para baixo.",
+      "description": "Bytes lidos e escritos por segundo, somando as unidades com letra.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -2007,18 +2021,6 @@
                   "mode": "fixed",
                   "fixedColor": "#FADE2A"
                 }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Escrita"
-            },
-            "properties": [
-              {
-                "id": "custom.transform",
-                "value": "negative-Y"
               }
             ]
           }
@@ -2321,15 +2323,140 @@
       "gridPos": {
         "x": 0,
         "y": 23,
-        "w": 18,
+        "w": 15,
+        "h": 6
+      }
+    },
+    {
+      "id": 380,
+      "type": "timeseries",
+      "title": "Erros e descartes",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Pacotes com erro ou descartados por segundo na placa principal. O normal é zero; valores constantes indicam problema de cabo, driver, buffer ou placa saturada.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "suffix: pac/s",
+          "min": 0,
+          "decimals": 2,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 20,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisSoftMax": 1,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Recebidos"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FF9830"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Enviados"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F2495C"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc",
+          "hideZeros": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(windows_net_packets_received_errors_total{job=\"integrations/windows\",instance=\"$server\",nic!~\"(?i).*(isatap|teredo|loopback|pseudo|6to4|miniport|kernel debug).*\"}[$__rate_interval]) + rate(windows_net_packets_received_discarded_total{job=\"integrations/windows\",instance=\"$server\",nic!~\"(?i).*(isatap|teredo|loopback|pseudo|6to4|miniport|kernel debug).*\"}[$__rate_interval]))",
+          "legendFormat": "Recebidos",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "format": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(windows_net_packets_outbound_errors_total{job=\"integrations/windows\",instance=\"$server\",nic!~\"(?i).*(isatap|teredo|loopback|pseudo|6to4|miniport|kernel debug).*\"}[$__rate_interval]) + rate(windows_net_packets_outbound_discarded_total{job=\"integrations/windows\",instance=\"$server\",nic!~\"(?i).*(isatap|teredo|loopback|pseudo|6to4|miniport|kernel debug).*\"}[$__rate_interval]))",
+          "legendFormat": "Enviados",
+          "refId": "B",
+          "range": true,
+          "instant": false,
+          "format": "time_series"
+        }
+      ],
+      "gridPos": {
+        "x": 15,
+        "y": 23,
+        "w": 6,
         "h": 6
       }
     },
     {
       "id": 377,
       "type": "stat",
-      "title": "Link",
-      "description": "Estado do link da placa principal.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -2376,7 +2503,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "displayName": "Link"
         },
         "overrides": []
       },
@@ -2391,13 +2519,13 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
         "text": {
           "titleSize": 12,
-          "valueSize": 20
+          "valueSize": 18
         }
       },
       "targets": [
@@ -2416,17 +2544,17 @@
         }
       ],
       "gridPos": {
-        "x": 18,
+        "x": 21,
         "y": 23,
-        "w": 6,
+        "w": 3,
         "h": 2
       }
     },
     {
       "id": 378,
       "type": "stat",
-      "title": "Quedas do link (24h)",
-      "description": "Quantas vezes o link caiu nas últimas 24h.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -2455,7 +2583,8 @@
               }
             ]
           },
-          "decimals": 0
+          "decimals": 0,
+          "displayName": "Quedas (24h)"
         },
         "overrides": []
       },
@@ -2470,13 +2599,13 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
         "text": {
           "titleSize": 12,
-          "valueSize": 20
+          "valueSize": 18
         }
       },
       "targets": [
@@ -2495,17 +2624,17 @@
         }
       ],
       "gridPos": {
-        "x": 18,
+        "x": 21,
         "y": 25,
-        "w": 6,
+        "w": 3,
         "h": 2
       }
     },
     {
       "id": 379,
       "type": "stat",
-      "title": "Velocidade do link",
-      "description": "Velocidade negociada da placa. Placas virtio podem não informar.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -2515,11 +2644,10 @@
           "unit": "bps",
           "mappings": [
             {
-              "type": "special",
+              "type": "value",
               "options": {
-                "match": "null+nan",
-                "result": {
-                  "text": "não informada",
+                "0": {
+                  "text": "n/d",
                   "index": 0
                 }
               }
@@ -2537,7 +2665,8 @@
               }
             ]
           },
-          "decimals": 0
+          "decimals": 0,
+          "displayName": "Velocidade"
         },
         "overrides": []
       },
@@ -2552,13 +2681,13 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
         "text": {
           "titleSize": 12,
-          "valueSize": 20
+          "valueSize": 18
         }
       },
       "targets": [
@@ -2568,18 +2697,17 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "windows_net_current_bandwidth_bytes{job=\"integrations/windows\",instance=\"$server\",nic!~\"(?i).*(isatap|teredo|loopback|pseudo|6to4|miniport|kernel debug).*\"} * 8 > 0",
+          "expr": "max(windows_net_current_bandwidth_bytes{job=\"integrations/windows\",instance=\"$server\",nic!~\"(?i).*(isatap|teredo|loopback|pseudo|6to4|miniport|kernel debug).*\"} * 8 > 0) or vector(0)",
           "refId": "A",
           "range": false,
           "instant": true,
-          "format": "time_series",
-          "legendFormat": "{{nic}}"
+          "format": "time_series"
         }
       ],
       "gridPos": {
-        "x": 18,
+        "x": 21,
         "y": 27,
-        "w": 6,
+        "w": 3,
         "h": 2
       }
     },
@@ -2739,7 +2867,7 @@
             "type": "loki",
             "uid": "${DS_LOKI}"
           },
-          "expr": "{job=\"windows-eventlog\", host=\"$server\"} | label_format level=`{{ if eq .level \"1\" }}critical{{ else if eq .level \"2\" }}error{{ else if eq .level \"3\" }}warning{{ else if eq .level \"4\" }}info{{ else if eq .level \"5\" }}debug{{ else }}{{ .level }}{{ end }}` | json source=\"source\", event_id=\"event_id\", message=\"message\" | line_format `{{ .source }} [{{ .event_id }}]: {{ .message }}`",
+          "expr": "{job=\"windows-eventlog\", host=\"$server\"} | label_format level=`{{ if eq .level \"1\" }}critical{{ else if eq .level \"2\" }}error{{ else if eq .level \"3\" }}warning{{ else if eq .level \"4\" }}info{{ else if eq .level \"5\" }}debug{{ else }}{{ .level }}{{ end }}` | level=~\"$nivel\" | json source=\"source\", event_id=\"event_id\", message=\"message\" | line_format `{{ .source }} [{{ .event_id }}]: {{ .message }}`",
           "legendFormat": "",
           "refId": "A",
           "range": true,
@@ -2751,7 +2879,8 @@
         "y": 37,
         "w": 24,
         "h": 12
-      }
+      },
+      "description": "Logs deste servidor. Aberto pelo link de Erros (24h), mostra só erros e críticos; volte ao dashboard pelo botão de voltar para ver todos os níveis."
     },
     {
       "type": "row",
@@ -3083,116 +3212,6 @@
             "w": 12,
             "h": 9
           }
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 10,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "pps"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "x": 12,
-            "y": 42,
-            "w": 12,
-            "h": 9
-          },
-          "hideTimeOverride": false,
-          "id": 10,
-          "options": {
-            "legend": {
-              "calcs": [
-                "lastNotNull",
-                "max"
-              ],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "10.3.3",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "expr": "rate(windows_net_packets_outbound_discarded_total{job=\"integrations/windows\",instance=\"$server\"}[$__rate_interval]) + rate(windows_net_packets_outbound_errors_total{job=\"integrations/windows\",instance=\"$server\"}[$__rate_interval])",
-              "legendFormat": "Tx {{nic}}",
-              "refId": "A",
-              "range": true
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "expr": "rate(windows_net_packets_received_discarded_total{job=\"integrations/windows\",instance=\"$server\"}[$__rate_interval]) + rate(windows_net_packets_received_errors_total{job=\"integrations/windows\",instance=\"$server\"}[$__rate_interval])",
-              "legendFormat": "Rx {{nic}}",
-              "refId": "B",
-              "range": true
-            }
-          ],
-          "title": "Pacotes descartados / com erro",
-          "type": "timeseries"
         },
         {
           "datasource": {
@@ -3975,7 +3994,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "description": "Serviços com início automático que não estão em execução. Ficam de fora serviços que param por design: atualizadores (Google, Edge, ASUS), serviços de início por gatilho/atrasado (RemoteRegistry, sppsvc, BITS, wuauserv, MapsBroker, InventorySvc, MMS…) e serviços por usuário (*_xxxxx).",
+          "description": "Serviços com início automático que não estão em execução. Ficam de fora serviços que param por design: atualizadores (Google, Edge, ASUS), serviços de início por gatilho/atrasado (RemoteRegistry, sppsvc, BITS, wuauserv, MapsBroker, InventorySvc, MMS, AppXSvc…) e serviços por usuário (*_xxxxx).",
           "fieldConfig": {
             "defaults": {},
             "overrides": []
@@ -3990,7 +4009,7 @@
                 "type": "prometheus",
                 "uid": "${DS_PROMETHEUS}"
               },
-              "expr": "(windows_service_state{job=\"integrations/windows\",instance=\"$server\",state!=\"running\",name!~\"(?i)(gupdate|gupdatem|GoogleUpdater.*|edgeupdate|edgeupdatem|MicrosoftEdgeElevationService|sppsvc|RemoteRegistry|MapsBroker|tiledatamodelsvc|CDPSvc|BITS|wuauserv|UsoSvc|DoSvc|WaaSMedicSvc|TrustedInstaller|clr_optimization_.*|stisvc|WbioSrvc|ShellHWDetection|sedsvc|InventorySvc|MMS|asus.*|OneSyncSvc_.*|CDPUserSvc_.*|cbdhsvc_.*|WpnUserService_.*)\"} == 1) and on (name) (windows_service_start_mode{job=\"integrations/windows\",instance=\"$server\",start_mode=\"auto\"} == 1)",
+              "expr": "(windows_service_state{job=\"integrations/windows\",instance=\"$server\",state!=\"running\",name!~\"(?i)(gupdate|gupdatem|GoogleUpdater.*|edgeupdate|edgeupdatem|MicrosoftEdgeElevationService|sppsvc|RemoteRegistry|MapsBroker|tiledatamodelsvc|CDPSvc|BITS|wuauserv|UsoSvc|DoSvc|WaaSMedicSvc|TrustedInstaller|clr_optimization_.*|stisvc|WbioSrvc|ShellHWDetection|sedsvc|InventorySvc|MMS|asus.*|OneSyncSvc_.*|CDPUserSvc_.*|cbdhsvc_.*|WpnUserService_.*|AppXSvc)\"} == 1) and on (name) (windows_service_start_mode{job=\"integrations/windows\",instance=\"$server\",start_mode=\"auto\"} == 1)",
               "legendFormat": "",
               "refId": "A",
               "range": false,
@@ -4066,6 +4085,25 @@
         "tagsQuery": "",
         "type": "query",
         "useTags": false
+      },
+      {
+        "type": "textbox",
+        "name": "nivel",
+        "label": "Nível",
+        "hide": 2,
+        "query": ".+",
+        "current": {
+          "text": ".+",
+          "value": ".+"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": ".+",
+            "value": ".+"
+          }
+        ],
+        "description": "Regex de nível dos logs. Preenchido pelo link de Erros (24h)."
       }
     ]
   },

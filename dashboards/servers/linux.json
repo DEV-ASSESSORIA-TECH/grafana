@@ -743,7 +743,14 @@
             ]
           },
           "decimals": 0,
-          "displayName": "Erros (24h)"
+          "displayName": "Erros (24h)",
+          "links": [
+            {
+              "title": "Ver erros e críticos (24h)",
+              "url": "/d/servers-linux?var-server=${server}&var-nivel=emerg%7Calert%7Ccrit%7Ccritical%7Cerr%7Cerror%7Cfatal&viewPanel=panel-346&from=now-24h&to=now",
+              "targetBlank": false
+            }
+          ]
         },
         "overrides": []
       },
@@ -774,7 +781,7 @@
             "uid": "${DS_LOKI}"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({job=\"systemd-journal\", host=\"$server\", level=~\"(?i)(emerg|alert|crit|critical|err|error|fatal)\"} [24h])) or vector(0)",
+          "expr": "sum(count_over_time({job=\"systemd-journal\", host=\"$server\", level=~\"(?i)(0|1|2|3|emerg|alert|crit|critical|err|error|fatal)\"} [24h])) or vector(0)",
           "refId": "A",
           "range": false,
           "instant": true,
@@ -818,7 +825,14 @@
             ]
           },
           "decimals": 0,
-          "displayName": "Falhas"
+          "displayName": "Falhas",
+          "links": [
+            {
+              "title": "Ver lista",
+              "url": "/d/servers-linux?var-server=${server}&viewPanel=panel-380&from=${__from}&to=${__to}",
+              "targetBlank": false
+            }
+          ]
         },
         "overrides": []
       },
@@ -849,7 +863,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "count(node_systemd_unit_state{job=\"integrations/unix\",instance=\"$server\",state=\"failed\"} == 1) or (0 * count(node_systemd_units{job=\"integrations/unix\",instance=\"$server\"}))",
+          "expr": "count(node_systemd_unit_state{job=\"integrations/unix\",instance=\"$server\",state=\"failed\",name!~\"fwupd.*|motd-news.*\"} == 1) or (0 * count(node_systemd_units{job=\"integrations/unix\",instance=\"$server\"}))",
           "refId": "A",
           "range": false,
           "instant": true,
@@ -2010,7 +2024,7 @@
       "id": 357,
       "type": "timeseries",
       "title": "Leitura / escrita",
-      "description": "Bytes lidos e escritos por segundo nos discos físicos (sem contar LVM/dm de novo). Escrita para baixo.",
+      "description": "Bytes lidos e escritos por segundo nos discos físicos (sem contar LVM/dm de novo).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -2075,18 +2089,6 @@
                   "mode": "fixed",
                   "fixedColor": "#FADE2A"
                 }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Escrita"
-            },
-            "properties": [
-              {
-                "id": "custom.transform",
-                "value": "negative-Y"
               }
             ]
           }
@@ -2389,15 +2391,140 @@
       "gridPos": {
         "x": 0,
         "y": 23,
-        "w": 18,
+        "w": 15,
+        "h": 6
+      }
+    },
+    {
+      "id": 381,
+      "type": "timeseries",
+      "title": "Erros e descartes",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Pacotes com erro ou descartados por segundo na placa principal. O normal é zero; valores constantes indicam problema de cabo, driver, buffer ou placa saturada.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "suffix: pac/s",
+          "min": 0,
+          "decimals": 2,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 20,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisSoftMax": 1,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Recebidos"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FF9830"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Enviados"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#F2495C"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc",
+          "hideZeros": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(node_network_receive_errs_total{job=\"integrations/unix\",instance=\"$server\",device!~\"lo|docker.*|br-.*|veth.*|tailscale.*|virbr.*|vnet.*|cni.*|flannel.*|cali.*|vxlan.*|wg.*|tun.*|tap.*|kube.*|zt.*\"}[$__rate_interval]) + rate(node_network_receive_drop_total{job=\"integrations/unix\",instance=\"$server\",device!~\"lo|docker.*|br-.*|veth.*|tailscale.*|virbr.*|vnet.*|cni.*|flannel.*|cali.*|vxlan.*|wg.*|tun.*|tap.*|kube.*|zt.*\"}[$__rate_interval]))",
+          "legendFormat": "Recebidos",
+          "refId": "A",
+          "range": true,
+          "instant": false,
+          "format": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(node_network_transmit_errs_total{job=\"integrations/unix\",instance=\"$server\",device!~\"lo|docker.*|br-.*|veth.*|tailscale.*|virbr.*|vnet.*|cni.*|flannel.*|cali.*|vxlan.*|wg.*|tun.*|tap.*|kube.*|zt.*\"}[$__rate_interval]) + rate(node_network_transmit_drop_total{job=\"integrations/unix\",instance=\"$server\",device!~\"lo|docker.*|br-.*|veth.*|tailscale.*|virbr.*|vnet.*|cni.*|flannel.*|cali.*|vxlan.*|wg.*|tun.*|tap.*|kube.*|zt.*\"}[$__rate_interval]))",
+          "legendFormat": "Enviados",
+          "refId": "B",
+          "range": true,
+          "instant": false,
+          "format": "time_series"
+        }
+      ],
+      "gridPos": {
+        "x": 15,
+        "y": 23,
+        "w": 6,
         "h": 6
       }
     },
     {
       "id": 361,
       "type": "stat",
-      "title": "Link",
-      "description": "Estado do link da placa principal.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -2444,7 +2571,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "displayName": "Link"
         },
         "overrides": []
       },
@@ -2459,13 +2587,13 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
         "text": {
           "titleSize": 12,
-          "valueSize": 20
+          "valueSize": 18
         }
       },
       "targets": [
@@ -2484,17 +2612,17 @@
         }
       ],
       "gridPos": {
-        "x": 18,
+        "x": 21,
         "y": 23,
-        "w": 6,
+        "w": 3,
         "h": 2
       }
     },
     {
       "id": 362,
       "type": "stat",
-      "title": "Quedas do link (24h)",
-      "description": "Quantas vezes o link caiu nas últimas 24h.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -2523,7 +2651,8 @@
               }
             ]
           },
-          "decimals": 0
+          "decimals": 0,
+          "displayName": "Quedas (24h)"
         },
         "overrides": []
       },
@@ -2538,13 +2667,13 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
         "text": {
           "titleSize": 12,
-          "valueSize": 20
+          "valueSize": 18
         }
       },
       "targets": [
@@ -2563,17 +2692,17 @@
         }
       ],
       "gridPos": {
-        "x": 18,
+        "x": 21,
         "y": 25,
-        "w": 6,
+        "w": 3,
         "h": 2
       }
     },
     {
       "id": 363,
       "type": "stat",
-      "title": "Velocidade do link",
-      "description": "Velocidade negociada da placa. Placas virtio podem não informar.",
+      "title": "",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -2583,11 +2712,10 @@
           "unit": "bps",
           "mappings": [
             {
-              "type": "special",
+              "type": "value",
               "options": {
-                "match": "null+nan",
-                "result": {
-                  "text": "não informada",
+                "0": {
+                  "text": "n/d",
                   "index": 0
                 }
               }
@@ -2605,7 +2733,8 @@
               }
             ]
           },
-          "decimals": 0
+          "decimals": 0,
+          "displayName": "Velocidade"
         },
         "overrides": []
       },
@@ -2620,13 +2749,13 @@
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
-        "textMode": "value",
+        "textMode": "value_and_name",
         "orientation": "auto",
         "wideLayout": true,
         "showPercentChange": false,
         "text": {
           "titleSize": 12,
-          "valueSize": 20
+          "valueSize": 18
         }
       },
       "targets": [
@@ -2636,18 +2765,17 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "node_network_speed_bytes{job=\"integrations/unix\",instance=\"$server\",device!~\"lo|docker.*|br-.*|veth.*|tailscale.*|virbr.*|vnet.*|cni.*|flannel.*|cali.*|vxlan.*|wg.*|tun.*|tap.*|kube.*|zt.*\"} * 8 > 0",
+          "expr": "max(node_network_speed_bytes{job=\"integrations/unix\",instance=\"$server\",device!~\"lo|docker.*|br-.*|veth.*|tailscale.*|virbr.*|vnet.*|cni.*|flannel.*|cali.*|vxlan.*|wg.*|tun.*|tap.*|kube.*|zt.*\"} * 8 > 0) or vector(0)",
           "refId": "A",
           "range": false,
           "instant": true,
-          "format": "time_series",
-          "legendFormat": "{{device}}"
+          "format": "time_series"
         }
       ],
       "gridPos": {
-        "x": 18,
+        "x": 21,
         "y": 27,
-        "w": 6,
+        "w": 3,
         "h": 2
       }
     },
@@ -2776,7 +2904,7 @@
           "refId": "A",
           "queryType": "range",
           "legendFormat": "{{level}}",
-          "expr": "sum by (level) (count_over_time({job=\"systemd-journal\", host=\"$server\"} [$__auto]))"
+          "expr": "sum by (level) (count_over_time({job=\"systemd-journal\", host=\"$server\"} | label_format level=`{{ if eq .level \"0\" }}emerg{{ else if eq .level \"1\" }}alert{{ else if eq .level \"2\" }}crit{{ else if eq .level \"3\" }}err{{ else if eq .level \"4\" }}warning{{ else if eq .level \"5\" }}notice{{ else if eq .level \"6\" }}info{{ else if eq .level \"7\" }}debug{{ else }}{{ .level }}{{ end }}` [$__auto]))"
         }
       ],
       "interval": "1m",
@@ -2814,9 +2942,10 @@
           },
           "refId": "A",
           "queryType": "range",
-          "expr": "{job=\"systemd-journal\", host=\"$server\"}"
+          "expr": "{job=\"systemd-journal\", host=\"$server\"} | label_format level=`{{ if eq .level \"0\" }}emerg{{ else if eq .level \"1\" }}alert{{ else if eq .level \"2\" }}crit{{ else if eq .level \"3\" }}err{{ else if eq .level \"4\" }}warning{{ else if eq .level \"5\" }}notice{{ else if eq .level \"6\" }}info{{ else if eq .level \"7\" }}debug{{ else }}{{ .level }}{{ end }}` | level=~\"$nivel\""
         }
-      ]
+      ],
+      "description": "Logs deste servidor. Aberto pelo link de Erros (24h), mostra só erros e críticos; volte ao dashboard pelo botão de voltar para ver todos os níveis."
     },
     {
       "collapsed": true,
@@ -8362,7 +8491,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "description": "Unidades systemd em estado failed. Vazio = nenhuma falha.",
+          "description": "Unidades systemd em estado failed. Vazio = nenhuma falha. Ficam de fora fwupd (atualizador de firmware, falha em VM por não ter firmware) e motd-news (falha sem internet).",
           "fieldConfig": {
             "defaults": {
               "custom": {
@@ -8385,7 +8514,7 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "editorMode": "code",
-              "expr": "node_systemd_unit_state{job=\"integrations/unix\",instance=\"$server\",state=\"failed\"} == 1",
+              "expr": "node_systemd_unit_state{job=\"integrations/unix\",instance=\"$server\",state=\"failed\",name!~\"fwupd.*|motd-news.*\"} == 1",
               "refId": "A",
               "range": false,
               "instant": true,
@@ -14288,6 +14417,25 @@
         "skipUrlSync": false,
         "sort": 1,
         "type": "query"
+      },
+      {
+        "type": "textbox",
+        "name": "nivel",
+        "label": "Nível",
+        "hide": 2,
+        "query": ".+",
+        "current": {
+          "text": ".+",
+          "value": ".+"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": ".+",
+            "value": ".+"
+          }
+        ],
+        "description": "Regex de nível dos logs. Preenchido pelo link de Erros (24h)."
       }
     ]
   },

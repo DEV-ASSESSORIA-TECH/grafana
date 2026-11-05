@@ -733,19 +733,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "mappings": [
-            {
-              "type": "special",
-              "options": {
-                "match": "null+nan",
-                "result": {
-                  "text": "0",
-                  "index": 0,
-                  "color": "green"
-                }
-              }
-            }
-          ],
+          "mappings": [],
           "color": {
             "mode": "thresholds"
           },
@@ -798,7 +786,7 @@
             "uid": "${DS_LOKI}"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({job=\"windows-eventlog\", host=\"$server\", level=~\"(?i)(critical|crit|error|err|fatal)\"} [24h]))",
+          "expr": "sum(count_over_time({job=\"windows-eventlog\", host=\"$server\", level=~\"(?i)(1|2|critical|crit|error|err|fatal)\"} [24h])) or vector(0)",
           "refId": "A",
           "range": false,
           "instant": true,
@@ -842,7 +830,7 @@
             ]
           },
           "decimals": 0,
-          "displayName": "Serviços c/ falha"
+          "displayName": "Falhas"
         },
         "overrides": []
       },
@@ -873,7 +861,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "count((windows_service_state{job=\"integrations/windows\",instance=\"$server\",state!=\"running\"} == 1) and on (name) (windows_service_start_mode{job=\"integrations/windows\",instance=\"$server\",start_mode=\"auto\"} == 1)) or (0 * count(windows_service_state{job=\"integrations/windows\",instance=\"$server\",state=\"running\"} == 1))",
+          "expr": "count((windows_service_state{job=\"integrations/windows\",instance=\"$server\",state!=\"running\",name!~\"(?i)(gupdate|gupdatem|GoogleUpdater.*|edgeupdate|edgeupdatem|MicrosoftEdgeElevationService|sppsvc|RemoteRegistry|MapsBroker|tiledatamodelsvc|CDPSvc|BITS|wuauserv|UsoSvc|DoSvc|WaaSMedicSvc|TrustedInstaller|clr_optimization_.*|stisvc|WbioSrvc|ShellHWDetection|sedsvc|InventorySvc|MMS|asus.*|OneSyncSvc_.*|CDPUserSvc_.*|cbdhsvc_.*|WpnUserService_.*)\"} == 1) and on (name) (windows_service_start_mode{job=\"integrations/windows\",instance=\"$server\",start_mode=\"auto\"} == 1)) or (0 * count(windows_service_state{job=\"integrations/windows\",instance=\"$server\",state=\"running\"} == 1))",
           "refId": "A",
           "range": false,
           "instant": true,
@@ -2711,7 +2699,7 @@
             "type": "loki",
             "uid": "${DS_LOKI}"
           },
-          "expr": "sum by (level) (count_over_time({job=\"windows-eventlog\", host=\"$server\"} [$__auto]))",
+          "expr": "sum by (level) (count_over_time({job=\"windows-eventlog\", host=\"$server\"} | label_format level=`{{ if eq .level \"1\" }}critical{{ else if eq .level \"2\" }}error{{ else if eq .level \"3\" }}warning{{ else if eq .level \"4\" }}info{{ else if eq .level \"5\" }}debug{{ else }}{{ .level }}{{ end }}` [$__auto]))",
           "legendFormat": "{{level}}",
           "refId": "A",
           "range": true,
@@ -2751,7 +2739,7 @@
             "type": "loki",
             "uid": "${DS_LOKI}"
           },
-          "expr": "{job=\"windows-eventlog\", host=\"$server\"}",
+          "expr": "{job=\"windows-eventlog\", host=\"$server\"} | label_format level=`{{ if eq .level \"1\" }}critical{{ else if eq .level \"2\" }}error{{ else if eq .level \"3\" }}warning{{ else if eq .level \"4\" }}info{{ else if eq .level \"5\" }}debug{{ else }}{{ .level }}{{ end }}` | json source=\"source\", event_id=\"event_id\", message=\"message\" | line_format `{{ .source }} [{{ .event_id }}]: {{ .message }}`",
           "legendFormat": "",
           "refId": "A",
           "range": true,
@@ -3987,7 +3975,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "description": "Servicos com inicio automatico que nao estao em execucao. Alguns (ex.: gupdate, sppsvc) param por design.",
+          "description": "Serviços com início automático que não estão em execução. Ficam de fora serviços que param por design: atualizadores (Google, Edge, ASUS), serviços de início por gatilho/atrasado (RemoteRegistry, sppsvc, BITS, wuauserv, MapsBroker, InventorySvc, MMS…) e serviços por usuário (*_xxxxx).",
           "fieldConfig": {
             "defaults": {},
             "overrides": []
@@ -4002,7 +3990,7 @@
                 "type": "prometheus",
                 "uid": "${DS_PROMETHEUS}"
               },
-              "expr": "(windows_service_state{job=\"integrations/windows\",instance=\"$server\",state!=\"running\"} == 1) and on (name) (windows_service_start_mode{job=\"integrations/windows\",instance=\"$server\",start_mode=\"auto\"} == 1)",
+              "expr": "(windows_service_state{job=\"integrations/windows\",instance=\"$server\",state!=\"running\",name!~\"(?i)(gupdate|gupdatem|GoogleUpdater.*|edgeupdate|edgeupdatem|MicrosoftEdgeElevationService|sppsvc|RemoteRegistry|MapsBroker|tiledatamodelsvc|CDPSvc|BITS|wuauserv|UsoSvc|DoSvc|WaaSMedicSvc|TrustedInstaller|clr_optimization_.*|stisvc|WbioSrvc|ShellHWDetection|sedsvc|InventorySvc|MMS|asus.*|OneSyncSvc_.*|CDPUserSvc_.*|cbdhsvc_.*|WpnUserService_.*)\"} == 1) and on (name) (windows_service_start_mode{job=\"integrations/windows\",instance=\"$server\",start_mode=\"auto\"} == 1)",
               "legendFormat": "",
               "refId": "A",
               "range": false,

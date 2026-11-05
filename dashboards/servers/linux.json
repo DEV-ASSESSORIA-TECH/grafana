@@ -721,19 +721,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "mappings": [
-            {
-              "type": "special",
-              "options": {
-                "match": "null+nan",
-                "result": {
-                  "text": "0",
-                  "index": 0,
-                  "color": "green"
-                }
-              }
-            }
-          ],
+          "mappings": [],
           "color": {
             "mode": "thresholds"
           },
@@ -786,7 +774,7 @@
             "uid": "${DS_LOKI}"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({job=\"systemd-journal\", host=\"$server\", level=~\"(?i)(emerg|alert|crit|critical|err|error|fatal)\"} [24h]))",
+          "expr": "sum(count_over_time({job=\"systemd-journal\", host=\"$server\", level=~\"(?i)(emerg|alert|crit|critical|err|error|fatal)\"} [24h])) or vector(0)",
           "refId": "A",
           "range": false,
           "instant": true,
@@ -830,7 +818,7 @@
             ]
           },
           "decimals": 0,
-          "displayName": "Falhas systemd"
+          "displayName": "Falhas"
         },
         "overrides": []
       },

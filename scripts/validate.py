@@ -78,6 +78,7 @@ def check_prom(where, expr):
 
 
 def check_loki(where, expr):
+    expr = re.sub(r"`[^`]*`", "``", expr)  # templates (label_format/line_format) nao sao seletores
     for selector in re.findall(r"\{([^}]*)\}", expr):
         labels = dict(re.findall(r'(\w+)\s*(?:=~|!=|!~|=)\s*"([^"]*)"', selector))
         job = labels.get("job")

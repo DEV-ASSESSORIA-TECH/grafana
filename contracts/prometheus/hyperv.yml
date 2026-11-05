@@ -1008,9 +1008,32 @@ units_validated:
     metrics:
       - windows_hyperv_vswitch_bytes_total
     evidence: rate 2.5 Mb/s
-  pending:
-    - windows_hyperv_hypervisor_virtual_processor_cpu_wait_time_per_dispatch_total (bruto ~60 a 7500, nao parece acumulado)
-    - windows_hyperv_virtual_storage_device_latency_seconds (bruto 4.1e11, nao e segundos instantaneos)
+  cpu_wait:
+    unit: segundos de espera acumulados por vCPU (contador; rate = fracao do tempo esperando CPU fisica, como o steal
+      do Linux)
+    metrics:
+      - windows_hyperv_hypervisor_virtual_processor_cpu_wait_time_per_dispatch_total
+    evidence: 24 series (3 VMs) sem nenhuma queda em 30 min; acumulado / uptime da VM na mesma ordem da taxa atual
+      (SRV-MON 0.9% vs 0.37%, SRV-CLOCKIN 0.01% vs 0.005%). Unidade inferida por consistencia; o HELP do exporter
+      fala em nanossegundos por despacho, o que nao bate com os valores.
+    vm_wait_pct: 100 * sum by (vm) (rate(windows_hyperv_hypervisor_virtual_processor_cpu_wait_time_per_dispatch_total[5m])) / count by (vm) (windows_hyperv_hypervisor_virtual_processor_cpu_wait_time_per_dispatch_total)
+    thresholds_pct:
+      ok: '< 2'
+      warn: '2 - 5'
+      crit: '> 5'
+  storage_latency_queue:
+    unit: acumulado em unidades de 100 ns (latencia) e 100 ns x fila (fila), apesar do nome _seconds
+    metrics:
+      - windows_hyperv_virtual_storage_device_latency_seconds
+      - windows_hyperv_virtual_storage_device_lower_latency_seconds
+      - windows_hyperv_virtual_storage_device_queue_length
+      - windows_hyperv_virtual_storage_device_operations_read_total
+      - windows_hyperv_virtual_storage_device_operations_written_total
+    evidence: rate(latency)/ops = 2657 -> 0.27 ms por operacao, compativel com a latencia de leitura do D: medida pelo
+      Windows (0.20 ms). Lei de Little confere - 57.8 ops/s x 0.27 ms = fila media 0.015 = rate(queue_length) x 1e-7.
+    avg_latency_seconds: 1e-7 * sum(rate(windows_hyperv_virtual_storage_device_latency_seconds[5m])) / sum(rate(windows_hyperv_virtual_storage_device_operations_read_total[5m]) + rate(windows_hyperv_virtual_storage_device_operations_written_total[5m]))
+    avg_queue: 1e-7 * rate(windows_hyperv_virtual_storage_device_queue_length[5m])
+    caveat: O fator 1e-7 vem da frequencia do contador de desempenho do Windows (10 MHz no Windows Server 2016+).
 query_recipes:
   - id: observed_vm_vcpu_counts
     title: vCPUs observadas por host e VM

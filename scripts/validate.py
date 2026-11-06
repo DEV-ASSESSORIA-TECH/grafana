@@ -5,6 +5,7 @@
 2. Dashboards: title, uid e panels presentes; uid unico.
 3. Contratos: toda metrica usada em consulta Prometheus existe no contrato
    do job fixado na consulta; toda consulta Loki usa job e labels observados.
+4. Contrato de alertas: severity e area definidos; jobs de cada area com contrato.
 """
 import json
 import re
@@ -19,6 +20,7 @@ errors, warnings = [], []
 # ---------------------------------------------------------------- contratos
 prom_jobs = {}  # job -> set(metricas)
 loki_jobs = {}  # job -> set(labels)
+alert_contracts = []  # (arquivo, contrato de labels de alerta)
 for path in sorted(ROOT.glob("contracts/**/*.yml")):
     rel = path.relative_to(ROOT)
     try:
@@ -34,6 +36,22 @@ for path in sorted(ROOT.glob("contracts/**/*.yml")):
         prom_jobs[job] = metrics
     elif c.get("kind") == "loki_log_contract" and job:
         loki_jobs[job] = set((c.get("identity") or {}).get("observed_labels") or [])
+    elif c.get("kind") == "alert_label_contract":
+        alert_contracts.append((rel, c))
+
+# contrato de alertas: labels obrigatorios e jobs do mapeamento de area
+for rel, c in alert_contracts:
+    labels = c.get("labels") or {}
+    for name in ("severity", "area"):
+        if not (labels.get(name) or {}).get("values"):
+            errors.append(f"{rel}: label '{name}' sem valores")
+    for area, spec in ((labels.get("area") or {}).get("values") or {}).items():
+        for job in (spec or {}).get("prometheus_jobs") or []:
+            if job not in prom_jobs:
+                errors.append(f"{rel}: area {area}: job Prometheus sem contrato: {job}")
+        for job in (spec or {}).get("loki_jobs") or []:
+            if job not in loki_jobs:
+                errors.append(f"{rel}: area {area}: job Loki sem contrato: {job}")
 
 # ------------------------------------------------------------ parser PromQL
 PROM_WORDS = {"by", "without", "on", "ignoring", "group_left", "group_right",

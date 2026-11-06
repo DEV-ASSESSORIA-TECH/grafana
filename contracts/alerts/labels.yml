@@ -1,0 +1,48 @@
+# Contrato dos labels de alerta; nao provisionar este YAML no Grafana.
+schema_version: 1
+kind: alert_label_contract
+version: 0.1.0
+id: alert-labels
+title: Labels obrigatorios de alertas
+status: defined
+scope: Labels que toda regra de alerta deve publicar. Nao define regras, limiares nem roteamento de notificacao.
+labels:
+  severity:
+    required: true
+    values:
+      critical: Exige acao imediata.
+      warning: Exige acao planejada.
+      info: Informativo; nao exige acao.
+  area:
+    required: true
+    values:
+      linux:
+        prometheus_jobs:
+          - integrations/unix
+        loki_jobs:
+          - systemd-journal
+      windows:
+        prometheus_jobs:
+          - integrations/windows
+        loki_jobs:
+          - windows-eventlog
+      hypervisor:
+        prometheus_jobs:
+          - integrations/hypervisor
+          - integrations/hyperv
+        loki_jobs:
+          - hyperv-eventlog
+      servicos:
+        prometheus_jobs:
+          - uptime-kuma
+        loki_jobs: []
+      containers:
+        prometheus_jobs:
+          - integrations/docker
+        loki_jobs:
+          - docker
+rules:
+  - Toda regra de alerta publica exatamente um valor de severity e um de area, entre os listados acima.
+  - Valores em ASCII minusculo, exatamente como escritos aqui (servicos, sem cedilha).
+  - area segue o job da consulta da regra, conforme o mapeamento acima.
+  - Valor novo de severity ou area exige atualizar este contrato antes de ser usado.

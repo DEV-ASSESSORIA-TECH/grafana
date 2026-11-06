@@ -9,6 +9,7 @@ Dashboards Grafana da infraestrutura e os contratos de dados que eles consomem.
 | `dashboards/` | Dashboards em uso (JSON para importar no Grafana) |
 | `contracts/prometheus/` | Métricas, jobs e labels observados por fonte (Alloy, Prometheus, Uptime Kuma) |
 | `contracts/loki/` | Streams e labels de log observados |
+| `contracts/alerts/` | Labels obrigatórios das regras de alerta (`severity`, `area`) |
 | `references/` | Dashboards da comunidade usados como base. Não editar |
 | `scripts/validate.py` | Valida sintaxe e se as consultas usam só métricas/labels dos contratos |
 

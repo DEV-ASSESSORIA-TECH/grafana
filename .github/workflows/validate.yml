@@ -14,3 +14,24 @@ jobs:
           python-version: "3.12"
       - run: pip install pyyaml
       - run: python scripts/validate.py
+
+  # Sincroniza dashboards/ num Grafana 13.0.3 real (motor do Git Sync) e confere o resultado
+  grafana-sync:
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Subir Grafana 13.0.3
+        run: |
+          docker run -d --name grafana -p 3000:3000 \
+            -v "$GITHUB_WORKSPACE/dashboards:/repo/dashboards:ro" \
+            -e GF_FEATURE_TOGGLES_ENABLE=provisioning,kubernetesDashboards \
+            -e GF_PATHS_PERMITTED_PROVISIONING_PATHS=/repo \
+            grafana/grafana:13.0.3
+      - run: python scripts/grafana_check.py --url http://localhost:3000 --path /repo/dashboards
+      - name: Log do Grafana
+        if: failure()
+        run: docker logs grafana 2>&1 | grep -iE "error|warn|provisioning" | tail -100

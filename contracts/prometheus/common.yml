@@ -1,23 +1,16 @@
 schema_version: 2
 kind: observability_contract_common
-version: 0.2.0
+version: 0.3.0
 status: observed_baseline
 observed_at_utc: '2026-11-04T19:01:53.881Z'
 scope: Contrato de consumo dos dados atualmente observados. Nao e especificacao da configuracao instalada nem obrigacao
   de ativar coletores.
 evidence:
-  metric_schema: Nome e labels confirmados em /api/v1/series; cobertura e cardinalidade derivadas da exportacao.
-  numeric_values: Somente up.json inclui valores de metricas. Os demais arquivos nao incluem amostras de CPU, memoria,
-    saude, latencia ou disponibilidade dos monitores.
-  metadata: TYPE/HELP/UNIT so sao confirmados quando presentes em metadata.json. A API nao associa esses registros
-    a cada job.
-  freshness: O timestamp de up.json e o instante de avaliacao da consulta, nao a idade da ultima amostra. Nao foi
-    exportado timestamp(up).
-  window: O script de coleta solicitou aproximadamente 15 minutos. Os parametros nao constam das respostas; /series
-    pode incluir series sem amostras no intervalo.
-  targets: 'targets.json contem apenas os dois targets de scrape direto: Prometheus e Uptime Kuma. Os targets Alloy
-    devem ser inventariados tambem por up/series.'
-  live_testing: Nenhuma consulta deste pacote foi executada no servidor durante a geracao.
+  metric_schema: Nomes e labels confirmados em /api/v1/series do Prometheus.
+  metadata: TYPE/HELP/UNIT so sao confirmados quando o exporter os publica. A API nao associa esses registros a
+    cada job.
+  targets: /targets lista apenas os scrapes diretos (Prometheus e Uptime Kuma). Os targets Alloy sao inventariados
+    por up/series.
 identity:
   target_key:
     - job
@@ -25,7 +18,7 @@ identity:
   alloy_host_label: host
   observed_alloy_host_equals_instance: true
   hyperv_instance_meaning: host hypervisor, nunca o sistema operacional convidado
-  case_sensitivity: vm em maiusculas e instance em minusculas no snapshot. Nao ha join direto automatico entre elas.
+  case_sensitivity: vm em maiusculas e instance em minusculas. Nao ha join direto automatico entre elas.
   host_is_not_global: Nenhum tenant/environment/site foi observado. Evitar homonimos caso a coleta se expanda para
     clientes diferentes.
 consumer_rules:
@@ -48,5 +41,3 @@ non_goals:
   - Publicar endpoints
   - Criar dashboards
   - Comprovar alertas ativos, retencao ou SLA
-privacy: Inventarios e relatorios contem estrutura interna. O .gitignore evita a inclusao inicial dessas pastas,
-  mas nao remove arquivos ja rastreados. Revisar todo o pacote antes de publicar.

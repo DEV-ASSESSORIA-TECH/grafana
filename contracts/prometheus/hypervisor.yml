@@ -1,7 +1,7 @@
 # Contrato observado para consumidores de dashboards; nao provisionar este YAML no Grafana.
 schema_version: 2
 kind: observability_contract
-version: 0.1.0
+version: 0.2.0
 id: hypervisor
 title: Hypervisor / inventario de VMs (formato neutro)
 status: observed_baseline
@@ -14,23 +14,12 @@ source:
     (textfile) -> scrape 60s
   platforms:
     hyperv: implementado
-  note: Formato neutro (hypervisor_*). Outras plataformas devem publicar os mesmos nomes e labels, com platform proprio.
+  note: Formato neutro (hypervisor_*). Outras plataformas devem publicar os mesmos nomes e labels, com platform
+    proprio.
 references:
   common: common.yml
   platform_counters:
     hyperv: hyperv.yml
-snapshot:
-  job: integrations/hypervisor
-  hosts_observed:
-    - srv-host01
-  hosts_pending:
-    - srv-host01-mtc
-  vms: 21
-  vms_running: 18
-  vms_off: 3
-  guest_kvp: 18
-  name_matches_guest: 18
-  inventory_duration_seconds: 11
 identity:
   target_key:
     - job
@@ -45,8 +34,7 @@ identity:
   guest_join:
     status: implemented
     label: guest_host (hypervisor_vm_info)
-    method: hostname do convidado via KVP, em minusculas, igual ao instance dos jobs integrations/windows e
-      integrations/unix
+    method: hostname do convidado via KVP, em minusculas, igual ao instance dos jobs integrations/windows e integrations/unix
     fallback: guest_source=cache (ultimo KVP visto) ou vm_name (nome da VM em minusculas, sem confirmacao)
     guest_kind: windows | linux | unknown (unknown = VM nunca vista ligada pelo inventario)
   counter_join:
@@ -112,9 +100,9 @@ metric_groups:
       - starting
       - stopping
       - other
-    interpretation: hypervisor_vm_state e one-hot (1 no estado vigente, 0 nos demais); contar VMs com == 1.
-      heartbeat so existe com a VM ligada e o servico de integracao ativo. name_matches_guest so existe quando o
-      convidado foi identificado (kvp ou cache).
+    interpretation: hypervisor_vm_state e one-hot (1 no estado vigente, 0 nos demais); contar VMs com == 1. heartbeat
+      so existe com a VM ligada e o servico de integracao ativo. name_matches_guest so existe quando o convidado
+      foi identificado (kvp ou cache).
   vm_config:
     title: Configuracao e uso das VMs
     metrics_observed:
@@ -128,8 +116,7 @@ metric_groups:
     labels:
       all:
         - vm
-    interpretation: memory_assigned = 0 com a VM desligada. memory_maximum so existe com memoria dinamica (nenhuma
-      VM observada usa).
+    interpretation: memory_assigned = 0 com a VM desligada. memory_maximum so existe com memoria dinamica.
   vm_disks:
     title: Discos virtuais
     metrics_observed:
@@ -147,8 +134,8 @@ metric_groups:
       hypervisor_vm_disk_size_bytes:
         - vm
         - path
-    interpretation: size = tamanho maximo provisionado; file = espaco ocupado no volume do host (VHDX dinamico
-      cresce ate size). Os .vmgs e ISOs dos contadores do Hyper-V nao entram no inventario.
+    interpretation: size = tamanho maximo provisionado; file = espaco ocupado no volume do host (VHDX dinamico cresce
+      ate size). Os .vmgs e ISOs dos contadores do Hyper-V nao entram no inventario.
   vm_network:
     title: Placas de rede virtuais
     metrics_observed:
@@ -178,10 +165,8 @@ query_recipes:
     promql: sum by (vm) (rate(windows_hyperv_virtual_storage_device_bytes_read{job="integrations/hyperv",instance="$host"}[5m])
       * on (device) group_left (vm) group by (device, vm) (hypervisor_vm_disk_info{job="integrations/hypervisor",instance="$host"}))
     notes:
-      - Confirmar se bytes_read e contador antes de fixar rate (contrato hyperv nao trouxe TYPE).
+      - bytes_read e contador acumulado (ver units_validated em hyperv.yml).
 limitations:
-  - Observado em um host (srv-host01). srv-host01-mtc ja publica os contadores do Hyper-V; inventario pendente de
-    reaplicacao.
   - Sistema do convidado de VM nunca vista ligada pelo inventario fica unknown; o hostname cai no nome da VM.
   - Atualizacao a cada 1 min; estado de VM pode atrasar ate ~2 min (tarefa + scrape).
 change_policy:

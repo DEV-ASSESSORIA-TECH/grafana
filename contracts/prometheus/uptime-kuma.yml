@@ -1,7 +1,7 @@
 # Contrato observado para consumidores de dashboards; nao provisionar este YAML no Grafana.
 schema_version: 2
 kind: observability_contract
-version: 0.3.0
+version: 0.4.0
 id: uptime-kuma
 title: Uptime Kuma / disponibilidade e certificados
 status: observed_baseline
@@ -9,19 +9,6 @@ observed_at_utc: '2026-11-04T19:01:53.881Z'
 job: uptime-kuma
 references:
   common: common.yml
-  full_metric_catalog: ../catalogs/uptime-kuma.yml
-  private_inventory: ../inventory/uptime-kuma.yml
-  sources: ../sources.yml
-snapshot:
-  job: uptime-kuma
-  metric_names: 43
-  series_returned: 207
-  instances: 1
-  up_series_returned: 1
-  up_equal_one: 1
-  metadata_exact_matches: 35
-  metadata_parent_family_matches: 3
-  metadata_unavailable: 5
 identity:
   target_key:
     - job
@@ -41,7 +28,6 @@ identity:
   monitor_hostname_null_is_string: true
   host_label_present: false
   tag_labels:
-    observed_at_utc: '2026-11-05T19:50:48Z'
     producer: Uptime Kuma 2.5.8 server/prometheus.js (tags do monitor viram labels)
     labels:
       criticidade:
@@ -57,13 +43,14 @@ identity:
         - externo
     absent_on: monitor_type=group (grupos nao tem tags)
     rules:
-      - O Kuma monta a lista de labels so na inicializacao. Tag NOVA exige reiniciar o container; ate la, os
-        monitores com ela somem de todas as metricas (erro "Added label ... is not included in initial labelset" no log).
+      - O Kuma monta a lista de labels so na inicializacao. Tag NOVA exige reiniciar o container; ate la, os monitores
+        com ela somem de todas as metricas (erro "Added label ... is not included in initial labelset" no log).
       - Mudar o valor de uma tag existente nao exige restart.
       - Nome e valor passam por [a-zA-Z0-9_] (acentos e espacos sao removidos). Usar ASCII minusculo.
       - Tag sem valor vira label vazio (igual a ausente no Prometheus). Usar sempre nome + valor.
       - Uma tag por monitor; repetir a tag junta os valores num label so.
-    loki_check: count_over_time({job="docker",compose_project="uptime",compose_service="kuma"} |= "PROMETHEUS" |= "ERROR" [1h])
+    loki_check: count_over_time({job="docker",compose_project="uptime",compose_service="kuma"} |= "PROMETHEUS" |=
+      "ERROR" [1h])
 grafana_variables:
   syntax: Grafana label_values, nao PromQL da API
   monitor_id:
@@ -91,46 +78,22 @@ metric_groups:
     title: Estado atual do monitor
     metrics_observed:
       - monitor_status
-    coverage:
-      monitor_status:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 12
     interpretation: 'Enums confirmados pelo HELP enviado: 0 down, 1 up, 2 pending, 3 maintenance. Monitor group
       nao e uma verificacao independente.'
   latency_current:
     title: Tempo de resposta atual em milissegundos
     metrics_observed:
       - monitor_response_time
-    coverage:
-      monitor_response_time:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 12
     interpretation: Gauge em ms, conforme HELP do export.
   latency_windows:
     title: Media movel de resposta em segundos
     metrics_observed:
       - monitor_response_time_seconds
-    coverage:
-      monitor_response_time_seconds:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 36
     interpretation: Gauge em segundos com window. Nao e contador, histogram ou quantil.
   availability_windows:
     title: Disponibilidade por janela
     metrics_observed:
       - monitor_uptime_ratio
-    coverage:
-      monitor_uptime_ratio:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 36
     interpretation: Gauge ratio 0..1, com window 1d/30d/365d. Nao e SLA contratado nem evidencia de historico completo
       da janela.
   tls:
@@ -138,34 +101,13 @@ metric_groups:
     metrics_observed:
       - monitor_cert_days_remaining
       - monitor_cert_is_valid
-    coverage:
-      monitor_cert_days_remaining:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 9
-      monitor_cert_is_valid:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 9
-    interpretation: 9 identidades possuem series de certificado; ausencia para group e esperada, nao erro de certificado.
+    interpretation: Somente monitores com TLS possuem series de certificado; ausencia para group e esperada, nao
+      erro de certificado.
   application:
     title: Versao e conexoes
     metrics_observed:
       - app_version
       - expressjs_number_of_open_connections
-    coverage:
-      app_version:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      expressjs_number_of_open_connections:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
   runtime:
     title: Runtime Node.js/processo
     metrics_observed:
@@ -199,157 +141,6 @@ metric_groups:
       - process_resident_memory_bytes
       - process_start_time_seconds
       - process_virtual_memory_bytes
-    coverage:
-      nodejs_active_handles:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 3
-      nodejs_active_handles_total:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      nodejs_active_requests_total:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      nodejs_eventloop_lag_max_seconds:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      nodejs_eventloop_lag_mean_seconds:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      nodejs_eventloop_lag_min_seconds:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      nodejs_eventloop_lag_p50_seconds:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      nodejs_eventloop_lag_p90_seconds:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      nodejs_eventloop_lag_p99_seconds:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      nodejs_eventloop_lag_seconds:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      nodejs_eventloop_lag_stddev_seconds:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      nodejs_external_memory_bytes:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      nodejs_gc_duration_seconds_bucket:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 21
-      nodejs_gc_duration_seconds_count:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 3
-      nodejs_gc_duration_seconds_sum:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 3
-      nodejs_heap_size_total_bytes:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      nodejs_heap_size_used_bytes:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      nodejs_heap_space_size_available_bytes:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 11
-      nodejs_heap_space_size_total_bytes:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 11
-      nodejs_heap_space_size_used_bytes:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 11
-      nodejs_version_info:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      process_cpu_seconds_total:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      process_cpu_system_seconds_total:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      process_cpu_user_seconds_total:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      process_heap_bytes:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      process_max_fds:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      process_open_fds:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      process_resident_memory_bytes:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      process_start_time_seconds:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      process_virtual_memory_bytes:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
   collection_health:
     title: Scrape do Kuma
     metrics_observed:
@@ -358,32 +149,6 @@ metric_groups:
       - scrape_samples_scraped
       - scrape_series_added
       - up
-    coverage:
-      scrape_duration_seconds:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      scrape_samples_post_metric_relabeling:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      scrape_samples_scraped:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      scrape_series_added:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
-      up:
-        instances_present: 1
-        baseline_instances: 1
-        instances_missing: 0
-        series_returned: 1
 query_recipes:
   - id: checks_status
     title: Estados das verificacoes, sem os grupos
@@ -461,24 +226,18 @@ query_recipes:
     notes:
       - Nao confundir com o estado de cada monitor.
 limitations:
-  - 'Em 2026-11-05 sao 14 entidades: 11 http e 3 group. Contar tudo como servicos duplica a estrutura de agrupamento.'
+  - Monitores do tipo group sao estrutura de agrupamento, nao servicos; usar monitor_type!="group" ao contar.
   - O Kuma nao exporta o grupo (pai) de cada monitor; a ligacao monitor -> grupo vem da tag grupo, mantida a mao.
-  - Prometheus tinha ~1,2 dia de historico do Kuma em 2026-11-05; disponibilidade longa deve vir de monitor_uptime_ratio.
-  - Os estados numericos dos monitores nao constam de series.json; nao foi possivel afirmar quais verificacoes estavam
-    up/down.
-  - As janelas observadas sao 1d, 30d e 365d. Sua presenca nao demonstra que a coleta possui 365 dias completos
-    de historico.
+  - Disponibilidade longa deve vir de monitor_uptime_ratio (calculado pelo Kuma), nao da retencao do Prometheus.
+  - A presenca das janelas 1d, 30d e 365d nao demonstra historico completo de cada janela.
   - monitor_response_time usa milissegundos; monitor_response_time_seconds usa segundos e representa uma media na
     janela.
   - monitor_hostname e monitor_port aparecem com o texto literal null; monitor_url dos grupos e um valor generico.
     Nao usar como chave de identidade.
-  - A resposta HTTP do monitor Tiflux nao fornece contagem ou lista de chats sem atendente; essa integracao nao
-    esta neste export.
 change_policy:
   baseline_counts_are_fixed_requirements: false
   require_new_metrics_before_using_in_dashboard: true
   preserve_raw_labels: true
-  alloy_changes_applied: false
 value_mappings:
   monitor_status:
     source: metadata.json:monitor_status
@@ -498,5 +257,4 @@ query_policy:
   static_metric_dependencies_checked: true
   documentation_sources:
     - prometheus_functions
-  note: As receitas usam semantica padrao onde conhecida; o catalogo preserva a ausencia de TYPE/HELP do exporter
-    em execucao.
+  note: As receitas usam semantica padrao onde conhecida; o exporter nao publica TYPE/HELP de todas as metricas.

@@ -1,6 +1,6 @@
 schema_version: 1
 kind: loki_log_contract
-version: 0.1.0
+version: 0.2.0
 status: observed_baseline
 observed_date: '2026-11-04'
 source: Alloy Linux / loki.source.docker
@@ -18,66 +18,6 @@ identity:
   - service
   - service_name
   - stream
-observed:
-  streams: 25
-  hosts:
-  - srv-adm
-  - srv-altogarcas
-  - srv-apps
-  - srv-docs
-  - srv-gps
-  - srv-mon
-  - srv-n8n
-  - srv-snipe
-  - srv-vpn
-  containers_by_host:
-    srv-adm:
-    - warpgate
-    srv-altogarcas:
-    - glpi-app
-    srv-apps:
-    - assessoria-app-1
-    - shlink
-    - shlink-web-client
-    - stirling-pdf
-    srv-docs:
-    - outline
-    - outline-postgres
-    - outline-redis
-    srv-gps:
-    - traccar-postgres
-    srv-mon:
-    - access-authentik-server-1
-    - access-authentik-worker-1
-    - access-gateway-1
-    - access-postgresql-1
-    - observability-grafana-1
-    - observability-loki-1
-    - observability-prometheus-1
-    - uptime-kuma-1
-    srv-n8n:
-    - n8n
-    - n8n-postgres
-    srv-snipe:
-    - snipe-it-app
-    srv-vpn:
-    - headplane
-    - headscale
-  compose_projects:
-  - access
-  - assessoria
-  - glpi
-  - headscale
-  - n8n
-  - observability
-  - outline
-  - pdf
-  - shlink
-  - snipe-it
-  - traccar
-  - uptime
-  - warpgate
-  container_identities: 23
 expected_configuration:
   labels:
   - container

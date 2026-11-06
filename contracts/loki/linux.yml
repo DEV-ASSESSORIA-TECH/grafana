@@ -1,6 +1,6 @@
 schema_version: 1
 kind: loki_log_contract
-version: 0.1.0
+version: 0.2.0
 status: observed_baseline
 observed_date: '2026-11-04'
 source: Alloy Linux / loki.source.journal
@@ -16,32 +16,6 @@ identity:
   - service_name
   - syslog_identifier
   - unit
-observed:
-  streams: 320
-  hosts:
-  - srv-adm
-  - srv-altogarcas
-  - srv-apps
-  - srv-docs
-  - srv-gps
-  - srv-mon
-  - srv-n8n
-  - srv-rmm
-  - srv-snipe
-  - srv-vpn
-  - srv-web
-  streams_per_host:
-    srv-adm: 37
-    srv-altogarcas: 33
-    srv-apps: 37
-    srv-docs: 34
-    srv-gps: 31
-    srv-mon: 1
-    srv-n8n: 28
-    srv-rmm: 29
-    srv-snipe: 34
-    srv-vpn: 33
-    srv-web: 23
 expected_configuration:
   source: journald
   labels:
@@ -50,5 +24,4 @@ expected_configuration:
   - level
   not_included_automatically: Arquivos de access log NGINX em /var/log/nginx/*.json.log
 limitations:
-- Contagem representa fluxos vistos na janela de 24h, nao volume de logs nem garantia de coleta futura.
-- srv-mon apresentou apenas um fluxo na janela; investigar se logs esperados estao chegando.
+- Ausencia de fluxos de uma unit na janela nao prova que a coleta esteja desativada.

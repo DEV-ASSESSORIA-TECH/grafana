@@ -1,6 +1,6 @@
 schema_version: 1
 kind: loki_log_contract
-version: 0.1.0
+version: 0.2.0
 status: observed_baseline
 observed_date: '2026-11-04'
 source: Alloy Windows / loki.source.windowsevent
@@ -16,38 +16,6 @@ identity:
   - job
   - level
   - service_name
-observed:
-  streams: 25
-  hosts:
-  - srv-ad
-  - srv-ad-trs
-  - srv-contabil-ass
-  - srv-dom-trs
-  - srv-host01
-  channels:
-  - Application
-  - System
-  host_channel_pairs:
-  - host: srv-ad
-    channel: Application
-  - host: srv-ad
-    channel: System
-  - host: srv-ad-trs
-    channel: Application
-  - host: srv-ad-trs
-    channel: System
-  - host: srv-contabil-ass
-    channel: Application
-  - host: srv-contabil-ass
-    channel: System
-  - host: srv-dom-trs
-    channel: Application
-  - host: srv-dom-trs
-    channel: System
-  - host: srv-host01
-    channel: Application
-  - host: srv-host01
-    channel: System
 expected_configuration:
   channels:
   - Application

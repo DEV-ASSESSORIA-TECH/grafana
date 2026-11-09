@@ -1,0 +1,32 @@
+# Templates de notificacao. Conteudo de template nao e interpolado pelo provisionamento: usar $labels normalmente.
+# No contact point (UI): assunto {{ template "infra.subject" . }} e mensagem {{ template "infra.message" . }}.
+apiVersion: 1
+templates:
+  - orgId: 1
+    name: infra
+    template: |-
+      {{ define "infra.subject" -}}
+      [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}]
+      {{- if and .CommonLabels.alert_code .CommonAnnotations.summary }} {{ .CommonLabels.alert_code }} {{ .CommonAnnotations.summary }}
+      {{- else }} {{ len .Alerts }} alertas{{ with .GroupLabels.dep_hypervisor }} em {{ . }}{{ end }}{{ with .GroupLabels.area }} ({{ . }}){{ end }}
+      {{- end }}
+      {{- end }}
+
+      {{ define "infra.alert" -}}
+      [{{ .Labels.alert_code }}] {{ .Labels.severity | toUpper }} - {{ .Annotations.summary }}
+      {{ .Annotations.description }}
+      {{ if .Annotations.runbook_url }}Procedimento: {{ .Annotations.runbook_url }}
+      {{ end }}{{ if .DashboardURL }}Dashboard: {{ .DashboardURL }}
+      {{ end }}Desde: {{ .StartsAt.Format "02/01/2006 15:04:05 MST" }}
+      {{- end }}
+
+      {{ define "infra.message" -}}
+      {{ if gt (len .Alerts.Firing) 0 }}ALERTAS ATIVOS ({{ len .Alerts.Firing }})
+      {{ range .Alerts.Firing }}
+      {{ template "infra.alert" . }}
+      {{ end }}{{ end }}{{ if gt (len .Alerts.Resolved) 0 }}
+      RESOLVIDOS ({{ len .Alerts.Resolved }})
+      {{ range .Alerts.Resolved }}
+      [{{ .Labels.alert_code }}] {{ .Annotations.summary }}
+      {{ end }}{{ end }}
+      {{- end }}

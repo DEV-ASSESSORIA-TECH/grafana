@@ -1,0 +1,10 @@
+# Mute timings. Manutencoes pontuais usam silences na UI (nao entram no Git).
+apiVersion: 1
+muteTimes:
+  # Sempre ativo: usado na rota de severity=info, que nao notifica.
+  - orgId: 1
+    name: sempre
+    time_intervals:
+      - times:
+          - start_time: '00:00'
+            end_time: '24:00'

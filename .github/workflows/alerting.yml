@@ -1,0 +1,79 @@
+name: alerting
+
+on:
+  push:
+    paths:
+      - alerting/**
+      - contracts/**
+      - dashboards/**
+      - scripts/validate_alerting.py
+      - scripts/contracts.py
+      - scripts/alerting_*.py
+      - .github/workflows/alerting.yml
+  pull_request:
+    paths:
+      - alerting/**
+      - contracts/**
+      - dashboards/**
+      - scripts/validate_alerting.py
+      - scripts/contracts.py
+      - scripts/alerting_*.py
+      - .github/workflows/alerting.yml
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+      - run: python scripts/validate_alerting.py
+
+  # Carrega alerting/ num Grafana 13.3.0 real (provisionamento por arquivo + App Platform) e confere
+  grafana-load:
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+      - name: Montar provisionamento
+        run: |
+          mkdir -p prov/datasources prov/alerting
+          python scripts/alerting_build.py --out prov/alerting
+          # datasources com os UIDs de producao (sem backend: as regras so precisam carregar)
+          cat > prov/datasources/ds.yaml <<'EOF'
+          apiVersion: 1
+          datasources:
+            - {name: Prometheus, type: prometheus, uid: prometheus, url: http://prometheus.invalid:9090, access: proxy}
+            - {name: Loki, type: loki, uid: loki, url: http://loki.invalid:3100, access: proxy}
+          EOF
+          # contact points gerenciados na UI em producao (contracts/alerts/notifications.yml)
+          cat > prov/alerting/ci-contact-points.yaml <<'EOF'
+          apiVersion: 1
+          contactPoints:
+            - orgId: 1
+              name: email-infra
+              receivers:
+                - {uid: ci-email-infra, type: email, settings: {addresses: ci@example.invalid}}
+          EOF
+          chmod -R a+rX prov
+      - name: Subir Grafana 13.3.0
+        run: |
+          docker run -d --name grafana -p 3000:3000 \
+            -v "$GITHUB_WORKSPACE/prov:/etc/grafana/provisioning:ro" \
+            grafana/grafana:13.3.0
+          for i in $(seq 1 60); do curl -sf http://localhost:3000/api/health && break; sleep 2; done
+      - name: Aplicar inibicao (App Platform)
+        run: |
+          python scripts/alerting_inhibition.py --url http://localhost:3000 --user admin --password admin --apply
+          python scripts/alerting_inhibition.py --url http://localhost:3000 --user admin --password admin | tee diff.txt
+          ! grep -vq '^igual' diff.txt
+      - run: python scripts/alerting_check.py --url http://localhost:3000
+      - name: Log do Grafana
+        if: failure()
+        run: docker logs grafana 2>&1 | grep -iE "error|warn|provisioning|alert" | tail -100

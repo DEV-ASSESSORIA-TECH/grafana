@@ -10,7 +10,7 @@ Os dashboards estão no **Dashboard Schema V2** (`dashboard.grafana.app/v2`, Gra
 |---|---|
 | `dashboards/` | Dashboards (recursos V2) e metadados de pasta. **Única pasta sincronizada pelo Git Sync** |
 | `contracts/prometheus/` | Métricas, jobs e labels observados por fonte (Alloy, Prometheus, Uptime Kuma) |
-| `contracts/loki/` | Streams e labels de log observados |
+| `contracts/loki/` | Streams e labels de log observados (inclui o heartbeat dos hosts, `alloy-heartbeat`) |
 | `contracts/alerts/` | Labels obrigatórios das regras de alerta (`severity`, `area`) |
 | `scripts/validate.py` | Valida formato V2, compatibilidade com Git Sync, datasources e se as consultas usam só métricas/labels dos contratos |
 | `scripts/grafana_check.py` | Sincroniza `dashboards/` num Grafana 13.0.3 real e confere o resultado |

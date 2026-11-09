@@ -1,7 +1,7 @@
 # Contrato dos labels de alerta; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_label_contract
-version: 0.1.0
+version: 0.2.0
 id: alert-labels
 title: Labels obrigatorios de alertas
 status: defined
@@ -21,11 +21,13 @@ labels:
           - integrations/unix
         loki_jobs:
           - systemd-journal
+          - alloy-heartbeat
       windows:
         prometheus_jobs:
           - integrations/windows
         loki_jobs:
           - windows-eventlog
+          - alloy-heartbeat
       hypervisor:
         prometheus_jobs:
           - integrations/hypervisor
@@ -45,4 +47,5 @@ rules:
   - Toda regra de alerta publica exatamente um valor de severity e um de area, entre os listados acima.
   - Valores em ASCII minusculo, exatamente como escritos aqui (servicos, sem cedilha).
   - area segue o job da consulta da regra, conforme o mapeamento acima.
+  - alloy-heartbeat esta em windows e linux; a regra escolhe a area pelo label os do stream.
   - Valor novo de severity ou area exige atualizar este contrato antes de ser usado.

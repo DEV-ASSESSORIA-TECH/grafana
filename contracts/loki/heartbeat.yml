@@ -1,0 +1,100 @@
+# Contrato do heartbeat dos hosts; nao provisionar este YAML no Grafana.
+schema_version: 1
+kind: loki_log_contract
+version: 0.1.0
+status: defined
+defined_date: '2026-11-09'
+source: >-
+  scripts/monitoring/alloy (heartbeat.ps1 no Windows, heartbeat.sh no Linux), tarefa agendada / timer
+  systemd a cada minuto. Push direto no Loki com a credencial do Alloy (OAuth2), sem passar pelo processo
+  do Alloy. Opcional: so existe nos hosts onde o heartbeat foi configurado (menu [9]).
+job: alloy-heartbeat
+identity:
+  required_labels:
+  - job
+  - host
+  - os
+  observed_labels:
+  - host
+  - job
+  - os
+  label_values:
+    os:
+    - windows
+    - linux
+    host: mesmo valor do label host do Alloy no host (integrations/windows, integrations/unix)
+expected_configuration:
+  interval: 60s
+  lines_per_run: 1
+  message_format: logfmt, uma linha por execucao, ASCII
+  fields:
+    alloy:
+      always: true
+      values:
+        ok: servico rodando, pronto, componentes saudaveis e metricas saindo
+        degradado: rodando e pronto, mas healthy=0 ou metrics_lag_s acima de 300
+        nao_pronto: servico rodando, /-/ready diferente de 200
+        parado: servico instalado e parado
+        ausente: Alloy nao instalado
+    service:
+      always: true
+      values:
+      - running
+      - stopped
+      - absent
+    version:
+      always: false
+      description: versao do Alloy instalada (ex. v1.11.2)
+    ready:
+      always: false
+      description: 1 quando /-/ready responde 200. Ausente com o servico parado.
+    healthy:
+      always: false
+      description: 1 quando /-/healthy responde 200, 0 quando responde 500. Ausente se o endpoint nao responder.
+    unhealthy:
+      always: false
+      description: componentes listados pelo /-/healthy, separados por virgula. So presente com healthy=0.
+    metrics_lag_s:
+      always: false
+      unit: seconds
+      description: >-
+        agora menos max(prometheus_remote_storage_queue_highest_sent_timestamp_seconds) do /metrics local:
+        ha quanto tempo saiu a ultima amostra enviada com sucesso. Ausente enquanto nada foi enviado.
+    samples_failed:
+      always: false
+      unit: count
+      description: soma de prometheus_remote_storage_samples_failed_total (acumulado desde o inicio do Alloy)
+    logs_sent:
+      always: false
+      unit: count
+      description: soma de loki_write_sent_entries_total (acumulado desde o inicio do Alloy)
+    logs_dropped:
+      always: false
+      unit: count
+      description: soma de loki_write_dropped_entries_total (acumulado desde o inicio do Alloy)
+query_recipes:
+- id: heartbeat_lines
+  title: Linhas de heartbeat de um host
+  logql: '{job="alloy-heartbeat", host="$host"} | logfmt'
+- id: alloy_not_ok
+  title: Hosts com Alloy fora do estado ok
+  logql: '{job="alloy-heartbeat"} | logfmt | alloy != "ok"'
+- id: metrics_lag
+  title: Atraso de envio de metricas por host
+  logql: max by (host) (max_over_time({job="alloy-heartbeat"} | logfmt | unwrap metrics_lag_s [5m]))
+  notes:
+  - Linhas sem metrics_lag_s geram __error__ no unwrap; filtrar com | __error__="" se necessario.
+- id: heartbeat_missing
+  title: Hosts sem heartbeat no Loki
+  logql: sum by (host) (count_over_time({job="alloy-heartbeat"}[5m]))
+  notes:
+  - Ausencia de serie = sem heartbeat no Loki (credencial, rede ou host). O Uptime Kuma separa host fora
+    de falha no caminho ate o Loki.
+limitations:
+- Canal independente do processo do Alloy, mas nao do endpoint mon nem da credencial OAuth2 do host.
+- Contadores (samples_failed, logs_sent, logs_dropped) zeram quando o Alloy reinicia; comparar janelas
+  com cuidado.
+- O mesmo heartbeat faz push no Uptime Kuma (monitor Push, sempre status=up) com um resumo curto no msg.
+  O msg do Kuma nao e exportado para o Prometheus; a fonte consultavel e este stream.
+- O job alloy-heartbeat aparece nas areas windows e linux do contrato de alertas; a regra escolhe a area
+  pelo label os.

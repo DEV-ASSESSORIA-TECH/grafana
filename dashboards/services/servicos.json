@@ -543,7 +543,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max by (monitor_name, monitor_url, criticidade, exposicao, grupo) (monitor_response_time{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} >= 0)",
+                        "expr": "max by (monitor_name, monitor_url, criticidade, exposicao, grupo) (monitor_response_time{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} >= 0)",
                         "format": "table",
                         "instant": true,
                         "range": false
@@ -565,7 +565,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max by (monitor_name, monitor_url, criticidade, exposicao, grupo) (1000 * monitor_response_time_seconds{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\",window=\"1d\"})",
+                        "expr": "max by (monitor_name, monitor_url, criticidade, exposicao, grupo) (1000 * monitor_response_time_seconds{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\",window=\"1d\"})",
                         "format": "table",
                         "instant": true,
                         "range": false
@@ -1228,7 +1228,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max by (monitor_name) (monitor_response_time{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} >= 0)",
+                        "expr": "max by (monitor_name) (monitor_response_time{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} >= 0)",
                         "format": "time_series",
                         "instant": false,
                         "legendFormat": "{{monitor_name}}",
@@ -1322,7 +1322,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "sort_desc(max by (monitor_name) (1000 * monitor_response_time_seconds{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\",window=\"1d\"}))",
+                        "expr": "sort_desc(max by (monitor_name) (1000 * monitor_response_time_seconds{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\",window=\"1d\"}))",
                         "format": "time_series",
                         "instant": true,
                         "legendFormat": "{{monitor_name}}",
@@ -2528,7 +2528,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "topk(1, monitor_response_time{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} >= 0)",
+                        "expr": "topk(1, monitor_response_time{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} >= 0)",
                         "format": "time_series",
                         "instant": true,
                         "legendFormat": "{{monitor_name}}",

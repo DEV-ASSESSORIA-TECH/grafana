@@ -5,7 +5,7 @@ version: 0.1.0
 status: defined
 defined_date: '2026-11-09'
 source: >-
-  scripts/monitoring/alloy (heartbeat.ps1 no Windows, heartbeat.sh no Linux), tarefa agendada / timer
+  scripts/monitoring/alloy (heartbeat.ps1 no Windows, heartbeat.py no Linux), tarefa agendada / timer
   systemd a cada minuto. Push direto no Loki com a credencial do Alloy (OAuth2), sem passar pelo processo
   do Alloy. Opcional: so existe nos hosts onde o heartbeat foi configurado (menu [9]).
 job: alloy-heartbeat

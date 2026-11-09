@@ -1,7 +1,7 @@
 # Contrato observado para consumidores de dashboards; nao provisionar este YAML no Grafana.
 schema_version: 2
 kind: observability_contract
-version: 0.4.0
+version: 0.5.0
 id: uptime-kuma
 title: Uptime Kuma / disponibilidade e certificados
 status: observed_baseline
@@ -33,6 +33,7 @@ identity:
       criticidade:
         - alta
         - critica
+        - critico
       exposicao:
         - cloudflare
         - direta
@@ -41,6 +42,7 @@ identity:
         - aplicacao
         - infraestrutura
         - externo
+        - servidores
     absent_on: monitor_type=group (grupos nao tem tags)
     rules:
       - O Kuma monta a lista de labels so na inicializacao. Tag NOVA exige reiniciar o container; ate la, os monitores
@@ -49,6 +51,10 @@ identity:
       - Nome e valor passam por [a-zA-Z0-9_] (acentos e espacos sao removidos). Usar ASCII minusculo.
       - Tag sem valor vira label vazio (igual a ausente no Prometheus). Usar sempre nome + valor.
       - Uma tag por monitor; repetir a tag junta os valores num label so.
+      - Valores novos aparecem sozinhos nos filtros (label_values); a lista acima e o observado, nao uma restricao.
+      - criticidade tem critica e critico (heartbeat dos hosts) como valores distintos; filtrar por um nao mostra o
+        outro.
+    values_added_at: '2026-11-09'
     loki_check: count_over_time({job="docker",compose_project="uptime",compose_service="kuma"} |= "PROMETHEUS" |=
       "ERROR" [1h])
 grafana_variables:
@@ -225,6 +231,22 @@ query_recipes:
     validation: dependencies_in_export; not_executed
     notes:
       - Nao confundir com o estado de cada monitor.
+heartbeat_monitors:
+  description: >-
+    Monitores Push do heartbeat dos hosts (scripts/monitoring/alloy, menu [9]). O host faz o push a cada minuto;
+    o estado detalhado do Alloy fica no Loki (contrato contracts/loki/heartbeat.yml), nao no Kuma.
+  monitor_type: push
+  name_convention: heartbeat-<host>, com <host> igual ao label host do Alloy
+  tags_observed:
+    criticidade: critico
+    exposicao: cloudflare
+    grupo: servidores
+  join_with_loki: label_replace(monitor_status{job="uptime-kuma",monitor_type="push"}, "host", "$1", "monitor_name",
+    "heartbeat-(.+)")
+  notes:
+    - O msg do push nao e exportado para o Prometheus; so o estado (monitor_status).
+    - O push sempre envia status=up; DOWN significa batida ausente (host fora ou sem rede ate o mon).
+    - O push nao envia ping, entao monitores push nao tem tempo de resposta util.
 limitations:
   - Monitores do tipo group sao estrutura de agrupamento, nao servicos; usar monitor_type!="group" ao contar.
   - O Kuma nao exporta o grupo (pai) de cada monitor; a ligacao monitor -> grupo vem da tag grupo, mantida a mao.

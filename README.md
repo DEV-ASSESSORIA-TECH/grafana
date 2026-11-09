@@ -1,8 +1,9 @@
-# grafana-dashboards
+# grafana
 
-Dashboards Grafana da infraestrutura e os contratos de dados que eles consomem.
+Dashboards e alertas do Grafana da infraestrutura (Grafana **13.3.0**), e os contratos de dados que eles consomem.
 
-Os dashboards estão no **Dashboard Schema V2** (`dashboard.grafana.app/v2`, Grafana 13.0.3) e a pasta `dashboards/` é sincronizada com o Grafana pelo **Git Sync**.
+- **Dashboards:** **Dashboard Schema V2** (`dashboard.grafana.app/v2`). A pasta `dashboards/` é sincronizada pelo **Git Sync**.
+- **Alertas:** regras, notificações e inibição como código em `alerting/`, aplicados manualmente. Detalhes em [`alerting/README.md`](alerting/README.md).
 
 ## Estrutura
 
@@ -11,9 +12,15 @@ Os dashboards estão no **Dashboard Schema V2** (`dashboard.grafana.app/v2`, Gra
 | `dashboards/` | Dashboards (recursos V2) e metadados de pasta. **Única pasta sincronizada pelo Git Sync** |
 | `contracts/prometheus/` | Métricas, jobs e labels observados por fonte (Alloy, Prometheus, Uptime Kuma) |
 | `contracts/loki/` | Streams e labels de log observados (inclui o heartbeat dos hosts, `alloy-heartbeat`) |
-| `contracts/alerts/` | Labels obrigatórios das regras de alerta (`severity`, `area`) |
-| `scripts/validate.py` | Valida formato V2, compatibilidade com Git Sync, datasources e se as consultas usam só métricas/labels dos contratos |
-| `scripts/grafana_check.py` | Sincroniza `dashboards/` num Grafana 13.0.3 real e confere o resultado |
+| `alerting/` | Regras (`rules/`), notificações (`notifications/`) e inibição (`inhibition/`). **Fora do Git Sync** |
+| `contracts/alerts/` | Labels das regras (`labels.yml`), catálogo de códigos (`codes.yml`) e contact points (`notifications.yml`) |
+| `scripts/contracts.py` | Leitura dos contratos e verificação de consultas PromQL/LogQL (usado pelos dois validadores) |
+| `scripts/validate_dashboards.py` | Valida formato V2, compatibilidade com Git Sync, datasources e se as consultas usam só métricas/labels dos contratos |
+| `scripts/grafana_check.py` | Sincroniza `dashboards/` num Grafana 13.3.0 real e confere o resultado |
+| `scripts/validate_alerting.py` | Valida `alerting/` contra os contratos (códigos, labels, consultas, policies, inibição) |
+| `scripts/alerting_build.py` | Achata `alerting/` na pasta de provisionamento do Grafana |
+| `scripts/alerting_inhibition.py` | Aplica `alerting/inhibition` pela App Platform API |
+| `scripts/alerting_check.py` | Confere num Grafana 13.3.0 real se `alerting/` foi carregado como está no repositório |
 
 ## Dashboards
 
@@ -57,7 +64,7 @@ Os datasources são provisionados no Grafana com UIDs fixos, e as consultas apon
 | `prometheus` | `prometheus` |
 | `loki` | `loki` |
 
-Não há mais `__inputs`/`__requires` nem `${DS_PROMETHEUS}`/`${DS_LOKI}`: o dashboard não é importado manualmente, chega pelo Git Sync. Se um UID mudar no Grafana, atualize `DATASOURCES` em `scripts/validate.py` e os dashboards juntos.
+Não há mais `__inputs`/`__requires` nem `${DS_PROMETHEUS}`/`${DS_LOKI}`: o dashboard não é importado manualmente, chega pelo Git Sync. Se um UID mudar no Grafana, atualize `DATASOURCES` em `scripts/contracts.py` e os dashboards e regras de alerta juntos.
 
 ## Convenções
 
@@ -75,12 +82,12 @@ Configuração da conexão do Git Sync no Grafana (tela de provisionamento / rec
 
 | Campo | Valor |
 |---|---|
-| Repositório | `DEV-ASSESSORIA-TECH/grafana-dashboards` |
+| Repositório | `DEV-ASSESSORIA-TECH/grafana` |
 | Branch | `main` |
 | Path | `dashboards` (sincroniza **apenas** essa pasta) |
 | Sync target | `folder` (uma pasta raiz no Grafana para este repositório) |
 
-O Grafana lê os recursos V2 como estão no Git: o diretório define a pasta, o `_folder.json` o UID/título dela e o `metadata.name` o UID do dashboard. Arquivos fora de `dashboards/` (contratos, scripts, README) não são lidos pelo Grafana.
+O Grafana lê os recursos V2 como estão no Git: o diretório define a pasta, o `_folder.json` o UID/título dela e o `metadata.name` o UID do dashboard. Arquivos fora de `dashboards/` (alertas, contratos, scripts, README) não são lidos pelo Git Sync. Os alertas chegam ao Grafana pelo provisionamento por arquivo (ver `alerting/README.md`).
 
 **Primeira ativação (migração dos dashboards importados):** o Git Sync não assume dashboards que já existem na instância sem gerenciamento. Se `servers-linux`, `servers-windows`, `servicos` ou `hypervisors` foram importados manualmente, o sync termina em `warning` com `already exists and is not managed`. Antes de conectar o repositório, faça backup e exclua esses quatro dashboards; o sync os recria com os mesmos UIDs (URLs `/d/<uid>` continuam valendo). O histórico de versões do Grafana dos dashboards antigos não é transferido; o histórico passa a ser o do Git.
 
@@ -96,21 +103,24 @@ Dashboard novo: crie o arquivo no diretório da pasta certa com um UID novo (at�
 
 ```bash
 pip install pyyaml
-python scripts/validate.py
+python scripts/validate_dashboards.py
 ```
 
-Teste de sincronização num Grafana 13.0.3 real (mesmo motor de leitura do Git Sync, com repositório `local`):
+```bash
+python scripts/validate_alerting.py
+```
+
+Teste de sincronização num Grafana 13.3.0 real (mesmo motor de leitura do Git Sync, com repositório `local`). Na 13.3.0 o Git Sync não precisa de feature toggle:
 
 ```bash
 docker run -d --name grafana -p 3000:3000 \
   -v "$PWD/dashboards:/repo/dashboards:ro" \
-  -e GF_FEATURE_TOGGLES_ENABLE=provisioning,kubernetesDashboards \
   -e GF_PATHS_PERMITTED_PROVISIONING_PATHS=/repo \
-  grafana/grafana:13.0.3
+  grafana/grafana:13.3.0
 ```
 
 ```bash
 python scripts/grafana_check.py --url http://localhost:3000 --path /repo/dashboards
 ```
 
-Os dois rodam no GitHub Actions a cada push.
+No GitHub Actions há dois workflows, disparados pelos caminhos alterados: `dashboards.yml` (validação + sync num Grafana real) e `alerting.yml` (validação + carga do provisionamento, da inibição e conferência num Grafana real).

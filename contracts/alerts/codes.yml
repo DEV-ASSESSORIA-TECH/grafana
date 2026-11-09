@@ -1,0 +1,92 @@
+# Catalogo dos codigos de alerta; nao provisionar este YAML no Grafana.
+schema_version: 1
+kind: alert_code_catalog
+version: 0.1.0
+id: alert-codes
+title: Catalogo de codigos de alerta
+status: defined
+scope: >-
+  Identidade permanente de cada alerta. O codigo liga a regra (alerting/rules), o titulo no Grafana, a notificacao
+  e o procedimento (runbook no Outline). O CI exige que regras e catalogo coincidam.
+ranges:
+  '1xx': Disponibilidade (10x host/alvo principal, 11x VM ou componente hospedado)
+  '2xx': Capacidade (armazenamento, memoria, CPU sustentada)
+  '3xx': Saude da coleta (inventario, exporters, heartbeat do agente)
+  '4xx': Desempenho (latencia, fila, disputa)
+rules:
+  - Codigo e permanente. Alerta removido fica com status retired e o codigo nunca e reutilizado.
+  - uid e o UID da regra no Grafana (nao muda ao renomear o titulo).
+  - title e o titulo sem o codigo; no Grafana o titulo e '[CODIGO] title'.
+  - severity e scope devem ser iguais aos labels da regra; a area vem do prefixo (labels.yml).
+  - runbook e a URL do procedimento no Outline (annotation runbook_url); null ate o documento existir.
+codes:
+  HYP-101:
+    uid: cg3sb66gvmnlsa
+    title: Host Hyper-V sem métricas
+    severity: critical
+    scope: hypervisor
+    status: active
+    runbook: null
+  HYP-102:
+    uid: eg3tfixhztwcgd
+    title: Heartbeat do host Hyper-V ausente
+    severity: critical
+    scope: hypervisor
+    status: active
+    runbook: null
+  HYP-110:
+    uid: bg3s6ye5rzdvkd
+    title: VM em estado crítico no Hyper-V
+    severity: critical
+    scope: vm
+    status: active
+    runbook: null
+  HYP-111:
+    uid: dg3tetitcczr4d
+    title: VM crítica desligada
+    severity: critical
+    scope: vm
+    status: active
+    runbook: null
+  HYP-112:
+    uid: cg3teyx1dmzuof
+    title: VM importante desligada
+    severity: warning
+    scope: vm
+    status: active
+    runbook: null
+  HYP-113:
+    uid: ag3tf34rw39q8e
+    title: VM informativa desligada
+    severity: info
+    scope: vm
+    status: active
+    runbook: null
+  HYP-201:
+    uid: fg3ti88kxhtdsd
+    title: Armazenamento do host elevado
+    severity: warning
+    scope: hypervisor
+    status: active
+    runbook: null
+  HYP-202:
+    uid: dg3tiayqkuqyob
+    title: Armazenamento do host crítico
+    severity: critical
+    scope: hypervisor
+    status: active
+    runbook: null
+  HYP-301:
+    uid: dg3s89i9nfnk0f
+    title: Falha no inventário do Hyper-V
+    severity: warning
+    scope: collection
+    status: active
+    runbook: null
+  HYP-302:
+    uid: eg3s8htqlp1c0e
+    title: Inventário do Hyper-V desatualizado
+    severity: warning
+    scope: collection
+    status: active
+    runbook: null

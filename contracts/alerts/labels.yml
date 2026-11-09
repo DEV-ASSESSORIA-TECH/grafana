@@ -1,51 +1,116 @@
 # Contrato dos labels de alerta; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_label_contract
-version: 0.2.0
+version: 0.3.0
 id: alert-labels
-title: Labels obrigatorios de alertas
+title: Labels obrigatorios e de dependencia das regras de alerta
 status: defined
-scope: Labels que toda regra de alerta deve publicar. Nao define regras, limiares nem roteamento de notificacao.
+scope: >-
+  Labels que as regras de alerta (alerting/rules) publicam. Define identidade (alert_code), classificacao
+  (severity, area, scope) e as chaves de dependencia usadas no agrupamento e na inibicao. Nao define limiares.
 labels:
+  alert_code:
+    required: true
+    format: '^(HYP|WIN|LIN|SVC|CTR)-[1-9][0-9]{2}$'
+    description: >-
+      Codigo permanente do alerta, igual ao do catalogo (codes.yml) e ao prefixo do titulo. Nunca reutilizar um
+      codigo removido.
   severity:
     required: true
     values:
       critical: Exige acao imediata.
       warning: Exige acao planejada.
-      info: Informativo; nao exige acao.
+      info: Informativo; registrado no Grafana, sem notificacao.
   area:
     required: true
+    description: >-
+      Dominio do alvo afetado (o que o alerta descreve), nao necessariamente o job da consulta. Ex.: o heartbeat do
+      hipervisor vem do job uptime-kuma, mas o alvo e o hipervisor (area hypervisor).
     values:
       linux:
+        code_prefix: LIN
         prometheus_jobs:
           - integrations/unix
         loki_jobs:
           - systemd-journal
           - alloy-heartbeat
       windows:
+        code_prefix: WIN
         prometheus_jobs:
           - integrations/windows
         loki_jobs:
           - windows-eventlog
           - alloy-heartbeat
       hypervisor:
+        code_prefix: HYP
         prometheus_jobs:
           - integrations/hypervisor
           - integrations/hyperv
         loki_jobs:
           - hyperv-eventlog
       servicos:
+        code_prefix: SVC
         prometheus_jobs:
           - uptime-kuma
         loki_jobs: []
       containers:
+        code_prefix: CTR
         prometheus_jobs:
           - integrations/docker
         loki_jobs:
           - docker
+  scope:
+    required: true
+    description: Nivel do alvo na cadeia de dependencia. Define quem pode inibir quem (alerting/inhibition).
+    values:
+      hypervisor: Host fisico do Hyper-V (disponibilidade, armazenamento).
+      vm: Maquina virtual vista pelo hipervisor (estado, saude no Hyper-V).
+      guest: Sistema operacional dentro da VM (metricas do Alloy no convidado).
+      service: Servico hospedado numa VM (Uptime Kuma, containers).
+      collection: Coleta de dados (inventario, exporters); falha nao indica falha do alvo.
+    requires:
+      hypervisor: [dep_hypervisor]
+      vm: [dep_hypervisor, dep_vm]
+      guest: [dep_hypervisor, dep_vm]
+      service: [dep_hypervisor, dep_vm]
+      collection: [dep_hypervisor]
+    note: >-
+      Convidados e servicos levam tambem dep_hypervisor: com o host fora, as metricas das VMs somem e os alertas de
+      VM nao disparam, entao so o alerta do host (equal dep_hypervisor) os inibe.
+  dep_hypervisor:
+    required: false
+    description: Chave canonica do hipervisor que hospeda (ou e) o alvo. Usada em group_by e em equal da inibicao.
+  dep_vm:
+    required: false
+    description: >-
+      Chave canonica da VM que hospeda (ou e) o alvo. Nomes de VM devem ser unicos entre hipervisores, pois a
+      inibicao por VM compara so dep_vm.
+canonical_key:
+  rule: minusculas, '-' trocado por '_', so [a-z0-9_]. Ex. SRV-WEB -> srv_web, srv-host01 -> srv_host01.
+  why: >-
+    O Uptime Kuma remove tudo fora de [a-zA-Z0-9_] dos valores de tag (SRV-WEB viraria SRVWEB), e a inibicao compara
+    por igualdade exata. A chave canonica e a mesma nas metricas, nos alertas e nas tags do Kuma.
+  template: >-
+    Gerada no label da regra a partir do label da consulta, protegida contra label ausente (alertas DatasourceNoData
+    nao tem os labels da consulta): '{{ with $$labels.instance }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
+  uptime_kuma: >-
+    Monitores de servico dentro de VM recebem as tags vm e hypervisor ja na chave canonica (ex. vm:srv_web,
+    hypervisor:srv_host01); a regra copia para dep_vm e dep_hypervisor. Tag nova exige reiniciar o container do Kuma
+    (ver contracts/prometheus/uptime-kuma.yml). Sem as tags, o alerta SVC nao e inibido.
+  guest_join: >-
+    Alertas de convidado (scope guest) obtem VM e hipervisor de hypervisor_vm_info (guest_host = instance do
+    convidado). last_over_time mantem o join com o host fora (as series do inventario somem junto com ele):
+    <expr do convidado> * on (instance) group_left (vm, hypervisor) label_replace(label_replace(
+    group by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)").
+    Os labels da regra convertem vm e hypervisor para dep_vm e dep_hypervisor.
+provisioning:
+  interpolation: >-
+    O provisionamento por arquivo interpola variaveis de ambiente nos labels ($labels vira vazio), mas nao em
+    annotations nem nas consultas. Em labels, escrever $$labels; em annotations, $labels.
 rules:
-  - Toda regra de alerta publica exatamente um valor de severity e um de area, entre os listados acima.
-  - Valores em ASCII minusculo, exatamente como escritos aqui (servicos, sem cedilha).
-  - area segue o job da consulta da regra, conforme o mapeamento acima.
-  - alloy-heartbeat esta em windows e linux; a regra escolhe a area pelo label os do stream.
-  - Valor novo de severity ou area exige atualizar este contrato antes de ser usado.
+  - Toda regra publica exatamente um alert_code, uma severity, uma area e um scope, entre os listados acima.
+  - O prefixo do alert_code e o code_prefix da area.
+  - Valores em ASCII minusculo, exatamente como escritos aqui (servicos, sem cedilha); alert_code em maiusculas.
+  - Labels exigidos pelo scope (requires) sao obrigatorios na regra.
+  - Valor novo de severity, area ou scope exige atualizar este contrato antes de ser usado.

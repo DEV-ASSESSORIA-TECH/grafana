@@ -52,15 +52,6 @@ jobs:
             - {name: Prometheus, type: prometheus, uid: prometheus, url: http://prometheus.invalid:9090, access: proxy}
             - {name: Loki, type: loki, uid: loki, url: http://loki.invalid:3100, access: proxy}
           EOF
-          # contact points gerenciados na UI em producao (contracts/alerts/notifications.yml)
-          cat > prov/alerting/ci-contact-points.yaml <<'EOF'
-          apiVersion: 1
-          contactPoints:
-            - orgId: 1
-              name: email-infra
-              receivers:
-                - {uid: ci-email-infra, type: email, settings: {addresses: ci@example.invalid}}
-          EOF
           chmod -R a+rX prov
       - name: Subir Grafana 13.3.0
         run: |

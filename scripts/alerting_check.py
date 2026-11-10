@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Confere num Grafana real se alerting/ foi carregado como esta no repositorio.
 
-Pressupoe o Grafana subido com a saida de alerting_build.py em provisioning/alerting (mais os contact points
-gerenciados na UI, que no CI vem de um arquivo proprio) e alerting_inhibition.py --apply ja executado.
+Pressupoe o Grafana subido com a saida de alerting_build.py em provisioning/alerting e
+alerting_inhibition.py --apply ja executado. Autenticacao: GRAFANA_TOKEN (service account) ou --user/--password.
 Verifica:
 
 - cada regra existe com provenance 'file', na pasta e no grupo do arquivo, com titulo, labels (depois da
   interpolacao: $$labels vira $labels), annotations, for e consultas iguais as do arquivo;
-- arvore de policies, mute timings e templates provisionados por arquivo e iguais aos do repositorio;
+- mute timings e templates provisionados por arquivo e iguais aos do repositorio (policies e contact points
+  sao da UI e nao sao conferidos);
 - regras de inibicao do repositorio presentes no Grafana com o mesmo spec.
 
 Uso:
@@ -16,6 +17,7 @@ Uso:
 import argparse
 import base64
 import json
+import os
 import sys
 import time
 import urllib.error
@@ -28,13 +30,16 @@ ROOT = Path(__file__).resolve().parent.parent
 INHIBITION = "/apis/notifications.alerting.grafana.app/v1beta1/namespaces/{ns}/inhibitionrules"
 
 ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-ap.add_argument("--url", default="http://localhost:3000")
+ap.add_argument("--url", default=os.environ.get("GRAFANA_URL", "http://localhost:3000"))
 ap.add_argument("--user", default="admin")
 ap.add_argument("--password", default="admin")
 ap.add_argument("--namespace", default="default")
 ap.add_argument("--timeout", type=int, default=120)
 args = ap.parse_args()
-AUTH = "Basic " + base64.b64encode(f"{args.user}:{args.password}".encode()).decode()
+if os.environ.get("GRAFANA_TOKEN"):
+    AUTH = f"Bearer {os.environ['GRAFANA_TOKEN']}"
+else:
+    AUTH = "Basic " + base64.b64encode(f"{args.user}:{args.password}".encode()).decode()
 errors = []
 
 
@@ -114,22 +119,6 @@ for rel, doc in load("rules"):
 
 # notificacoes
 for rel, doc in load("notifications"):
-    for policy in doc.get("policies") or []:
-        got = api("/api/v1/provisioning/policies")
-        if got.get("provenance") != "file":
-            errors.append(f"{rel}: arvore de policies com provenance {got.get('provenance')!r}, esperado 'file'")
-
-        def shape(node):
-            keys = ("receiver", "group_by", "object_matchers", "mute_time_intervals",
-                    "group_wait", "group_interval", "repeat_interval")
-            out = {k: node[k] for k in keys if node.get(k) not in (None, [])}
-            out["routes"] = [shape(r) for r in node.get("routes") or []]
-            return out
-
-        want = dict(policy)
-        want.pop("orgId", None)
-        same(f"{rel}", "arvore de policies", shape(got), shape(want))
-        print("ok  arvore de policies")
     for mute in doc.get("muteTimes") or []:
         got = api(f"/api/v1/provisioning/mute-timings/{mute['name']}", ok404=True)
         if not got:

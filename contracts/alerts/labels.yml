@@ -1,7 +1,7 @@
 # Contrato dos labels de alerta; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_label_contract
-version: 0.3.0
+version: 0.4.0
 id: alert-labels
 title: Labels obrigatorios e de dependencia das regras de alerta
 status: defined
@@ -63,20 +63,19 @@ labels:
     required: true
     description: Nivel do alvo na cadeia de dependencia. Define quem pode inibir quem (alerting/inhibition).
     values:
-      hypervisor: Host fisico do Hyper-V (disponibilidade, armazenamento).
+      hypervisor: Host fisico do Hyper-V (disponibilidade, armazenamento, heartbeat do host).
       vm: Maquina virtual vista pelo hipervisor (estado, saude no Hyper-V).
-      guest: Sistema operacional dentro da VM (metricas do Alloy no convidado).
-      service: Servico hospedado numa VM (Uptime Kuma, containers).
+      guest: Sistema operacional dentro da VM (metricas do Alloy, heartbeat de VM quando existir).
+      service: Servico nosso (Uptime Kuma, containers). Depende de uma VM so quando roda inteiro nela.
+      external: Servico de terceiros (Uptime Kuma grupo=externo). Nao depende da infraestrutura; nunca e inibido.
       collection: Coleta de dados (inventario, exporters); falha nao indica falha do alvo.
     requires:
       hypervisor: [dep_hypervisor]
       vm: [dep_hypervisor, dep_vm]
       guest: [dep_hypervisor, dep_vm]
-      service: [dep_hypervisor, dep_vm]
+      service: []
+      external: []
       collection: [dep_hypervisor]
-    note: >-
-      Convidados e servicos levam tambem dep_hypervisor: com o host fora, as metricas das VMs somem e os alertas de
-      VM nao disparam, entao so o alerta do host (equal dep_hypervisor) os inibe.
   dep_hypervisor:
     required: false
     description: Chave canonica do hipervisor que hospeda (ou e) o alvo. Usada em group_by e em equal da inibicao.
@@ -84,26 +83,46 @@ labels:
     required: false
     description: >-
       Chave canonica da VM que hospeda (ou e) o alvo. Nomes de VM devem ser unicos entre hipervisores, pois a
-      inibicao por VM compara so dep_vm.
+      inibicao por VM compara so dep_vm. Quem tem dep_vm tem tambem dep_hypervisor.
+dependency:
+  principle: >-
+    So existe dependencia quando o alvo depende 100% do outro: VM depende do host, servico depende da VM onde roda
+    inteiro. Servico em mais de uma VM (balanceado, failover) ou de terceiros nao recebe chave de dependencia.
+  chain: >-
+    Com dep_vm vem sempre dep_hypervisor: com o host fora, as metricas das VMs somem e os alertas de VM nao
+    disparam, entao so o alerta do host (equal dep_hypervisor) inibe convidados e servicos.
 canonical_key:
   rule: minusculas, '-' trocado por '_', so [a-z0-9_]. Ex. SRV-WEB -> srv_web, srv-host01 -> srv_host01.
   why: >-
     O Uptime Kuma remove tudo fora de [a-zA-Z0-9_] dos valores de tag (SRV-WEB viraria SRVWEB), e a inibicao compara
     por igualdade exata. A chave canonica e a mesma nas metricas, nos alertas e nas tags do Kuma.
+  inventory: >-
+    hypervisor_vm_info publica vm_key (chave canonica da VM), alem de vm (nome original). PromQL nao converte
+    maiusculas; vm_key permite o join com a tag do Kuma (ver contracts/prometheus/hypervisor.yml).
   template: >-
-    Gerada no label da regra a partir do label da consulta, protegida contra label ausente (alertas DatasourceNoData
-    nao tem os labels da consulta): '{{ with $$labels.instance }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
-  uptime_kuma: >-
-    Monitores de servico dentro de VM recebem as tags vm e hypervisor ja na chave canonica (ex. vm:srv_web,
-    hypervisor:srv_host01); a regra copia para dep_vm e dep_hypervisor. Tag nova exige reiniciar o container do Kuma
-    (ver contracts/prometheus/uptime-kuma.yml). Sem as tags, o alerta SVC nao e inibido.
+    Nas regras a chave e gerada no label a partir do label da consulta, protegida contra label ausente (alertas
+    DatasourceNoData nao tem os labels da consulta): '{{ with $$labels.instance }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
+recipes:
+  kuma_service: >-
+    Monitor de servico que roda inteiro numa VM recebe so a tag vm:<chave canonica> (ex. vm:srv_web). O hipervisor vem
+    do inventario, entao a dependencia acompanha a VM se ela mudar de host. Tag nova exige reiniciar o Kuma.
+    Consulta (servicos com e sem tag): S * on (vm) group_left (hypervisor) H or (S unless on (vm) H), com
+    S = monitor_status{job="uptime-kuma",monitor_type!~"group|push",grupo!="externo"} e
+    H = group by (vm, hypervisor) (label_replace(label_replace(last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h]),
+    "vm", "$1", "vm_key", "(.+)"), "hypervisor", "$1", "instance", "(.+)")). Labels da regra: dep_vm a partir de vm
+    e dep_hypervisor a partir de hypervisor (template canonico), scope service.
+  kuma_external: >-
+    Monitores grupo=externo ficam numa regra propria com scope external e sem chaves de dependencia.
+  kuma_heartbeat: >-
+    Push heartbeat-<host>: do hipervisor e origem (HYP-102, dep_hypervisor sai do nome). De VM (opcional) e alvo
+    scope guest: o nome da o hostname do convidado, igual a guest_host do inventario (receita guest_join), sem tag.
   guest_join: >-
     Alertas de convidado (scope guest) obtem VM e hipervisor de hypervisor_vm_info (guest_host = instance do
     convidado). last_over_time mantem o join com o host fora (as series do inventario somem junto com ele):
-    <expr do convidado> * on (instance) group_left (vm, hypervisor) label_replace(label_replace(
-    group by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+    <expr do convidado> * on (instance) group_left (vm_key, hypervisor) label_replace(label_replace(
+    group by (instance, guest_host, vm_key) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
     "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)").
-    Os labels da regra convertem vm e hypervisor para dep_vm e dep_hypervisor.
+    Labels da regra: dep_vm a partir de vm_key e dep_hypervisor a partir de hypervisor (template canonico).
 provisioning:
   interpolation: >-
     O provisionamento por arquivo interpola variaveis de ambiente nos labels ($labels vira vazio), mas nao em
@@ -112,5 +131,6 @@ rules:
   - Toda regra publica exatamente um alert_code, uma severity, uma area e um scope, entre os listados acima.
   - O prefixo do alert_code e o code_prefix da area.
   - Valores em ASCII minusculo, exatamente como escritos aqui (servicos, sem cedilha); alert_code em maiusculas.
-  - Labels exigidos pelo scope (requires) sao obrigatorios na regra.
+  - Labels exigidos pelo scope (requires) sao obrigatorios na regra; dep_vm exige dep_hypervisor.
+  - scope external nunca e alvo de inibicao.
   - Valor novo de severity, area ou scope exige atualizar este contrato antes de ser usado.

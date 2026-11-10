@@ -1,7 +1,7 @@
 # Contrato observado para consumidores de dashboards; nao provisionar este YAML no Grafana.
 schema_version: 2
 kind: observability_contract
-version: 0.2.0
+version: 0.3.0
 id: hypervisor
 title: Hypervisor / inventario de VMs (formato neutro)
 status: observed_baseline
@@ -31,6 +31,10 @@ identity:
     - vm
   vm_label_is_case_sensitive: true
   vm_id: GUID da VM em maiusculas (label vm_id em hypervisor_vm_info)
+  vm_key: >-
+    Chave canonica da VM (minusculas, '-' -> '_'; label vm_key em hypervisor_vm_info), igual a tag vm do Uptime Kuma e
+    ao label dep_vm dos alertas (contracts/alerts/labels.yml). Publicada pelo hypervisor-inventory.ps1 a partir da
+    versao com vm_key; hosts com o script antigo ainda nao a tem.
   guest_join:
     status: implemented
     label: guest_host (hypervisor_vm_info)
@@ -89,6 +93,7 @@ metric_groups:
         - guest_os
         - guest_kind
         - guest_source
+        - vm_key
       hypervisor_vm_state:
         - vm
         - state

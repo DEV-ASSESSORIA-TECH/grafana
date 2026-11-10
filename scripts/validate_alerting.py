@@ -9,8 +9,8 @@
    condition existente, datasource provisionado, metricas/labels das consultas nos contratos, painel
    vinculado existente nos dashboards.
 3. Catalogo: todo codigo active tem regra e toda regra tem codigo; uid, severity e scope iguais.
-4. Notificacoes: policies so com contact points do contrato e mute timings declarados; contact point
-   gerenciado na UI nunca declarado em arquivo; matchers e group_by com labels conhecidos.
+4. Notificacoes: so mute timings e templates; policies e contact points sao da UI e nao podem aparecer
+   em arquivo. Regras sem notification_settings (o destino sai da policy).
 5. Inibicao: recurso InhibitionRule valido; labels do contrato; equal so com chaves dep_* e exigidas
    nao vazias (=~ .+) nos dois lados; alert_code dos matchers casa com algum codigo do catalogo.
 """
@@ -48,7 +48,6 @@ scope_requires = (label_spec.get("scope") or {}).get("requires") or {}
 known_labels = set(label_spec)
 dep_labels = {name for name in known_labels if name.startswith("dep_")}
 codes = CATALOG.get("codes") or {}
-contact_points = NOTIF.get("contact_points") or {}
 
 for name in ("alert_code", "severity", "area", "scope"):
     if not label_spec.get(name):
@@ -143,6 +142,10 @@ def check_rule_labels(where, labels, code):
     for name in scope_requires.get(scope) or []:
         if not labels.get(name):
             errors.append(f"{where}: scope {scope} exige o label {name}")
+    if labels.get("dep_vm") and not labels.get("dep_hypervisor"):
+        errors.append(f"{where}: dep_vm exige dep_hypervisor (com o host fora, so o alerta do host inibe)")
+    if scope == "external" and set(labels) & dep_labels:
+        errors.append(f"{where}: scope external nao tem chave de dependencia")
     for name, value in labels.items():
         if ENV_VAR_RE.search(str(value)):
             errors.append(f"{where}: label {name} usa $ simples (interpolado como variavel de ambiente); "
@@ -162,6 +165,9 @@ def check_rule(rel, group, rule, seen_uids, seen_codes):
         elif uid in seen_uids:
             errors.append(f"{where}: uid repetido ({seen_uids[uid]})")
         seen_uids[uid] = rel
+
+    if rule.get("notification_settings"):
+        errors.append(f"{where}: notification_settings envia direto a um contact point; o destino sai da policy (UI)")
 
     labels = rule.get("labels") or {}
     code = labels.get("alert_code")
@@ -270,76 +276,34 @@ for uid in sorted({u for u in catalog_uids if catalog_uids.count(u) > 1}):
 
 
 # ----------------------------------------------------------- notificacoes
-def check_matchers(where, matchers):
-    for m in matchers or []:
-        if not (isinstance(m, list) and len(m) == 3 and m[1] in MATCH_TYPES):
-            errors.append(f"{where}: object_matcher invalido: {m!r}")
-            continue
-        label, op, value = m
-        if label not in known_labels | BUILTIN_LABELS:
-            errors.append(f"{where}: matcher com label fora do contrato: {label}")
-        if label == "severity" and op == "=" and value not in severities:
-            errors.append(f"{where}: matcher com severity invalida: {value}")
-
-
-def walk_policy(where, node, receivers, mutes, depth=0):
-    receiver = node.get("receiver")
-    if depth == 0 and not receiver:
-        errors.append(f"{where}: politica raiz sem receiver")
-    if receiver:
-        receivers.add(receiver)
-    if "matchers" in node:
-        errors.append(f"{where}: usar object_matchers (matchers em texto nao sao validados)")
-    check_matchers(where, node.get("object_matchers"))
-    for label in node.get("group_by") or []:
-        if label not in known_labels | BUILTIN_LABELS | {"..."}:
-            errors.append(f"{where}: group_by com label fora do contrato: {label}")
-    if depth == 0 and node.get("mute_time_intervals"):
-        errors.append(f"{where}: a politica raiz nao aceita mute_time_intervals")
-    mutes.update(node.get("mute_time_intervals") or [])
-    mutes.update(node.get("active_time_intervals") or [])
-    for i, child in enumerate(node.get("routes") or []):
-        walk_policy(f"{where}.routes[{i}]", child, receivers, mutes, depth + 1)
-
-
-policies, used_receivers, used_mutes = 0, set(), set()
-defined = {"muteTimes": set(), "templates": set(), "contactPoints": set()}
+# Policies e contact points ficam na UI (contracts/alerts/notifications.yml): o arquivo substituiria a arvore
+# inteira e travaria a edicao. Do repositorio saem so mute timings e templates.
+UI_ONLY = {"policies", "resetPolicies", "contactPoints", "deleteContactPoints"}
+defined = {"muteTimes": set(), "templates": set()}
 for path in files["notifications"]:
     rel = path.relative_to(ROOT)
     for doc in load_yaml(path):
         if doc.get("apiVersion") != 1:
             errors.append(f"{rel}: apiVersion deve ser 1")
-        allowed = {"apiVersion", "policies", "resetPolicies", "contactPoints", "deleteContactPoints",
-                   "muteTimes", "deleteMuteTimes", "templates", "deleteTemplates"}
+        for key in sorted(set(doc) & UI_ONLY):
+            errors.append(f"{rel}: {key} e gerenciado na UI (contracts/alerts/notifications.yml)")
+        allowed = {"apiVersion", "muteTimes", "deleteMuteTimes", "templates", "deleteTemplates"} | UI_ONLY
         for key in sorted(set(doc) - allowed):
             errors.append(f"{rel}: chave inesperada em arquivo de notificacao: {key}")
-        for p in doc.get("policies") or []:
-            policies += 1
-            walk_policy(f"{rel} [policy org {p.get('orgId', 1)}]", p, used_receivers, used_mutes)
-        for kind, key in (("muteTimes", "name"), ("templates", "name"), ("contactPoints", "name")):
+        for kind in defined:
             for item in doc.get(kind) or []:
-                name = item.get(key)
+                name = item.get("name")
                 if not name:
-                    errors.append(f"{rel}: {kind} sem {key}")
+                    errors.append(f"{rel}: {kind} sem name")
                 elif name in defined[kind]:
                     errors.append(f"{rel}: {kind} {name} repetido")
                 defined[kind].add(name)
-        for cp in doc.get("contactPoints") or []:
-            spec = contact_points.get(cp.get("name")) or {}
-            if spec.get("managed_by") != "file":
-                errors.append(f"{rel}: contact point {cp.get('name')!r} nao e managed_by: file no contrato "
-                              f"(gerenciado na UI ou ausente de contracts/alerts/notifications.yml)")
-            if not cp.get("receivers"):
-                errors.append(f"{rel}: contact point {cp.get('name')!r} sem integracoes (o Grafana ignora sem aviso)")
-if policies > 1:
-    errors.append("alerting/notifications: mais de uma arvore de policies (a arvore e um recurso unico)")
-for name in sorted(used_receivers - set(contact_points)):
-    errors.append(f"alerting/notifications: policy usa contact point fora do contrato: {name}")
-for name in sorted(used_mutes - defined["muteTimes"]):
-    errors.append(f"alerting/notifications: policy usa mute timing nao declarado: {name}")
-for name, spec in contact_points.items():
-    if (spec or {}).get("managed_by") not in ("ui", "file"):
-        errors.append(f"contracts/alerts/notifications.yml: contact point {name}: managed_by deve ser ui ou file")
+for label in NOTIF.get("routing_labels") or []:
+    if label not in known_labels:
+        errors.append(f"contracts/alerts/notifications.yml: routing_labels com label fora do contrato: {label}")
+for policy in NOTIF.get("recommended_ui_policies") or []:
+    if policy.get("mute_timing") and policy["mute_timing"] not in defined["muteTimes"]:
+        errors.append(f"contracts/alerts/notifications.yml: mute timing {policy['mute_timing']} nao declarado em alerting/")
 
 
 # ---------------------------------------------------------------- inibicao
@@ -367,6 +331,10 @@ def check_inhibition_matchers(where, side, matchers):
                 errors.append(f"{where}: {side}: alert_code {value!r} nao casa com nenhum codigo do catalogo")
             if label == "scope" and op == "=~" and not any(rx.match(s) for s in scopes):
                 errors.append(f"{where}: {side}: scope {value!r} nao casa com nenhum scope do contrato")
+            if label == "scope" and op == "=~" and side == "target_matchers" and rx.match("external"):
+                errors.append(f"{where}: scope external nunca e alvo de inibicao (nao depende da infraestrutura)")
+        elif label == "scope" and op == "=" and side == "target_matchers" and value == "external":
+            errors.append(f"{where}: scope external nunca e alvo de inibicao (nao depende da infraestrutura)")
         elif label == "alert_code" and op == "=" and value not in codes:
             errors.append(f"{where}: {side}: alert_code {value} fora do catalogo")
         result.setdefault(label, []).append((op, value))
@@ -406,6 +374,6 @@ for path in files["inhibition"]:
                     errors.append(f"{where}: {side} deve exigir {label} =~ .+ (vazio e ausente sao iguais no equal)")
 
 sys.exit(ct.report(errors, warnings,
-                   f"{rule_count} regras, {len(seen_codes)} codigos, {policies} arvore de policies, "
+                   f"{rule_count} regras, {len(seen_codes)} codigos, "
                    f"{len(defined['muteTimes'])} mute timings, {len(defined['templates'])} templates, "
                    f"{len(inhibition_names)} regras de inibicao"))

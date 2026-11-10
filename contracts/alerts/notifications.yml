@@ -1,30 +1,34 @@
 # Contrato de notificacao; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_notification_contract
-version: 0.1.0
+version: 0.2.0
 id: alert-notifications
-title: Contact points e roteamento por severidade
+title: Divisao de responsabilidade das notificacoes
 status: defined
 scope: >-
-  Nomes dos contact points que as policies (alerting/notifications/policies.yaml) podem usar e quem gerencia cada
-  um. Os destinatarios nao fazem parte do contrato.
-contact_points:
-  email-infra:
-    managed_by: ui
-    type: email
-    purpose: Notificacoes critical e warning da infraestrutura.
-    note: >-
-      Criado e editado na UI do Grafana (destinatarios mudam sem PR). Precisa existir ANTES de aplicar as policies:
-      policy com contact point inexistente impede o Grafana de subir.
-managed_by:
-  ui: Criado e editado pela UI; nunca aparece em alerting/ (o arquivo bloquearia a edicao na UI).
-  file: Provisionado por arquivo em alerting/notifications/contact-points.yaml.
-routing:
-  critical: email-infra, repeticao curta
-  warning: email-infra, agrupamento e repeticao longos
-  info: email-infra com o mute timing 'sempre' (nunca notifica; o alerta fica visivel no Grafana)
-  group_by: [area, dep_hypervisor]
+  O que das notificacoes vem do repositorio e o que fica na UI. As regras so publicam labels; quem decide o destino e
+  a notification policy padrao, editada na UI.
+managed_in_ui:
+  - notification policies (arvore padrao): roteamento livre pelos labels de contracts/alerts/labels.yml
+  - contact points (e-mail, webhooks, APIs)
+  - silences (manutencao pontual)
+managed_in_files:
+  muteTimes: alerting/notifications/mute-timings.yaml (usaveis nas policies da UI)
+  templates: alerting/notifications/templates.yaml (usaveis nos contact points da UI)
+routing_labels:
+  - alert_code
+  - severity
+  - area
+  - scope
+  - dep_hypervisor
+  - dep_vm
+recommended_ui_policies:
+  - matcher: severity = info
+    mute_timing: sempre
+    why: info fica visivel no Grafana e nunca notifica.
+  - group_by: [area, dep_hypervisor]
+    why: a queda de um host vira uma notificacao so.
 rules:
-  - Toda policy referencia apenas contact points deste contrato.
-  - Contact point managed_by ui nao pode ser declarado em alerting/.
-  - A arvore de policies e um recurso unico; o arquivo substitui a arvore inteira ao ser aplicado.
+  - alerting/ nao declara policies, resetPolicies nem contact points (o arquivo travaria a edicao na UI e substituiria a arvore inteira).
+  - Regras nao usam notification_settings (roteamento direto para contact point); o destino sai sempre da policy.
+  - Nome de mute timing ou template usado na UI nao muda sem ajustar a UI junto.

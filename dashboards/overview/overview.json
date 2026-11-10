@@ -30,16 +30,22 @@
       }
     ],
     "cursorSync": "Crosshair",
-    "description": "Visão geral da infraestrutura: alertas ativos por severidade, linha do tempo dos alertas e estado de hosts, VMs, servidores, containers e serviços.",
+    "description": "Página inicial: estado de cada área, alertas ativos, alvos sem dados, o que pede atenção e o histórico de alertas do período.",
     "editable": true,
     "elements": {
       "panel-1": {
         "kind": "Panel",
         "spec": {
           "id": 1,
-          "title": "Críticos",
-          "description": "Instâncias de alerta critical disparando agora. Depende do histórico de estado dos alertas no Prometheus (métrica GRAFANA_ALERTS, contrato contracts/prometheus/grafana-alerts.yml). Sem ele, mostra 0.",
-          "links": [],
+          "title": "Linux",
+          "description": "",
+          "links": [
+            {
+              "title": "Abrir o dashboard de Linux",
+              "url": "/grafana/d/servers-linux",
+              "targetBlank": false
+            }
+          ],
           "data": {
             "kind": "QueryGroup",
             "spec": {
@@ -56,14 +62,60 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",severity=\"critical\"}) or vector(0)",
+                        "expr": "count(up{job=\"integrations/unix\"} == 1) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "",
+                        "legendFormat": "no ar",
                         "range": false
                       }
                     },
                     "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"linux\",severity=\"critical\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "críticos",
+                        "range": false
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"linux\",severity=\"warning\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "avisos",
+                        "range": false
+                      }
+                    },
+                    "refId": "C",
                     "hidden": false
                   }
                 }
@@ -78,10 +130,10 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "background",
+                "colorMode": "value",
                 "graphMode": "none",
                 "justifyMode": "center",
-                "orientation": "auto",
+                "orientation": "vertical",
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -91,10 +143,10 @@
                 },
                 "showPercentChange": false,
                 "text": {
-                  "titleSize": 13,
-                  "valueSize": 30
+                  "titleSize": 11,
+                  "valueSize": 22
                 },
-                "textMode": "value",
+                "textMode": "value_and_name",
                 "wideLayout": true
               },
               "fieldConfig": {
@@ -107,16 +159,57 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "green"
+                        "color": "#73BF69"
                       },
                       {
                         "value": 1,
-                        "color": "red"
+                        "color": "#F2495C"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "A"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "text"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "C"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#73BF69"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#FF9830"
+                            }
+                          ]
+                        }
                       }
                     ]
                   }
-                },
-                "overrides": []
+                ]
               }
             }
           }
@@ -126,9 +219,15 @@
         "kind": "Panel",
         "spec": {
           "id": 2,
-          "title": "Avisos",
-          "description": "Instâncias de alerta warning disparando agora. Depende do histórico de estado dos alertas no Prometheus (métrica GRAFANA_ALERTS, contrato contracts/prometheus/grafana-alerts.yml). Sem ele, mostra 0.",
-          "links": [],
+          "title": "Windows",
+          "description": "",
+          "links": [
+            {
+              "title": "Abrir o dashboard de Windows",
+              "url": "/grafana/d/servers-windows",
+              "targetBlank": false
+            }
+          ],
           "data": {
             "kind": "QueryGroup",
             "spec": {
@@ -145,14 +244,60 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",severity=\"warning\"}) or vector(0)",
+                        "expr": "count(up{job=\"integrations/windows\",instance!~\"srv-host01|srv-host01-mtc\"} == 1) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "",
+                        "legendFormat": "no ar",
                         "range": false
                       }
                     },
                     "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"windows\",severity=\"critical\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "críticos",
+                        "range": false
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"windows\",severity=\"warning\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "avisos",
+                        "range": false
+                      }
+                    },
+                    "refId": "C",
                     "hidden": false
                   }
                 }
@@ -167,10 +312,10 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "background",
+                "colorMode": "value",
                 "graphMode": "none",
                 "justifyMode": "center",
-                "orientation": "auto",
+                "orientation": "vertical",
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -180,10 +325,10 @@
                 },
                 "showPercentChange": false,
                 "text": {
-                  "titleSize": 13,
-                  "valueSize": 30
+                  "titleSize": 11,
+                  "valueSize": 22
                 },
-                "textMode": "value",
+                "textMode": "value_and_name",
                 "wideLayout": true
               },
               "fieldConfig": {
@@ -196,16 +341,57 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "green"
+                        "color": "#73BF69"
                       },
                       {
                         "value": 1,
-                        "color": "orange"
+                        "color": "#F2495C"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "A"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "text"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "C"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#73BF69"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#FF9830"
+                            }
+                          ]
+                        }
                       }
                     ]
                   }
-                },
-                "overrides": []
+                ]
               }
             }
           }
@@ -215,9 +401,15 @@
         "kind": "Panel",
         "spec": {
           "id": 3,
-          "title": "Pendentes",
-          "description": "Alertas com a condição verdadeira, esperando o tempo mínimo (for) para disparar. Depende do histórico de estado dos alertas no Prometheus (métrica GRAFANA_ALERTS, contrato contracts/prometheus/grafana-alerts.yml). Sem ele, mostra 0.",
-          "links": [],
+          "title": "Hyper-V",
+          "description": "",
+          "links": [
+            {
+              "title": "Abrir o dashboard de Hyper-V",
+              "url": "/grafana/d/hypervisors",
+              "targetBlank": false
+            }
+          ],
           "data": {
             "kind": "QueryGroup",
             "spec": {
@@ -234,14 +426,60 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"pending\"}) or vector(0)",
+                        "expr": "count(up{job=\"integrations/hypervisor\"} == 1) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "",
+                        "legendFormat": "hosts",
                         "range": false
                       }
                     },
                     "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"hypervisor\",severity=\"critical\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "críticos",
+                        "range": false
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"hypervisor\",severity=\"warning\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "avisos",
+                        "range": false
+                      }
+                    },
+                    "refId": "C",
                     "hidden": false
                   }
                 }
@@ -256,10 +494,10 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "background",
+                "colorMode": "value",
                 "graphMode": "none",
                 "justifyMode": "center",
-                "orientation": "auto",
+                "orientation": "vertical",
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -269,10 +507,10 @@
                 },
                 "showPercentChange": false,
                 "text": {
-                  "titleSize": 13,
-                  "valueSize": 30
+                  "titleSize": 11,
+                  "valueSize": 22
                 },
-                "textMode": "value",
+                "textMode": "value_and_name",
                 "wideLayout": true
               },
               "fieldConfig": {
@@ -285,16 +523,57 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "green"
+                        "color": "#73BF69"
                       },
                       {
                         "value": 1,
-                        "color": "yellow"
+                        "color": "#F2495C"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "A"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "text"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "C"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#73BF69"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#FF9830"
+                            }
+                          ]
+                        }
                       }
                     ]
                   }
-                },
-                "overrides": []
+                ]
               }
             }
           }
@@ -304,100 +583,11 @@
         "kind": "Panel",
         "spec": {
           "id": 4,
-          "title": "Informativos",
-          "description": "Registros info disparando (não notificam). Depende do histórico de estado dos alertas no Prometheus (métrica GRAFANA_ALERTS, contrato contracts/prometheus/grafana-alerts.yml). Sem ele, mostra 0.",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",severity=\"info\"}) or vector(0)",
-                        "format": "time_series",
-                        "instant": true,
-                        "legendFormat": "",
-                        "range": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 13,
-                  "valueSize": 30
-                },
-                "textMode": "value",
-                "wideLayout": true
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "green"
-                      },
-                      {
-                        "value": 1,
-                        "color": "blue"
-                      }
-                    ]
-                  }
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-5": {
-        "kind": "Panel",
-        "spec": {
-          "id": 5,
-          "title": "Serviços fora",
-          "description": "Monitores do Uptime Kuma fora do ar agora (sem grupos e heartbeats).",
+          "title": "Serviços",
+          "description": "",
           "links": [
             {
-              "title": "Serviços",
+              "title": "Abrir o dashboard de Serviços",
               "url": "/grafana/d/servicos",
               "targetBlank": false
             }
@@ -418,14 +608,60 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\"} == 0) or vector(0)",
+                        "expr": "count(monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\"} == 1) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "",
+                        "legendFormat": "no ar",
                         "range": false
                       }
                     },
                     "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"servicos\",severity=\"critical\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "críticos",
+                        "range": false
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"servicos\",severity=\"warning\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "avisos",
+                        "range": false
+                      }
+                    },
+                    "refId": "C",
                     "hidden": false
                   }
                 }
@@ -440,10 +676,10 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "background",
+                "colorMode": "value",
                 "graphMode": "none",
                 "justifyMode": "center",
-                "orientation": "auto",
+                "orientation": "vertical",
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -453,10 +689,10 @@
                 },
                 "showPercentChange": false,
                 "text": {
-                  "titleSize": 13,
-                  "valueSize": 30
+                  "titleSize": 11,
+                  "valueSize": 22
                 },
-                "textMode": "value",
+                "textMode": "value_and_name",
                 "wideLayout": true
               },
               "fieldConfig": {
@@ -469,16 +705,239 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "green"
+                        "color": "#73BF69"
                       },
                       {
                         "value": 1,
-                        "color": "red"
+                        "color": "#F2495C"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "A"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "text"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "C"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#73BF69"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#FF9830"
+                            }
+                          ]
+                        }
                       }
                     ]
                   }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-5": {
+        "kind": "Panel",
+        "spec": {
+          "id": 5,
+          "title": "Containers",
+          "description": "",
+          "links": [
+            {
+              "title": "Abrir o dashboard de Containers",
+              "url": "/grafana/d/servers-linux",
+              "targetBlank": false
+            }
+          ],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "rodando",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
                 },
-                "overrides": []
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"containers\",severity=\"critical\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "críticos",
+                        "range": false
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"containers\",severity=\"warning\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "avisos",
+                        "range": false
+                      }
+                    },
+                    "refId": "C",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "vertical",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 11,
+                  "valueSize": 22
+                },
+                "textMode": "value_and_name",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#73BF69"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#F2495C"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "A"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "text"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "C"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#73BF69"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#FF9830"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
               }
             }
           }
@@ -488,45 +947,179 @@
         "kind": "Panel",
         "spec": {
           "id": 6,
-          "title": "Alertas ativos",
-          "description": "Alertas disparando ou pendentes, por importância (sem os informativos). Clique para abrir a regra; a documentação de cada código está no link Procedimento da regra.",
-          "links": [],
+          "title": "Coleta",
+          "description": "",
+          "links": [
+            {
+              "title": "Abrir o dashboard de Coleta",
+              "url": "/grafana/alerting/list",
+              "targetBlank": false
+            }
+          ],
           "data": {
             "kind": "QueryGroup",
             "spec": {
-              "queries": [],
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "(count(up{job=\"prometheus\"} == 1) or vector(0)) + (count(up{job=\"uptime-kuma\"} == 1) or vector(0))",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "coletores",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"monitoramento\",severity=\"critical\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "críticos",
+                        "range": false
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"monitoramento\",severity=\"warning\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "avisos",
+                        "range": false
+                      }
+                    },
+                    "refId": "C",
+                    "hidden": false
+                  }
+                }
+              ],
               "transformations": [],
               "queryOptions": {}
             }
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "alertlist",
+            "group": "stat",
             "version": "",
             "spec": {
               "options": {
-                "alertInstanceLabelFilter": "{severity!=\"info\"}",
-                "alertName": "",
-                "dashboardAlerts": false,
-                "datasource": "grafana",
-                "groupBy": [],
-                "groupMode": "default",
-                "maxItems": 100,
-                "showInactiveAlerts": false,
-                "sortOrder": 3,
-                "stateFilter": {
-                  "error": true,
-                  "firing": true,
-                  "noData": false,
-                  "normal": false,
-                  "pending": true,
-                  "recovering": false
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "vertical",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
                 },
-                "viewMode": "list"
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 11,
+                  "valueSize": 22
+                },
+                "textMode": "value_and_name",
+                "wideLayout": true
               },
               "fieldConfig": {
-                "defaults": {},
-                "overrides": []
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#73BF69"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#F2495C"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "A"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "text"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "C"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#73BF69"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#FF9830"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
               }
             }
           }
@@ -536,8 +1129,8 @@
         "kind": "Panel",
         "spec": {
           "id": 7,
-          "title": "Linha do tempo",
-          "description": "Quando cada alerta (critical e warning) esteve disparando no período. Depende do histórico de estado dos alertas no Prometheus (métrica GRAFANA_ALERTS, contrato contracts/prometheus/grafana-alerts.yml). Sem ele, mostra 0.",
+          "title": "Agora",
+          "description": "Ocorrências disparando por severidade e pendentes (condição verdadeira, esperando o tempo de confirmação). Informativos não notificam. Fonte: histórico de estado dos alertas no Prometheus (GRAFANA_ALERTS).",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -555,10 +1148,1493 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max by (alertname, instance, vm, volume, mountpoint, name, monitor_name) (GRAFANA_ALERTS{alertstate=\"firing\",severity!=\"info\"})",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",severity=\"critical\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "críticos",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",severity=\"warning\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "avisos",
+                        "range": false
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"pending\",severity!=\"info\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "pendentes",
+                        "range": false
+                      }
+                    },
+                    "refId": "C",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",severity=\"info\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "info",
+                        "range": false
+                      }
+                    },
+                    "refId": "D",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "vertical",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 11,
+                  "valueSize": 24
+                },
+                "textMode": "value_and_name",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#6E7480"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "A"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#6E7480"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#F2495C"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "B"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#6E7480"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#FF9830"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "C"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#6E7480"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#5794F2"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "D"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#6E7480"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#5794F2"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-8": {
+        "kind": "Panel",
+        "spec": {
+          "id": 8,
+          "title": "Silences",
+          "description": "Silences não são gravados no Prometheus: gerencie direto no Grafana.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "text",
+            "version": "",
+            "spec": {
+              "options": {
+                "mode": "markdown",
+                "content": "[Ver silences ativos](/grafana/alerting/silences) · [Criar silence](/grafana/alerting/silence/new)",
+                "code": {
+                  "language": "plaintext",
+                  "showLineNumbers": false,
+                  "showMiniMap": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-9": {
+        "kind": "Panel",
+        "spec": {
+          "id": 9,
+          "title": "Alertas ativos",
+          "description": "Uma linha por ocorrência: o que está com problema (Alvo), o código (abre a documentação) e o alerta (abre a regra). Críticos primeiro. Fonte: histórico de estado dos alertas no Prometheus (GRAFANA_ALERTS).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max by (alert_code, alvo, alertname, severity, alertstate, area, grafana_rule_uid) (GRAFANA_ALERTS{severity!=\"info\"})",
+                        "format": "table",
+                        "instant": true,
+                        "legendFormat": "",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "filterFieldsByName",
+                  "spec": {
+                    "options": {
+                      "include": {
+                        "pattern": "^(alert_code|alvo|alertname|severity|alertstate|area|grafana_rule_uid)$"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "organize",
+                  "spec": {
+                    "options": {
+                      "indexByName": {
+                        "severity": 0,
+                        "alert_code": 1,
+                        "alvo": 2,
+                        "alertname": 3,
+                        "alertstate": 4,
+                        "area": 5,
+                        "grafana_rule_uid": 6
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "footer": {
+                  "fields": "",
+                  "reducer": [
+                    "sum"
+                  ],
+                  "show": false
+                },
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "displayName": "Severidade",
+                    "desc": false
+                  }
+                ]
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "inspect": false
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "text"
+                      }
+                    ]
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "alert_code"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Código"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 90
+                      },
+                      {
+                        "id": "links",
+                        "value": [
+                          {
+                            "title": "Documentação do alerta",
+                            "url": "https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/${__value.raw}.md",
+                            "targetBlank": true
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "alvo"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Alvo"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "alertname"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Alerta"
+                      },
+                      {
+                        "id": "links",
+                        "value": [
+                          {
+                            "title": "Abrir a regra no Grafana",
+                            "url": "/grafana/alerting/grafana/${__data.fields.grafana_rule_uid}/view",
+                            "targetBlank": false
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "severity"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Severidade"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 100
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "critical": {
+                                "text": "crítico",
+                                "color": "#F2495C",
+                                "index": 0
+                              },
+                              "warning": {
+                                "text": "aviso",
+                                "color": "#FF9830",
+                                "index": 1
+                              },
+                              "info": {
+                                "text": "info",
+                                "color": "#5794F2",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "alertstate"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Estado"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 100
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "firing": {
+                                "text": "disparando",
+                                "index": 0
+                              },
+                              "pending": {
+                                "text": "pendente",
+                                "color": "#5794F2",
+                                "index": 1
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "area"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Área"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 110
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "grafana_rule_uid"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hidden",
+                        "value": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-10": {
+        "kind": "Panel",
+        "spec": {
+          "id": 10,
+          "title": "Certificados",
+          "description": "Certificados TLS dos monitores do Uptime Kuma que vencem em até 30 dias, e quantos dias faltam para o mais próximo.",
+          "links": [
+            {
+              "title": "Abrir Serviços",
+              "url": "/grafana/d/servicos",
+              "targetBlank": false
+            }
+          ],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(monitor_cert_days_remaining{job=\"uptime-kuma\"} <= 30) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "até 30 dias",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "min(monitor_cert_days_remaining{job=\"uptime-kuma\"})",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "mais próximo",
+                        "range": false
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "vertical",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 11,
+                  "valueSize": 22
+                },
+                "textMode": "value_and_name",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#73BF69"
+                      }
+                    ]
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "A"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#73BF69"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#FF9830"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byFrameRefID",
+                      "options": "B"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "suffix: dias"
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#F2495C"
+                            },
+                            {
+                              "value": 3,
+                              "color": "#FF9830"
+                            },
+                            {
+                              "value": 14,
+                              "color": "#73BF69"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-11": {
+        "kind": "Panel",
+        "spec": {
+          "id": 11,
+          "title": "",
+          "description": "Alvos que reportaram nos últimos 7 dias e pararam (qualquer coleta). Servidor parado não gera alerta de CPU ou disco: ele some. Alvo desativado de propósito sai daqui depois de 7 dias.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "(time() - max by (job, instance) (max_over_time(timestamp(up{job=\"integrations/windows\"})[7d:1m]))) unless on (job, instance) (up{job=\"integrations/windows\"} == 1)\nor\n(time() - max by (job, instance) (max_over_time(timestamp(up{job=\"integrations/unix\"})[7d:1m]))) unless on (job, instance) (up{job=\"integrations/unix\"} == 1)\nor\n(time() - max by (job, instance) (max_over_time(timestamp(up{job=\"integrations/docker\"})[7d:1m]))) unless on (job, instance) (up{job=\"integrations/docker\"} == 1)\nor\n(time() - max by (job, instance) (max_over_time(timestamp(up{job=\"integrations/hypervisor\"})[7d:1m]))) unless on (job, instance) (up{job=\"integrations/hypervisor\"} == 1)\nor\n(time() - max by (job, instance) (max_over_time(timestamp(up{job=\"integrations/hyperv\"})[7d:1m]))) unless on (job, instance) (up{job=\"integrations/hyperv\"} == 1)\nor\n(time() - max by (job, instance) (max_over_time(timestamp(up{job=\"uptime-kuma\"})[7d:1m]))) unless on (job, instance) (up{job=\"uptime-kuma\"} == 1)\nor\n(time() - max by (job, instance) (max_over_time(timestamp(up{job=\"prometheus\"})[7d:1m]))) unless on (job, instance) (up{job=\"prometheus\"} == 1)",
+                        "format": "table",
+                        "instant": true,
+                        "legendFormat": "",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "(max by (job, instance) (max_over_time(timestamp(up{job=\"integrations/windows\"})[7d:1m])) * 1000) unless on (job, instance) (up{job=\"integrations/windows\"} == 1)\nor\n(max by (job, instance) (max_over_time(timestamp(up{job=\"integrations/unix\"})[7d:1m])) * 1000) unless on (job, instance) (up{job=\"integrations/unix\"} == 1)\nor\n(max by (job, instance) (max_over_time(timestamp(up{job=\"integrations/docker\"})[7d:1m])) * 1000) unless on (job, instance) (up{job=\"integrations/docker\"} == 1)\nor\n(max by (job, instance) (max_over_time(timestamp(up{job=\"integrations/hypervisor\"})[7d:1m])) * 1000) unless on (job, instance) (up{job=\"integrations/hypervisor\"} == 1)\nor\n(max by (job, instance) (max_over_time(timestamp(up{job=\"integrations/hyperv\"})[7d:1m])) * 1000) unless on (job, instance) (up{job=\"integrations/hyperv\"} == 1)\nor\n(max by (job, instance) (max_over_time(timestamp(up{job=\"uptime-kuma\"})[7d:1m])) * 1000) unless on (job, instance) (up{job=\"uptime-kuma\"} == 1)\nor\n(max by (job, instance) (max_over_time(timestamp(up{job=\"prometheus\"})[7d:1m])) * 1000) unless on (job, instance) (up{job=\"prometheus\"} == 1)",
+                        "format": "table",
+                        "instant": true,
+                        "legendFormat": "",
+                        "range": false
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "merge",
+                  "spec": {
+                    "options": {}
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterFieldsByName",
+                  "spec": {
+                    "options": {
+                      "include": {
+                        "pattern": "^(instance|job|Value #[AB])$"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "organize",
+                  "spec": {
+                    "options": {
+                      "indexByName": {
+                        "instance": 0,
+                        "job": 1,
+                        "Value #A": 2,
+                        "Value #B": 3
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "footer": {
+                  "fields": "",
+                  "reducer": [
+                    "sum"
+                  ],
+                  "show": false
+                },
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "displayName": "Sem dados há",
+                    "desc": true
+                  }
+                ]
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "inspect": false
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "text"
+                      }
+                    ]
+                  },
+                  "noValue": "Todos os alvos estão reportando."
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "instance"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Alvo"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "job"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Coleta"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Value #A"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Sem dados há"
+                      },
+                      {
+                        "id": "unit",
+                        "value": "dtdurations"
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#FF9830"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Value #B"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Última vez visto"
+                      },
+                      {
+                        "id": "unit",
+                        "value": "dateTimeAsLocal"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-12": {
+        "kind": "Panel",
+        "spec": {
+          "id": 12,
+          "title": "Discos que enchem primeiro",
+          "description": "Os 8 volumes mais cheios (Linux e Windows, inclusive os hosts) e em quanto tempo enchem no ritmo do último dia (mesma conta dos dashboards de servidor). O F: do srv-host01 fica de fora: o ciclo diário de backup engana a previsão, e ele tem alertas próprios (HYP-203/204).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "topk(8, label_replace(max by (instance, mountpoint) (100 * (1 - node_filesystem_avail_bytes{job=\"integrations/unix\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"} / node_filesystem_size_bytes{job=\"integrations/unix\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"})), \"volume\", \"$1\", \"mountpoint\", \"(.+)\")\nor\nmax by (instance, volume) (100 * (1 - windows_logical_disk_free_bytes{job=\"integrations/windows\",volume=~\"[A-Z]:\"} / windows_logical_disk_size_bytes{job=\"integrations/windows\",volume=~\"[A-Z]:\"})) unless on (instance, volume) windows_logical_disk_free_bytes{job=\"integrations/windows\",instance=\"srv-host01\",volume=\"F:\"})",
+                        "format": "table",
+                        "instant": true,
+                        "legendFormat": "",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "label_replace(max by (instance, mountpoint) ((node_filesystem_avail_bytes{job=\"integrations/unix\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"} / (-deriv(node_filesystem_avail_bytes{job=\"integrations/unix\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"}[1d]) > 0)) < 7776000) / 86400, \"volume\", \"$1\", \"mountpoint\", \"(.+)\")\nor\nmax by (instance, volume) ((windows_logical_disk_free_bytes{job=\"integrations/windows\",volume=~\"[A-Z]:\"} / (-deriv(windows_logical_disk_free_bytes{job=\"integrations/windows\",volume=~\"[A-Z]:\"}[1d]) > 0)) < 7776000) / 86400 unless on (instance, volume) windows_logical_disk_free_bytes{job=\"integrations/windows\",instance=\"srv-host01\",volume=\"F:\"}",
+                        "format": "table",
+                        "instant": true,
+                        "legendFormat": "",
+                        "range": false
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "merge",
+                  "spec": {
+                    "options": {}
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterByValue",
+                  "spec": {
+                    "options": {
+                      "filters": [
+                        {
+                          "fieldName": "Value #A",
+                          "config": {
+                            "id": "isNull"
+                          }
+                        }
+                      ],
+                      "match": "any",
+                      "type": "exclude"
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterFieldsByName",
+                  "spec": {
+                    "options": {
+                      "include": {
+                        "pattern": "^(instance|volume|Value #[AB])$"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "organize",
+                  "spec": {
+                    "options": {
+                      "indexByName": {
+                        "instance": 0,
+                        "volume": 1,
+                        "Value #A": 2,
+                        "Value #B": 3
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "footer": {
+                  "fields": "",
+                  "reducer": [
+                    "sum"
+                  ],
+                  "show": false
+                },
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "displayName": "Uso",
+                    "desc": true
+                  }
+                ]
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "inspect": false
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "text"
+                      }
+                    ]
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "instance"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Servidor"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "volume"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Volume"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Value #A"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Uso"
+                      },
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "min",
+                        "value": 0
+                      },
+                      {
+                        "id": "max",
+                        "value": 100
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 0
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "mode": "basic",
+                          "type": "gauge",
+                          "valueDisplayMode": "color"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#73BF69"
+                            },
+                            {
+                              "value": 80,
+                              "color": "#FF9830"
+                            },
+                            {
+                              "value": 90,
+                              "color": "#F2495C"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Value #B"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Enche em"
+                      },
+                      {
+                        "id": "unit",
+                        "value": "suffix: dias"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "options": {
+                              "match": "null+nan",
+                              "result": {
+                                "color": "#73BF69",
+                                "index": 0,
+                                "text": "estável"
+                              }
+                            },
+                            "type": "special"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#F2495C"
+                            },
+                            {
+                              "value": 7,
+                              "color": "#FF9830"
+                            },
+                            {
+                              "value": 30,
+                              "color": "text"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 90
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-13": {
+        "kind": "Panel",
+        "spec": {
+          "id": 13,
+          "title": "CPU agora (top 5)",
+          "description": "Servidores Linux e Windows (convidados) com mais CPU em uso agora.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "topk(5,\n  100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{job=\"integrations/unix\",mode=\"idle\"}[5m])))\n  or\n  100 * (1 - avg by (instance) (rate(windows_cpu_time_total{job=\"integrations/windows\",instance!~\"srv-host01|srv-host01-mtc\",mode=\"idle\"}[5m])))\n)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "{{instance}}",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "bargauge",
+            "version": "",
+            "spec": {
+              "options": {
+                "displayMode": "basic",
+                "legend": {
+                  "showLegend": false
+                },
+                "maxVizHeight": 18,
+                "minVizHeight": 10,
+                "namePlacement": "left",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "valueMode": "color"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percent",
+                  "decimals": 0,
+                  "min": 0,
+                  "max": 100,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#73BF69"
+                      },
+                      {
+                        "value": 80,
+                        "color": "#FF9830"
+                      },
+                      {
+                        "value": 90,
+                        "color": "#F2495C"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-14": {
+        "kind": "Panel",
+        "spec": {
+          "id": 14,
+          "title": "RAM agora (top 5)",
+          "description": "Servidores Linux e Windows (convidados) com mais memória em uso agora. Os hosts Hyper-V ficam de fora: a memória deles fica quase toda com as VMs.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "topk(5,\n  100 * (1 - node_memory_MemAvailable_bytes{job=\"integrations/unix\"} / node_memory_MemTotal_bytes{job=\"integrations/unix\"})\n  or\n  100 * (1 - windows_memory_available_bytes{job=\"integrations/windows\",instance!~\"srv-host01|srv-host01-mtc\"} / windows_memory_physical_total_bytes{job=\"integrations/windows\",instance!~\"srv-host01|srv-host01-mtc\"})\n)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "{{instance}}",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "bargauge",
+            "version": "",
+            "spec": {
+              "options": {
+                "displayMode": "basic",
+                "legend": {
+                  "showLegend": false
+                },
+                "maxVizHeight": 18,
+                "minVizHeight": 10,
+                "namePlacement": "left",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "valueMode": "color"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percent",
+                  "decimals": 0,
+                  "min": 0,
+                  "max": 100,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#73BF69"
+                      },
+                      {
+                        "value": 80,
+                        "color": "#FF9830"
+                      },
+                      {
+                        "value": 90,
+                        "color": "#F2495C"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-15": {
+        "kind": "Panel",
+        "spec": {
+          "id": 15,
+          "title": "",
+          "description": "O que disparou e resolveu no período, por ocorrência: vermelho crítico, laranja aviso, azul pendente. Fonte: histórico de estado dos alertas no Prometheus (GRAFANA_ALERTS).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max by (alert_code, alvo) (\n  2 * GRAFANA_ALERTS{alertstate=\"firing\",severity=\"critical\"}\n  or GRAFANA_ALERTS{alertstate=\"firing\",severity=\"warning\"}\n  or 3 * GRAFANA_ALERTS{alertstate=\"pending\",severity!=\"info\"}\n)",
                         "format": "time_series",
                         "instant": false,
-                        "legendFormat": "{{alertname}} {{instance}} {{vm}} {{volume}}{{mountpoint}} {{name}}{{monitor_name}}",
+                        "legendFormat": "{{alert_code}} · {{alvo}}",
                         "range": true
                       }
                     },
@@ -596,15 +2672,26 @@
                 "defaults": {
                   "color": {
                     "mode": "fixed",
-                    "fixedColor": "#F2495C"
+                    "fixedColor": "#6E7480"
                   },
                   "mappings": [
                     {
                       "type": "value",
                       "options": {
                         "1": {
-                          "text": "disparando",
+                          "text": "aviso",
+                          "color": "#FF9830",
                           "index": 0
+                        },
+                        "2": {
+                          "text": "crítico",
+                          "color": "#F2495C",
+                          "index": 1
+                        },
+                        "3": {
+                          "text": "pendente",
+                          "color": "#5794F2",
+                          "index": 2
                         }
                       }
                     }
@@ -614,7 +2701,7 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "#F2495C"
+                        "color": "#6E7480"
                       }
                     ]
                   },
@@ -634,790 +2721,293 @@
           }
         }
       },
-      "panel-8": {
-        "kind": "Panel",
-        "spec": {
-          "id": 8,
-          "title": "Hosts Hyper-V",
-          "description": "Hosts Hyper-V enviando métricas.",
-          "links": [
-            {
-              "title": "Hypervisors",
-              "url": "/grafana/d/hypervisors",
-              "targetBlank": false
-            }
-          ],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "count(up{job=\"integrations/windows\",instance=~\"srv-host01|srv-host01-mtc\"} == 1) or vector(0)",
-                        "format": "time_series",
-                        "instant": true,
-                        "legendFormat": "",
-                        "range": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 13,
-                  "valueSize": 30
-                },
-                "textMode": "value",
-                "wideLayout": true
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "red"
-                      },
-                      {
-                        "value": 2,
-                        "color": "green"
-                      }
-                    ]
-                  }
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-9": {
-        "kind": "Panel",
-        "spec": {
-          "id": 9,
-          "title": "VMs ligadas",
-          "description": "VMs em execução nos hosts Hyper-V (inventário).",
-          "links": [
-            {
-              "title": "Hypervisors",
-              "url": "/grafana/d/hypervisors",
-              "targetBlank": false
-            }
-          ],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "count(hypervisor_vm_state{job=\"integrations/hypervisor\",state=\"running\"} == 1) or vector(0)",
-                        "format": "time_series",
-                        "instant": true,
-                        "legendFormat": "",
-                        "range": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 13,
-                  "valueSize": 30
-                },
-                "textMode": "value",
-                "wideLayout": true
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "green"
-                      }
-                    ]
-                  }
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-10": {
-        "kind": "Panel",
-        "spec": {
-          "id": 10,
-          "title": "VMs desligadas",
-          "description": "VMs fora de execução (desligadas, salvas ou pausadas).",
-          "links": [
-            {
-              "title": "Hypervisors",
-              "url": "/grafana/d/hypervisors",
-              "targetBlank": false
-            }
-          ],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "count(hypervisor_vm_state{job=\"integrations/hypervisor\",state!=\"running\"} == 1) or vector(0)",
-                        "format": "time_series",
-                        "instant": true,
-                        "legendFormat": "",
-                        "range": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 13,
-                  "valueSize": 30
-                },
-                "textMode": "value",
-                "wideLayout": true
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "green"
-                      },
-                      {
-                        "value": 1,
-                        "color": "blue"
-                      }
-                    ]
-                  }
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-11": {
-        "kind": "Panel",
-        "spec": {
-          "id": 11,
-          "title": "Servidores monitorados",
-          "description": "Servidores Windows e Linux enviando métricas (inclui os hosts).",
-          "links": [
-            {
-              "title": "Servidores Linux",
-              "url": "/grafana/d/servers-linux",
-              "targetBlank": false
-            }
-          ],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "(count(up{job=\"integrations/windows\"} == 1) or vector(0)) + (count(up{job=\"integrations/unix\"} == 1) or vector(0))",
-                        "format": "time_series",
-                        "instant": true,
-                        "legendFormat": "",
-                        "range": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 13,
-                  "valueSize": 30
-                },
-                "textMode": "value",
-                "wideLayout": true
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "green"
-                      }
-                    ]
-                  }
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-12": {
-        "kind": "Panel",
-        "spec": {
-          "id": 12,
-          "title": "Containers",
-          "description": "Containers Docker em execução.",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "count(container_last_seen{job=\"integrations/docker\",name!=\"\"}) or vector(0)",
-                        "format": "time_series",
-                        "instant": true,
-                        "legendFormat": "",
-                        "range": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 13,
-                  "valueSize": 30
-                },
-                "textMode": "value",
-                "wideLayout": true
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "green"
-                      }
-                    ]
-                  }
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-13": {
-        "kind": "Panel",
-        "spec": {
-          "id": 13,
-          "title": "Containers com problema",
-          "description": "Containers com healthcheck falhando.",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "count(container_health_state{job=\"integrations/docker\",name!=\"\"} != 1 and container_health_state{job=\"integrations/docker\",name!=\"\"} != -1) or vector(0)",
-                        "format": "time_series",
-                        "instant": true,
-                        "legendFormat": "",
-                        "range": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 13,
-                  "valueSize": 30
-                },
-                "textMode": "value",
-                "wideLayout": true
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "green"
-                      },
-                      {
-                        "value": 1,
-                        "color": "orange"
-                      }
-                    ]
-                  }
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-14": {
-        "kind": "Panel",
-        "spec": {
-          "id": 14,
-          "title": "Heartbeats",
-          "description": "Heartbeats dos hosts recebidos pelo Uptime Kuma.",
-          "links": [
-            {
-              "title": "Serviços",
-              "url": "/grafana/d/servicos",
-              "targetBlank": false
-            }
-          ],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "count(monitor_status{job=\"uptime-kuma\",monitor_type=\"push\"} == 1) or vector(0)",
-                        "format": "time_series",
-                        "instant": true,
-                        "legendFormat": "",
-                        "range": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 13,
-                  "valueSize": 30
-                },
-                "textMode": "value",
-                "wideLayout": true
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "red"
-                      },
-                      {
-                        "value": 2,
-                        "color": "green"
-                      }
-                    ]
-                  }
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-15": {
-        "kind": "Panel",
-        "spec": {
-          "id": 15,
-          "title": "Próximo certificado",
-          "description": "Dias até o certificado TLS mais próximo de vencer (monitores do Kuma).",
-          "links": [
-            {
-              "title": "Serviços",
-              "url": "/grafana/d/servicos",
-              "targetBlank": false
-            }
-          ],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "min(monitor_cert_days_remaining{job=\"uptime-kuma\"})",
-                        "format": "time_series",
-                        "instant": true,
-                        "legendFormat": "",
-                        "range": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "auto",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 13,
-                  "valueSize": 30
-                },
-                "textMode": "value",
-                "wideLayout": true
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "red"
-                      },
-                      {
-                        "value": 3,
-                        "color": "orange"
-                      },
-                      {
-                        "value": 14,
-                        "color": "green"
-                      }
-                    ]
-                  },
-                  "unit": "d"
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
       "panel-16": {
         "kind": "Panel",
         "spec": {
           "id": 16,
           "title": "Informativos",
-          "description": "Registros informativos (severity info): ficam visíveis aqui e não notificam.",
+          "description": "Registros informativos (severity info): ficam visíveis aqui e não notificam. Fonte: histórico de estado dos alertas no Prometheus (GRAFANA_ALERTS).",
           "links": [],
           "data": {
             "kind": "QueryGroup",
             "spec": {
-              "queries": [],
-              "transformations": [],
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max by (alert_code, alvo, alertname, severity, alertstate, area, grafana_rule_uid) (GRAFANA_ALERTS{severity=\"info\"})",
+                        "format": "table",
+                        "instant": true,
+                        "legendFormat": "",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "filterFieldsByName",
+                  "spec": {
+                    "options": {
+                      "include": {
+                        "pattern": "^(alert_code|alvo|alertname|severity|alertstate|area|grafana_rule_uid)$"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "organize",
+                  "spec": {
+                    "options": {
+                      "indexByName": {
+                        "severity": 0,
+                        "alert_code": 1,
+                        "alvo": 2,
+                        "alertname": 3,
+                        "alertstate": 4,
+                        "area": 5,
+                        "grafana_rule_uid": 6
+                      }
+                    }
+                  }
+                }
+              ],
               "queryOptions": {}
             }
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "alertlist",
+            "group": "table",
             "version": "",
             "spec": {
               "options": {
-                "alertInstanceLabelFilter": "{severity=\"info\"}",
-                "alertName": "",
-                "dashboardAlerts": false,
-                "datasource": "grafana",
-                "groupBy": [],
-                "groupMode": "default",
-                "maxItems": 100,
-                "showInactiveAlerts": false,
-                "sortOrder": 3,
-                "stateFilter": {
-                  "error": true,
-                  "firing": true,
-                  "noData": false,
-                  "normal": false,
-                  "pending": true,
-                  "recovering": false
+                "cellHeight": "sm",
+                "footer": {
+                  "fields": "",
+                  "reducer": [
+                    "sum"
+                  ],
+                  "show": false
                 },
-                "viewMode": "list"
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "displayName": "Código",
+                    "desc": false
+                  }
+                ]
               },
               "fieldConfig": {
-                "defaults": {},
-                "overrides": []
+                "defaults": {
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "inspect": false
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "text"
+                      }
+                    ]
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "alert_code"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Código"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 90
+                      },
+                      {
+                        "id": "links",
+                        "value": [
+                          {
+                            "title": "Documentação do alerta",
+                            "url": "https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/${__value.raw}.md",
+                            "targetBlank": true
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "alvo"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Alvo"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "alertname"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Alerta"
+                      },
+                      {
+                        "id": "links",
+                        "value": [
+                          {
+                            "title": "Abrir a regra no Grafana",
+                            "url": "/grafana/alerting/grafana/${__data.fields.grafana_rule_uid}/view",
+                            "targetBlank": false
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "severity"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Severidade"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 100
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "critical": {
+                                "text": "crítico",
+                                "color": "#F2495C",
+                                "index": 0
+                              },
+                              "warning": {
+                                "text": "aviso",
+                                "color": "#FF9830",
+                                "index": 1
+                              },
+                              "info": {
+                                "text": "info",
+                                "color": "#5794F2",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "alertstate"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Estado"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 100
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "firing": {
+                                "text": "disparando",
+                                "index": 0
+                              },
+                              "pending": {
+                                "text": "pendente",
+                                "color": "#5794F2",
+                                "index": 1
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "area"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Área"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 110
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "grafana_rule_uid"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hidden",
+                        "value": true
+                      }
+                    ]
+                  }
+                ]
               }
             }
           }
@@ -1428,6 +3018,98 @@
       "kind": "RowsLayout",
       "spec": {
         "rows": [
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Áreas",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 4,
+                        "height": 5,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-1"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 4,
+                        "y": 0,
+                        "width": 4,
+                        "height": 5,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-2"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 8,
+                        "y": 0,
+                        "width": 4,
+                        "height": 5,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-3"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 4,
+                        "height": 5,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-4"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 16,
+                        "y": 0,
+                        "width": 4,
+                        "height": 5,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-5"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 20,
+                        "y": 0,
+                        "width": 4,
+                        "height": 5,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-6"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
           {
             "kind": "RowsLayoutRow",
             "spec": {
@@ -1442,63 +3124,11 @@
                       "spec": {
                         "x": 0,
                         "y": 0,
-                        "width": 5,
+                        "width": 6,
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-1"
-                        }
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 5,
-                        "y": 0,
-                        "width": 5,
-                        "height": 4,
-                        "element": {
-                          "kind": "ElementReference",
-                          "name": "panel-2"
-                        }
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 10,
-                        "y": 0,
-                        "width": 5,
-                        "height": 4,
-                        "element": {
-                          "kind": "ElementReference",
-                          "name": "panel-3"
-                        }
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 15,
-                        "y": 0,
-                        "width": 4,
-                        "height": 4,
-                        "element": {
-                          "kind": "ElementReference",
-                          "name": "panel-4"
-                        }
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 19,
-                        "y": 0,
-                        "width": 5,
-                        "height": 4,
-                        "element": {
-                          "kind": "ElementReference",
-                          "name": "panel-5"
+                          "name": "panel-7"
                         }
                       }
                     },
@@ -1507,11 +3137,11 @@
                       "spec": {
                         "x": 0,
                         "y": 4,
-                        "width": 24,
-                        "height": 12,
+                        "width": 6,
+                        "height": 3,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-6"
+                          "name": "panel-10"
                         }
                       }
                     },
@@ -1519,36 +3149,9 @@
                       "kind": "GridLayoutItem",
                       "spec": {
                         "x": 0,
-                        "y": 16,
-                        "width": 24,
-                        "height": 10,
-                        "element": {
-                          "kind": "ElementReference",
-                          "name": "panel-7"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          {
-            "kind": "RowsLayoutRow",
-            "spec": {
-              "title": "Infraestrutura",
-              "collapse": false,
-              "layout": {
-                "kind": "GridLayout",
-                "spec": {
-                  "items": [
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 0,
-                        "y": 0,
+                        "y": 7,
                         "width": 6,
-                        "height": 4,
+                        "height": 2,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-8"
@@ -1560,47 +3163,62 @@
                       "spec": {
                         "x": 6,
                         "y": 0,
-                        "width": 6,
-                        "height": 4,
+                        "width": 18,
+                        "height": 9,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-9"
                         }
                       }
-                    },
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Sem dados",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 12,
+                        "x": 0,
                         "y": 0,
-                        "width": 6,
-                        "height": 4,
-                        "element": {
-                          "kind": "ElementReference",
-                          "name": "panel-10"
-                        }
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 18,
-                        "y": 0,
-                        "width": 6,
+                        "width": 24,
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-11"
                         }
                       }
-                    },
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Atenção",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
                         "x": 0,
-                        "y": 4,
-                        "width": 6,
-                        "height": 4,
+                        "y": 0,
+                        "width": 12,
+                        "height": 7,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-12"
@@ -1610,10 +3228,10 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 6,
-                        "y": 4,
+                        "x": 12,
+                        "y": 0,
                         "width": 6,
-                        "height": 4,
+                        "height": 7,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-13"
@@ -1623,23 +3241,37 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 12,
-                        "y": 4,
+                        "x": 18,
+                        "y": 0,
                         "width": 6,
-                        "height": 4,
+                        "height": 7,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-14"
                         }
                       }
-                    },
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Histórico de alertas",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 18,
-                        "y": 4,
-                        "width": 6,
-                        "height": 4,
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 9,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-15"
@@ -1666,7 +3298,7 @@
                         "x": 0,
                         "y": 0,
                         "width": 24,
-                        "height": 10,
+                        "height": 8,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-16"
@@ -1683,52 +3315,17 @@
     },
     "links": [
       {
-        "title": "Hypervisors",
-        "type": "link",
-        "url": "/grafana/d/hypervisors",
+        "title": "Painéis",
+        "type": "dashboards",
         "icon": "external link",
         "tooltip": "",
-        "tags": [],
-        "asDropdown": false,
+        "tags": [
+          "infra"
+        ],
+        "asDropdown": true,
         "targetBlank": false,
         "includeVars": false,
-        "keepTime": false
-      },
-      {
-        "title": "Servidores Windows",
-        "type": "link",
-        "url": "/grafana/d/servers-windows",
-        "icon": "external link",
-        "tooltip": "",
-        "tags": [],
-        "asDropdown": false,
-        "targetBlank": false,
-        "includeVars": false,
-        "keepTime": false
-      },
-      {
-        "title": "Servidores Linux",
-        "type": "link",
-        "url": "/grafana/d/servers-linux",
-        "icon": "external link",
-        "tooltip": "",
-        "tags": [],
-        "asDropdown": false,
-        "targetBlank": false,
-        "includeVars": false,
-        "keepTime": false
-      },
-      {
-        "title": "Serviços",
-        "type": "link",
-        "url": "/grafana/d/servicos",
-        "icon": "external link",
-        "tooltip": "",
-        "tags": [],
-        "asDropdown": false,
-        "targetBlank": false,
-        "includeVars": false,
-        "keepTime": false
+        "keepTime": true
       },
       {
         "title": "Regras de alerta",
@@ -1743,10 +3340,22 @@
         "keepTime": false
       },
       {
+        "title": "Silences",
+        "type": "link",
+        "url": "/grafana/alerting/silences",
+        "icon": "external link",
+        "tooltip": "",
+        "tags": [],
+        "asDropdown": false,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": false
+      },
+      {
         "title": "Documentação dos alertas",
         "type": "link",
         "url": "https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/README.md",
-        "icon": "external link",
+        "icon": "doc",
         "tooltip": "",
         "tags": [],
         "asDropdown": false,
@@ -1758,6 +3367,7 @@
     "liveNow": false,
     "preload": false,
     "tags": [
+      "infra",
       "overview",
       "alertas"
     ],

@@ -98,6 +98,7 @@ groups:
             O container temporário do deploy (grafana-alerting-temp) fica de fora.
         labels:
           alert_code: CTR-101
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.name }} · {{ . }}{{ end }}'
           severity: warning
           area: containers
           scope: service
@@ -188,6 +189,7 @@ groups:
             Verifique com: docker inspect {{ $labels.name }} (seção State.Health) e docker logs {{ $labels.name }}.
         labels:
           alert_code: CTR-102
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.name }} · {{ . }}{{ end }}'
           severity: warning
           area: containers
           scope: service
@@ -265,11 +267,12 @@ groups:
           runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/CTR-103.md
           summary: 'Container {{ $labels.name }} reiniciando em {{ $labels.instance }}'
           description: |-
-            O container {{ $labels.name }} em {{ $labels.instance }} reiniciou {{ humanize $values.A.Value }} vezes na última hora.
+            O container {{ $labels.name }} em {{ $labels.instance }} reiniciou {{ with $values.A }}{{ humanize .Value }}{{ end }} vezes na última hora.
 
             Verifique os logs do container (docker logs {{ $labels.name }}) e a memória disponível.
         labels:
           alert_code: CTR-103
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.name }} · {{ . }}{{ end }}'
           severity: warning
           area: containers
           scope: service
@@ -352,6 +355,7 @@ groups:
             Aumente o limite de memória do container ou a memória da VM.
         labels:
           alert_code: CTR-104
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.name }} · {{ . }}{{ end }}'
           severity: warning
           area: containers
           scope: service
@@ -446,6 +450,7 @@ groups:
             Enquanto isso, os alertas CTR deste servidor não funcionam. Verifique o módulo Docker do Alloy (alloy.sh, opção Ativar Docker).
         labels:
           alert_code: CTR-301
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
           severity: warning
           area: containers
           scope: collection

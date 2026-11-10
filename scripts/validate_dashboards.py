@@ -12,6 +12,7 @@
    ${DS_*}); toda consulta aponta para um datasource provisionado por UID.
 5. Contratos: toda metrica usada em consulta Prometheus existe no contrato do
    job fixado na consulta; toda consulta Loki usa job e labels observados.
+6. Navegacao: tag infra, menu Paineis (dropdown por tag) e link para a Visao geral.
 
 Os alertas sao validados por validate_alerting.py.
 """
@@ -32,6 +33,8 @@ FOLDER_FILE = "_folder.json"
 BUILTIN_DATASOURCES = {("grafana", "-- Grafana --"), ("datasource", "grafana")}
 UID_RE = re.compile(r"^[a-zA-Z0-9_-]{1,40}$")
 LEGACY_KEYS = ("__inputs", "__requires", "__elements")
+NAV_TAG = "infra"      # dashboards com esta tag aparecem no menu Paineis
+HOME_UID = "overview"  # Visao geral: pagina inicial
 
 contracts = ct.Contracts(errors)
 
@@ -127,9 +130,22 @@ def check_metadata(rel, res, allowed_api, kind):
     return name
 
 
+def check_navigation(rel, name, spec):
+    """Navegacao comum: tag infra (menu Paineis) e link para a Visao geral nos demais dashboards."""
+    if NAV_TAG not in (spec.get("tags") or []):
+        errors.append(f"{rel}: falta a tag '{NAV_TAG}' (menu Paineis dos dashboards)")
+    links = spec.get("links") or []
+    if not any(link.get("type") == "dashboards" and link.get("asDropdown") and NAV_TAG in (link.get("tags") or [])
+               for link in links):
+        errors.append(f"{rel}: falta o link 'Paineis' (type dashboards, tag {NAV_TAG}, asDropdown)")
+    if name != HOME_UID and not any(link.get("url") == f"/grafana/d/{HOME_UID}" for link in links):
+        errors.append(f"{rel}: falta o link para a Visao geral (/grafana/d/{HOME_UID})")
+
+
 def check_dashboard(rel, res):
     name = check_metadata(rel, res, DASHBOARD_API, "Dashboard")
     spec = res.get("spec") or {}
+    check_navigation(rel, name, spec)
     for key in LEGACY_KEYS:
         if key in res or key in spec:
             errors.append(f"{rel}: '{key}' nao e permitido (importacao manual)")

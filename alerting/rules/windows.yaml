@@ -93,6 +93,7 @@ groups:
             Servidor desativado de propósito some deste alerta depois de 7 dias (ou silencie).
         labels:
           alert_code: WIN-101
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
           severity: critical
           area: windows
           scope: guest
@@ -182,6 +183,7 @@ groups:
             Servidor desativado de propósito some deste alerta depois de 7 dias (ou silencie).
         labels:
           alert_code: WIN-102
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
           severity: warning
           area: windows
           scope: guest
@@ -267,6 +269,7 @@ groups:
             Verifique o serviço e o Event Log (Directory Service, DNS Server, DFS Replication).
         labels:
           alert_code: WIN-110
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.name }} · {{ . }}{{ end }}'
           severity: critical
           area: windows
           scope: guest
@@ -360,6 +363,7 @@ groups:
             Verifique o serviço e o Event Log (Application).
         labels:
           alert_code: WIN-111
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.name }} · {{ . }}{{ end }}'
           severity: warning
           area: windows
           scope: guest
@@ -429,6 +433,7 @@ groups:
             Quando a curadoria terminar, mova o serviço para WIN-111 ou retire-o desta regra.
         labels:
           alert_code: WIN-112
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.name }} · {{ . }}{{ end }}'
           severity: info
           area: windows
           scope: service
@@ -511,6 +516,7 @@ groups:
             Registro informativo. Se o reinício não foi planejado, verifique o Event Log (Kernel-Power 41, EventLog 6008).
         labels:
           alert_code: WIN-120
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
           severity: info
           area: windows
           scope: guest
@@ -584,6 +590,7 @@ groups:
             Verifique: w32tm /query /status, w32tm /query /source e w32tm /resync.
         labels:
           alert_code: WIN-130
+          alvo: '{{ with $$labels.host }}{{ . }}{{ end }}'
           severity: warning
           area: windows
           scope: guest
@@ -668,11 +675,12 @@ groups:
           __panelId__: "369"
           summary: 'Volume {{ $labels.volume }} de {{ $labels.instance }} acima de 90% de uso'
           description: |-
-            O volume {{ $labels.volume }} de {{ $labels.instance }} está com {{ humanize $values.A.Value }}% de uso e menos de 20 GiB livres.
+            O volume {{ $labels.volume }} de {{ $labels.instance }} está com {{ with $values.A }}{{ humanize .Value }}{{ end }}% de uso e menos de 20 GiB livres.
 
             Libere espaço (temporários, logs, backups locais antigos) ou aumente o disco virtual.
         labels:
           alert_code: WIN-201
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.volume }} · {{ . }}{{ end }}'
           severity: warning
           area: windows
           scope: guest
@@ -754,11 +762,12 @@ groups:
           __panelId__: "369"
           summary: 'Volume {{ $labels.volume }} de {{ $labels.instance }} acima de 95% de uso'
           description: |-
-            O volume {{ $labels.volume }} de {{ $labels.instance }} está com {{ humanize $values.A.Value }}% de uso.
+            O volume {{ $labels.volume }} de {{ $labels.instance }} está com {{ with $values.A }}{{ humanize .Value }}{{ end }}% de uso.
 
             Com o volume cheio, serviços e bancos de dados param de gravar. Libere espaço imediatamente.
         labels:
           alert_code: WIN-202
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.volume }} · {{ . }}{{ end }}'
           severity: critical
           area: windows
           scope: guest
@@ -840,11 +849,12 @@ groups:
           __panelId__: "204"
           summary: 'Memória de {{ $labels.instance }} acima de 92%'
           description: |-
-            A memória em uso de {{ $labels.instance }} está em {{ humanize $values.A.Value }}% há mais de 15 minutos.
+            A memória em uso de {{ $labels.instance }} está em {{ with $values.A }}{{ humanize .Value }}{{ end }}% há mais de 15 minutos.
 
             Verifique os processos que mais consomem memória ou aumente a memória da VM.
         labels:
           alert_code: WIN-203
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
           severity: warning
           area: windows
           scope: guest
@@ -926,11 +936,12 @@ groups:
           __panelId__: "205"
           summary: 'Commit de {{ $labels.instance }} acima de 95% do limite'
           description: |-
-            A memória comprometida de {{ $labels.instance }} está em {{ humanize $values.A.Value }}% do limite (RAM + arquivo de paginação).
+            A memória comprometida de {{ $labels.instance }} está em {{ with $values.A }}{{ humanize .Value }}{{ end }}% do limite (RAM + arquivo de paginação).
 
             Perto de 100%, novos processos e alocações falham. Verifique vazamentos de memória ou aumente a memória da VM.
         labels:
           alert_code: WIN-204
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
           severity: warning
           area: windows
           scope: guest
@@ -1010,11 +1021,12 @@ groups:
           __panelId__: "368"
           summary: 'CPU de {{ $labels.instance }} acima de 90%'
           description: |-
-            A CPU de {{ $labels.instance }} está em {{ humanize $values.A.Value }}% há mais de 30 minutos.
+            A CPU de {{ $labels.instance }} está em {{ with $values.A }}{{ humanize .Value }}{{ end }}% há mais de 30 minutos.
 
             Verifique os processos que mais consomem CPU.
         labels:
           alert_code: WIN-205
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
           severity: warning
           area: windows
           scope: guest

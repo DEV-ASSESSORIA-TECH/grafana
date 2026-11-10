@@ -26,7 +26,7 @@ Todas as regras ficam na pasta INFRA do Grafana, um grupo por arquivo. O catálo
 | `windows.yaml` | `windows-1m` | Servidores Windows convidados: sem métricas, serviços do AD, de aplicação e em curadoria, reinício, horário (Event Log), disco, memória, commit, CPU |
 | `linux.yaml` | `linux-1m` | Servidores Linux: sem métricas, systemd, reinício, OOM killer (journal), filesystem (uso, previsão de 24 h, somente leitura, inodes), memória, swap, CPU, relógio |
 | `containers.yaml` | `containers-1m` | Containers Docker: sumiu, unhealthy, loop de reinício, OOM, coleta parada |
-| `servicos.yaml` | `servicos-1m` | Uptime Kuma: serviços por criticidade, externos (15 min de tolerância), certificados, Kuma sem métricas |
+| `servicos.yaml` | `servicos-1m` | Uptime Kuma: serviços por criticidade, externos (15 min de tolerância), certificados (sem Tiflux e Sispcard, de terceiros), Kuma sem métricas |
 | `monitoramento.yaml` | `monitoramento-5m` | Prometheus: configuração inválida, falha de compactação |
 
 **Decisões que estão nas consultas** (mude aqui quando mudar a operação):

@@ -256,7 +256,7 @@ groups:
             datasourceUid: prometheus
             model:
               editorMode: code
-              expr: 'monitor_cert_days_remaining{job="uptime-kuma"}'
+              expr: 'monitor_cert_days_remaining{job="uptime-kuma",monitor_name!~"Tiflux|Sispcard"}'
               instant: true
               intervalMs: 1000
               legendFormat: __auto
@@ -320,7 +320,7 @@ groups:
             datasourceUid: prometheus
             model:
               editorMode: code
-              expr: 'monitor_cert_days_remaining{job="uptime-kuma"}'
+              expr: 'monitor_cert_days_remaining{job="uptime-kuma",monitor_name!~"Tiflux|Sispcard"}'
               instant: true
               intervalMs: 1000
               legendFormat: __auto
@@ -384,7 +384,7 @@ groups:
             datasourceUid: prometheus
             model:
               editorMode: code
-              expr: 'monitor_cert_is_valid{job="uptime-kuma"}'
+              expr: 'monitor_cert_is_valid{job="uptime-kuma",monitor_name!~"Tiflux|Sispcard"}'
               instant: true
               intervalMs: 1000
               legendFormat: __auto

@@ -3848,7 +3848,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "min(monitor_cert_days_remaining{job=\"uptime-kuma\"})",
+                        "expr": "min(monitor_cert_days_remaining{job=\"uptime-kuma\",monitor_name!~\"Tiflux|Sispcard\"})",
                         "format": "time_series",
                         "instant": true,
                         "legendFormat": "Próximo certificado",

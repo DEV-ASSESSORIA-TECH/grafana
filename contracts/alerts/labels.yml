@@ -92,7 +92,7 @@ dependency:
     Com dep_vm vem sempre dep_hypervisor: com o host fora, as metricas das VMs somem e os alertas de VM nao
     disparam, entao so o alerta do host (equal dep_hypervisor) inibe convidados e servicos.
 canonical_key:
-  rule: minusculas, '-' trocado por '_', so [a-z0-9_]. Ex. SRV-WEB -> srv_web, srv-host01 -> srv_host01.
+  rule: "minusculas e todo caractere fora de [a-z0-9_] trocado por '_'. Ex. SRV-WEB -> srv_web, srv-host01 -> srv_host01."
   why: >-
     O Uptime Kuma remove tudo fora de [a-zA-Z0-9_] dos valores de tag (SRV-WEB viraria SRVWEB), e a inibicao compara
     por igualdade exata. A chave canonica e a mesma nas metricas, nos alertas e nas tags do Kuma.
@@ -101,7 +101,7 @@ canonical_key:
     maiusculas; vm_key permite o join com a tag do Kuma (ver contracts/prometheus/hypervisor.yml).
   template: >-
     Nas regras a chave e gerada no label a partir do label da consulta, protegida contra label ausente (alertas
-    DatasourceNoData nao tem os labels da consulta): '{{ with $$labels.instance }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
+    DatasourceNoData nao tem os labels da consulta): '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
 recipes:
   kuma_service: >-
     Monitor de servico que roda inteiro numa VM recebe so a tag vm:<chave canonica> (ex. vm:srv_web). O hipervisor vem

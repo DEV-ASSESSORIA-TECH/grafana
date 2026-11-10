@@ -3,7 +3,7 @@
 Dashboards e alertas do Grafana da infraestrutura (Grafana **13.3.0**), e os contratos de dados que eles consomem.
 
 - **Dashboards:** **Dashboard Schema V2** (`dashboard.grafana.app/v2`). A pasta `dashboards/` é sincronizada pelo **Git Sync**.
-- **Alertas:** regras, notificações e inibição como código em `alerting/`, aplicados manualmente. Detalhes em [`alerting/README.md`](alerting/README.md).
+- **Alertas:** regras, mute timings, templates e inibição como código em `alerting/`, aplicados no servidor com `grafana-alerting`. Roteamento e contact points ficam na UI. Detalhes em [`alerting/README.md`](alerting/README.md).
 
 ## Estrutura
 
@@ -13,7 +13,8 @@ Dashboards e alertas do Grafana da infraestrutura (Grafana **13.3.0**), e os con
 | `contracts/prometheus/` | Métricas, jobs e labels observados por fonte (Alloy, Prometheus, Uptime Kuma) |
 | `contracts/loki/` | Streams e labels de log observados (inclui o heartbeat dos hosts, `alloy-heartbeat`) |
 | `alerting/` | Regras (`rules/`), notificações (`notifications/`) e inibição (`inhibition/`). **Fora do Git Sync** |
-| `contracts/alerts/` | Labels das regras (`labels.yml`), catálogo de códigos (`codes.yml`) e contact points (`notifications.yml`) |
+| `contracts/alerts/` | Labels e dependências das regras (`labels.yml`), catálogo de códigos (`codes.yml`) e divisão repositório/UI das notificações (`notifications.yml`) |
+| `deploy/` | `setup.sh` e `grafana-alerting.py`: deploy manual do alerting no servidor (ver `alerting/README.md`) |
 | `scripts/contracts.py` | Leitura dos contratos e verificação de consultas PromQL/LogQL (usado pelos dois validadores) |
 | `scripts/validate_dashboards.py` | Valida formato V2, compatibilidade com Git Sync, datasources e se as consultas usam só métricas/labels dos contratos |
 | `scripts/grafana_check.py` | Sincroniza `dashboards/` num Grafana 13.3.0 real e confere o resultado |

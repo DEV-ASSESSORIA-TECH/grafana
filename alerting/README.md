@@ -1,19 +1,19 @@
 # Alerting como código
 
-Regras, notificações e inibição do Grafana Alerting (Grafana 13.3.0). O Git é a fonte da verdade. Os contact points são a exceção: ficam na UI para os destinatários poderem mudar sem PR.
+Regras, mute timings, templates e inibição do Grafana Alerting (Grafana 13.3.0). O Git é a fonte da verdade para essas peças. **Roteamento e destinatários ficam na UI**: as regras só publicam labels, e a notification policy padrão (editada na UI) decide quem recebe.
 
 | Pasta | Conteúdo | Como chega ao Grafana | Editável na UI |
 |---|---|---|---|
 | `rules/` | Grupos e regras de alerta, um arquivo por área (`hypervisor.yaml`) | Provisionamento por arquivo | Não |
-| `notifications/` | Árvore de policies, mute timings, templates | Provisionamento por arquivo | Não |
-| `inhibition/` | Regras de inibição (`InhibitionRule`) | App Platform API (`scripts/alerting_inhibition.py`) | Não existe UI |
-| — | Contact points (`email-infra`) | Criados na UI | Sim |
+| `notifications/` | Mute timings e templates | Provisionamento por arquivo | Não (mas usáveis na UI) |
+| `inhibition/` | Regras de inibição (`InhibitionRule`) | App Platform API | Não existe UI |
+| — | Notification policies e contact points | UI | Sim |
 
 Contratos em `contracts/alerts/`:
 
-- `labels.yml`: labels obrigatórios (`alert_code`, `severity`, `area`, `scope`), chaves de dependência (`dep_hypervisor`, `dep_vm`) e chave canônica.
+- `labels.yml`: labels obrigatórios (`alert_code`, `severity`, `area`, `scope`), chaves de dependência (`dep_hypervisor`, `dep_vm`), chave canônica e receitas de consulta.
 - `codes.yml`: catálogo de códigos (código → UID, título, severidade, scope, runbook).
-- `notifications.yml`: nomes dos contact points e quem gerencia cada um.
+- `notifications.yml`: o que vem do repositório e o que fica na UI, e os labels disponíveis para roteamento.
 
 ## Padrão das regras
 
@@ -25,12 +25,13 @@ Contratos em `contracts/alerts/`:
     alert_code: HYP-111
     severity: critical        # critical | warning | info
     area: hypervisor          # domínio do alvo (define o prefixo do código)
-    scope: vm                 # hypervisor | vm | guest | service | collection
-    dep_hypervisor: '{{ with $$labels.instance }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
-    dep_vm: '{{ with $$labels.vm }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
+    scope: vm                 # hypervisor | vm | guest | service | external | collection
+    dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+    dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
   ```
 
 - **Annotations:** `summary`, `description` e, quando o procedimento existir no Outline, `runbook_url` (igual ao `runbook` do catálogo). O painel vinculado vem de `__dashboardUid__` e `__panelId__` (texto).
+- **Destino:** nunca `notification_settings` (envio direto a um contact point). O destino sai da policy.
 - **Faixas de código:** 1xx disponibilidade, 2xx capacidade, 3xx saúde da coleta, 4xx desempenho.
 
 ### Armadilhas do provisionamento (verificadas no 13.3.0)
@@ -40,65 +41,126 @@ Contratos em `contracts/alerts/`:
 | `$labels` num **label** | O provisionamento interpola variáveis de ambiente: vira `{{ .x }}` e quebra | Em labels escrever `$$labels`. Em annotations e consultas, `$labels` (não são interpoladas) |
 | Template de label com label ausente (`DatasourceNoData`) | Erro de template | Envolver em `{{ with $$labels.x }}...{{ end }}` |
 | Campos `dashboardUid`/`panelId` na regra | Ignorados sem aviso | Usar as annotations `__dashboardUid__`/`__panelId__` |
-| Subpastas em `provisioning/alerting/` | Ignoradas (só aviso no log) | Por isso o build achata os arquivos |
-| Contact point com `receivers: []` | Ignorado sem aviso | Não declarar contact point vazio |
-| Policy com contact point inexistente | **O Grafana não sobe** (no restart) | Criar `email-infra` na UI antes da primeira aplicação |
-| Arquivo de provisionamento sem permissão de leitura | **O Grafana não sobe** | O build grava com `0644` |
+| Subpastas em `provisioning/alerting/` | Ignoradas (só aviso no log) | O deploy achata os arquivos |
+| Arquivo inválido ou ilegível na pasta de provisionamento | **O Grafana não sobe** | O deploy ensaia antes e restaura sozinho se a produção não subir |
+| Reload pela API (`/api/admin/provisioning/alerting/reload`) | Exige admin do servidor; token de service account recebe 403 | O deploy reinicia o container |
 | Inibição: label ausente e vazio são iguais no `equal` | Um `DatasourceNoData` (chave vazia) inibiria todo alvo sem chave | Exigir `dep_* =~ .+` nos dois lados (o validador cobra) |
 
-## Inibição
+## Dependências e inibição
 
-A chave de dependência é a mesma em métricas, alertas e tags do Uptime Kuma: minúsculas, `-` vira `_` (`SRV-WEB` → `srv_web`, `srv-host01` → `srv_host01`). O Kuma remove `-` dos valores de tag, e a inibição compara por igualdade exata.
+**Regra de ouro:** só existe dependência quando o alvo depende 100% do outro. Host → VM → serviço que roda inteiro naquela VM. Serviço em mais de uma VM (balanceado, failover) e serviço de terceiros não recebem chave.
+
+A chave canônica é a mesma em métricas, alertas e tags do Uptime Kuma: minúsculas e todo caractere fora de `[a-z0-9_]` vira `_` (`SRV-WEB` → `srv_web`). O Kuma remove `-` dos valores de tag, e a inibição compara por igualdade exata. O inventário publica `vm_key` com essa chave.
 
 | Regra (`inhibition/hypervisor.yaml`) | Origem | Inibe | `equal` |
 |---|---|---|---|
 | `hyp-host-indisponivel` | `HYP-101`, `HYP-102` (host sem métricas / sem heartbeat) | `scope` vm, guest, service, collection | `dep_hypervisor` |
 | `hyp-vm-indisponivel` | `HYP-110`–`HYP-113` (VM fora ou em estado crítico) | `scope` guest, service | `dep_vm` |
 
-Com o host fora, as métricas das VMs somem e os alertas de VM não disparam. Por isso convidados e serviços também levam `dep_hypervisor`, e só o alerta do host os inibe. Para um serviço do Uptime Kuma ser inibido, o monitor precisa das tags `vm` e `hypervisor` já na chave canônica (tag nova exige reiniciar o Kuma).
+Com o host fora, as métricas das VMs somem e os alertas de VM não disparam. Por isso quem tem `dep_vm` tem também `dep_hypervisor`, e o alerta do host inibe toda a cadeia. `scope: external` nunca é inibido.
+
+| Uptime Kuma | Tag | Scope |
+|---|---|---|
+| Push `heartbeat-<host>` do hipervisor | nenhuma (a chave sai do nome) | `hypervisor`, é origem |
+| Push `heartbeat-<host>` de VM (opcional) | nenhuma (o nome casa com `guest_host` do inventário) | `guest` |
+| Serviço que roda inteiro numa VM | `vm:<chave>` (ex. `vm:srv_web`); o hipervisor vem do inventário | `service` |
+| Serviço em mais de uma VM | nenhuma | `service`, sem chave |
+| `grupo=externo` | nenhuma | `external` |
+
+Tag nova no Kuma exige reiniciar o container dele. As consultas prontas estão em `contracts/alerts/labels.yml` (`recipes`).
 
 Alertas inibidos continuam visíveis no Grafana (estado `suppressed`); só a notificação deixa de sair. A API é `v1beta1` e pode mudar.
 
-## Notificações
+## Notificações (na UI)
 
-- `critical` e `warning` vão para `email-infra` com tempos diferentes. `info` usa o mute timing `sempre`: o alerta aparece no Grafana e nunca notifica.
-- Agrupamento: `area` + `dep_hypervisor` (a queda de um host vira um e-mail só).
-- Template `infra`: no contact point (UI), assunto `{{ template "infra.subject" . }}` e mensagem `{{ template "infra.message" . }}`.
-- Manutenção pontual: silence na UI (não vai para o Git).
+Monte a policy padrão pelos labels (`contracts/alerts/notifications.yml`, `routing_labels`). Recomendado:
 
-## Aplicar (manual)
+- Rota `severity = info` com o mute timing **`sempre`** (vem do repositório): o alerta aparece no Grafana e nunca notifica.
+- Agrupamento por `area` e `dep_hypervisor`: a queda de um host vira uma notificação só.
+- Template `infra` (vem do repositório): no contact point, assunto `{{ template "infra.subject" . }}` e mensagem `{{ template "infra.message" . }}`.
+- Manutenção pontual: silence na UI.
 
-Pré-requisitos, uma vez só: o contact point `email-infra` criado na UI e um token de service account com papel Admin.
+## Deploy (manual, no servidor)
 
-1. Valide:
+A ferramenta `grafana-alerting` (`deploy/`) mantém tudo em **`/opt/grafana-alerting`** e não toca em mais nada de `/opt`:
+
+| Caminho | Conteúdo |
+|---|---|
+| `repo/` | Clone local (só a branch, sem histórico de blobs). Cada execução faz `git fetch` e a ferramenta se atualiza sozinha |
+| `live/` | Arquivos achatados que o Grafana lê, montados em `/etc/grafana/provisioning/alerting` |
+| `packages/` | Pacotes `.tar.gz` de cada deploy e backups de `live/` (últimos 20 de cada) |
+| `config.json`, `token`, `state.json` | URL, container e branch; token da service account (`0600`); o que está aplicado |
+
+### Instalar (uma vez)
+
+```bash
+(
+  set -e
+  dir=$(mktemp -d)
+  trap 'rm -rf "$dir"' EXIT
+  curl -fsSL https://raw.githubusercontent.com/DEV-ASSESSORIA-TECH/grafana/main/deploy/setup.sh -o "$dir/setup.sh"
+  sudo bash "$dir/setup.sh"
+)
+```
+
+O setup instala `git`, `python3` e `python3-yaml` se faltarem, clona o repositório, instala o comando `/usr/local/sbin/grafana-alerting`, pergunta a URL do Grafana (padrão `https://mon.assessoriatech.com/grafana`) e o token. O token é de uma service account com papel **Admin**, criada em *Administration → Users and access → Service accounts*. O container de produção é encontrado pelas labels do compose (`observability`/`grafana`).
+
+**Mount (você faz, uma vez):** o Grafana precisa ler `/opt/grafana-alerting/live`. O mount de provisioning atual é somente leitura, então o Docker não cria o ponto de montagem sozinho:
+
+1. Ponto de montagem vazio:
 
    ```bash
-   python scripts/validate_alerting.py
+   sudo mkdir /opt/observability/grafana/provisioning/alerting
    ```
 
-2. Copie para a pasta de provisionamento (achata as subpastas e adiciona o prefixo):
+2. No `compose.yaml`, serviço `grafana`, em `volumes`, depois do mount de provisioning:
+
+   ```yaml
+   - /opt/grafana-alerting/live:/etc/grafana/provisioning/alerting:ro
+   ```
+
+3. Recrie o container:
 
    ```bash
-   python scripts/alerting_build.py --out /opt/observability/grafana/provisioning/alerting
+   cd /opt/observability && sudo docker compose up -d grafana
    ```
 
-3. Recarregue sem reiniciar. Com erro, o reload falha mas o Grafana continua de pé; num restart, o Grafana não subiria:
+`sudo grafana-alerting setup` confere o mount e o token a qualquer momento. Enquanto o mount não existir, o deploy recusa aplicar.
 
-   ```bash
-   curl -X POST -H "Authorization: Bearer $GRAFANA_TOKEN" "$GRAFANA_URL/api/admin/provisioning/alerting/reload"
-   ```
+### Usar
 
-4. Inibição: mostre a diferença e depois aplique:
+Sem argumentos, `sudo grafana-alerting` abre um menu. Comandos diretos:
 
-   ```bash
-   python scripts/alerting_inhibition.py
-   ```
+| Comando | O que faz |
+|---|---|
+| `status` | O que está aplicado, o que mudou na branch desde então, container, mount e token |
+| `deploy [--ref REF]` | Fetch → validação → pacote → **ensaio** → backup → aplicação → inibição → conferência |
+| `deploy --skip-test` | Igual, **sem o ensaio** (aplicação direta) |
+| `test [--ref REF]` | Só valida, empacota e ensaia; não toca na produção |
+| `package [--ref REF]` | Só valida e gera o pacote |
+| `apply PACOTE [--skip-test]` | Aplica um pacote existente (também serve para outro servidor) |
+| `rollback` | Aplica de novo o pacote do deploy anterior |
+| `list` | Pacotes e backups |
+| `cleanup` | Remove o container e a rede temporários, se sobrarem |
 
-   ```bash
-   python scripts/alerting_inhibition.py --apply
-   ```
+`--yes` pula a confirmação. `--no-update` não atualiza a ferramenta antes de executar. `--ref` aceita branch, tag ou commit.
 
-`GRAFANA_URL` e `GRAFANA_TOKEN` vêm do ambiente. `--prune` apaga do Grafana as regras de inibição que não estão no repositório.
+**Ensaio:** sobe um container `grafana-alerting-temp` com a **mesma imagem da produção**, numa rede própria `grafana-alerting-temp` (fora das redes do compose). Carrega o pacote, aplica a inibição, confere tudo com `scripts/alerting_check.py` e remove o container e a rede no fim, mesmo se falhar.
+
+**Aplicação:**
+1. Guarda `live/` em `packages/live-backup-*.tar.gz` e copia os arquivos novos.
+2. Reinicia o container de produção, **só se** os arquivos mudaram.
+3. Aplica a inibição pela API com `--prune`: o repositório é a fonte de todas as regras de inibição.
+4. Confere a produção.
+
+Se a produção não subir (o loop de crash do `restart: unless-stopped` é detectado em segundos) ou a conferência falhar, a ferramenta restaura o backup, reinicia de novo e reaplica a inibição do pacote anterior.
+
+### Primeira aplicação (regras criadas na UI)
+
+O provisionamento assume as regras atuais pelo UID: mesma pasta INFRA, mesmos grupos, consultas, limiares, `for` e estados. Elas passam a ser somente leitura na UI. Policies e contact points não são tocados. Efeitos esperados:
+
+- Título e labels mudam a identidade do alerta: o que estiver disparando resolve e dispara de novo uma vez.
+- Silences que filtram pelo título antigo (`alertname`) deixam de valer.
 
 ### Remover uma regra
 
@@ -110,14 +172,6 @@ deleteRules:
   - orgId: 1
     uid: <uid>
 ```
-
-### Primeira aplicação (migração das regras criadas na UI)
-
-As regras atuais foram criadas na UI. O provisionamento as assume pelo UID (mesmas consultas, limiares, `for` e estados) e elas passam a ser somente leitura na UI. Efeitos esperados:
-
-- Título e labels mudam a identidade do alerta: o que estiver disparando resolve e dispara de novo uma vez.
-- Silences que filtram pelo título antigo (`alertname`) deixam de valer.
-- A árvore de policies é substituída inteira.
 
 ## Validar
 

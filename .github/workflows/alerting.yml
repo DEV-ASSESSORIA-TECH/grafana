@@ -9,6 +9,7 @@ on:
       - scripts/validate_alerting.py
       - scripts/contracts.py
       - scripts/alerting_*.py
+      - deploy/**
       - .github/workflows/alerting.yml
   pull_request:
     paths:
@@ -18,6 +19,7 @@ on:
       - scripts/validate_alerting.py
       - scripts/contracts.py
       - scripts/alerting_*.py
+      - deploy/**
       - .github/workflows/alerting.yml
 
 jobs:
@@ -30,6 +32,10 @@ jobs:
           python-version: "3.12"
       - run: pip install pyyaml
       - run: python scripts/validate_alerting.py
+      - name: Sintaxe da ferramenta de deploy
+        run: |
+          python -m py_compile deploy/grafana-alerting.py
+          bash -n deploy/setup.sh
 
   # Carrega alerting/ num Grafana 13.3.0 real (provisionamento por arquivo + App Platform) e confere
   grafana-load:

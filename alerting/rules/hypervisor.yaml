@@ -90,7 +90,7 @@ groups:
           severity: critical
           area: hypervisor
           scope: hypervisor
-          dep_hypervisor: '{{ with $$labels.instance }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
         isPaused: false
 
       - uid: eg3tfixhztwcgd
@@ -169,7 +169,7 @@ groups:
           severity: critical
           area: hypervisor
           scope: hypervisor
-          dep_hypervisor: '{{ with $$labels.monitor_name }}{{ . | reReplaceAll "^heartbeat-" "" | reReplaceAll "-" "_" | toLower }}{{ end }}'
+          dep_hypervisor: '{{ with $$labels.monitor_name }}{{ . | reReplaceAll "^heartbeat-" "" | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
         isPaused: false
 
       - uid: bg3s6ye5rzdvkd
@@ -232,8 +232,8 @@ groups:
           severity: critical
           area: hypervisor
           scope: vm
-          dep_hypervisor: '{{ with $$labels.instance }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
-          dep_vm: '{{ with $$labels.vm }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
         isPaused: false
 
       - uid: dg3tetitcczr4d
@@ -316,8 +316,8 @@ groups:
           severity: critical
           area: hypervisor
           scope: vm
-          dep_hypervisor: '{{ with $$labels.instance }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
-          dep_vm: '{{ with $$labels.vm }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
         isPaused: false
 
       - uid: cg3teyx1dmzuof
@@ -396,8 +396,8 @@ groups:
           severity: warning
           area: hypervisor
           scope: vm
-          dep_hypervisor: '{{ with $$labels.instance }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
-          dep_vm: '{{ with $$labels.vm }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
         isPaused: false
 
       - uid: ag3tf34rw39q8e
@@ -470,8 +470,8 @@ groups:
           severity: info
           area: hypervisor
           scope: vm
-          dep_hypervisor: '{{ with $$labels.instance }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
-          dep_vm: '{{ with $$labels.vm }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
         isPaused: false
 
       - uid: dg3s89i9nfnk0f
@@ -542,7 +542,7 @@ groups:
           severity: warning
           area: hypervisor
           scope: collection
-          dep_hypervisor: '{{ with $$labels.instance }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
         isPaused: false
 
       - uid: eg3s8htqlp1c0e
@@ -605,7 +605,7 @@ groups:
           severity: warning
           area: hypervisor
           scope: collection
-          dep_hypervisor: '{{ with $$labels.instance }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
         isPaused: false
 
   - orgId: 1
@@ -689,7 +689,7 @@ groups:
           severity: warning
           area: hypervisor
           scope: hypervisor
-          dep_hypervisor: '{{ with $$labels.instance }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
         isPaused: false
 
       - uid: dg3tiayqkuqyob
@@ -768,5 +768,5 @@ groups:
           severity: critical
           area: hypervisor
           scope: hypervisor
-          dep_hypervisor: '{{ with $$labels.instance }}{{ . | reReplaceAll "-" "_" | toLower }}{{ end }}'
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
         isPaused: false

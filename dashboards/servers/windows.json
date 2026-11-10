@@ -924,7 +924,7 @@
             "version": "11.6.1",
             "spec": {
               "options": {
-                "colorMode": "none",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
                 "orientation": "horizontal",
@@ -969,7 +969,8 @@
                     ]
                   },
                   "color": {
-                    "mode": "thresholds"
+                    "mode": "fixed",
+                    "fixedColor": "#2F333A"
                   }
                 },
                 "overrides": []
@@ -1025,7 +1026,7 @@
             "version": "11.6.1",
             "spec": {
               "options": {
-                "colorMode": "none",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
                 "orientation": "horizontal",
@@ -1071,7 +1072,8 @@
                     ]
                   },
                   "color": {
-                    "mode": "thresholds"
+                    "mode": "fixed",
+                    "fixedColor": "#2F333A"
                   }
                 },
                 "overrides": []
@@ -1686,7 +1688,7 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
                 "orientation": "auto",
@@ -1703,7 +1705,7 @@
                   "valueSize": 20
                 },
                 "textMode": "value_and_name",
-                "wideLayout": true
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
@@ -1715,12 +1717,12 @@
                       "options": {
                         "0": {
                           "text": "falha",
-                          "color": "red",
+                          "color": "#C4162A",
                           "index": 1
                         },
                         "1": {
                           "text": "OK",
-                          "color": "green",
+                          "color": "#37872D",
                           "index": 0
                         }
                       }
@@ -1731,7 +1733,7 @@
                         "match": "null+nan",
                         "result": {
                           "text": "sem dados",
-                          "color": "red",
+                          "color": "#C4162A",
                           "index": 0
                         }
                       }
@@ -1742,7 +1744,7 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "text"
+                        "color": "#2F333A"
                       }
                     ]
                   },
@@ -1801,7 +1803,7 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
                 "orientation": "auto",
@@ -1818,7 +1820,7 @@
                   "valueSize": 14
                 },
                 "textMode": "name",
-                "wideLayout": true
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
@@ -1834,7 +1836,8 @@
                     ]
                   },
                   "color": {
-                    "mode": "thresholds"
+                    "mode": "fixed",
+                    "fixedColor": "#2F333A"
                   }
                 },
                 "overrides": []
@@ -1887,7 +1890,7 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
                 "orientation": "auto",
@@ -1904,7 +1907,7 @@
                   "valueSize": 20
                 },
                 "textMode": "value_and_name",
-                "wideLayout": true
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
@@ -1916,15 +1919,15 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "green"
+                        "color": "#37872D"
                       },
                       {
                         "value": 1,
-                        "color": "orange"
+                        "color": "#E0752D"
                       },
                       {
                         "value": 50,
-                        "color": "red"
+                        "color": "#C4162A"
                       }
                     ]
                   },
@@ -1989,7 +1992,7 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
                 "orientation": "auto",
@@ -2006,7 +2009,7 @@
                   "valueSize": 20
                 },
                 "textMode": "value_and_name",
-                "wideLayout": true
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
@@ -2018,11 +2021,11 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "green"
+                        "color": "#37872D"
                       },
                       {
                         "value": 1,
-                        "color": "red"
+                        "color": "#C4162A"
                       }
                     ]
                   },
@@ -2704,7 +2707,7 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
                 "orientation": "auto",
@@ -2718,10 +2721,10 @@
                 "showPercentChange": false,
                 "text": {
                   "titleSize": 12,
-                  "valueSize": 20
+                  "valueSize": 24
                 },
                 "textMode": "value_and_name",
-                "wideLayout": true
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
@@ -2733,7 +2736,15 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "text"
+                        "color": "#C4162A"
+                      },
+                      {
+                        "value": 5368709120,
+                        "color": "#E0752D"
+                      },
+                      {
+                        "value": 21474836480,
+                        "color": "#37872D"
                       }
                     ]
                   },
@@ -2791,7 +2802,7 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
                 "orientation": "auto",
@@ -2805,10 +2816,10 @@
                 "showPercentChange": false,
                 "text": {
                   "titleSize": 12,
-                  "valueSize": 20
+                  "valueSize": 24
                 },
                 "textMode": "value_and_name",
-                "wideLayout": true
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
@@ -2820,15 +2831,15 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "green"
+                        "color": "#37872D"
                       },
                       {
                         "value": 0.7,
-                        "color": "orange"
+                        "color": "#E0752D"
                       },
                       {
                         "value": 0.9,
-                        "color": "red"
+                        "color": "#C4162A"
                       }
                     ]
                   },
@@ -2886,7 +2897,7 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
                 "orientation": "auto",
@@ -2900,10 +2911,10 @@
                 "showPercentChange": false,
                 "text": {
                   "titleSize": 12,
-                  "valueSize": 20
+                  "valueSize": 24
                 },
                 "textMode": "value_and_name",
-                "wideLayout": true
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
@@ -2916,7 +2927,7 @@
                       "options": {
                         "-1": {
                           "text": "estável",
-                          "color": "green",
+                          "color": "#37872D",
                           "index": 0
                         }
                       }
@@ -2927,15 +2938,15 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "red"
+                        "color": "#C4162A"
                       },
                       {
                         "value": 14,
-                        "color": "orange"
+                        "color": "#E0752D"
                       },
                       {
                         "value": 30,
-                        "color": "green"
+                        "color": "#37872D"
                       }
                     ]
                   },
@@ -5466,20 +5477,6 @@
           "infra"
         ],
         "asDropdown": true,
-        "targetBlank": false,
-        "includeVars": false,
-        "keepTime": true
-      },
-      {
-        "title": "Servidores Linux",
-        "type": "dashboards",
-        "icon": "external link",
-        "tooltip": "",
-        "tags": [
-          "linux",
-          "servers"
-        ],
-        "asDropdown": false,
         "targetBlank": false,
         "includeVars": false,
         "keepTime": true

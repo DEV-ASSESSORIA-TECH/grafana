@@ -74,6 +74,7 @@ Não há mais `__inputs`/`__requires` nem `${DS_PROMETHEUS}`/`${DS_LOKI}`: o das
 
 - **Navegação:** todo dashboard tem a tag `infra`, o link **Visão geral** e o menu **Painéis** (link do tipo `dashboards`, tag `infra`, em dropdown). Dashboard novo com a tag entra sozinho no menu dos outros. O CI cobra os três.
 - **Página inicial:** a Visão geral (`overview`). Configure uma vez em *Administração → Geral → Preferências padrão → Painel inicial* (ou o botão Home e o logo levam para a tela padrão do Grafana).
+- **Blocos de número:** status em stat de **fundo sólido**, nome em cima e valor embaixo (verde `#37872D`, laranja `#E0752D`, vermelho `#C4162A`). Informativos (sistema, ligado há, núcleos) em cinza neutro `#2F333A`. Blocos de área do Visão geral em **Canvas** nativo: valor/total, chips de críticos e avisos, borda na cor do pior alerta.
 - Uma variável de seleção: **Server** nos servidores, **Host** nos hypervisors (`instance`). Job e datasource ficam fixos no JSON.
 - Serviços filtra pelas tags do Uptime Kuma (**Criticidade**, **Exposição**, **Grupo**). Tag nova no Kuma exige reiniciar o container (ver contrato `uptime-kuma`).
 - Painéis e colunas de latência do Serviços excluem monitores `push` (heartbeat dos hosts, sem tempo de resposta): `monitor_type!~"group|push"`.

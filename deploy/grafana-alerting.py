@@ -197,6 +197,7 @@ def wait_health(url, seconds=180, container=None):
     """Espera o /api/health. Com container, desiste cedo se ele parar ou ficar reiniciando."""
     deadline = time.time() + seconds
     last, down_since = "", None
+    restarts = inspect(container)["RestartCount"] if container else 0
     while time.time() < deadline:
         try:
             status, body = http(url, "/api/health", "")
@@ -205,7 +206,10 @@ def wait_health(url, seconds=180, container=None):
         except (OSError, ValueError) as e:
             last = str(e)
         if container:
-            st = inspect(container)["State"]
+            info = inspect(container)
+            st = info["State"]
+            if info["RestartCount"] > restarts:  # restart policy reiniciando apos crash
+                raise Fail(f"o container {container} caiu e foi reiniciado pelo Docker:\n{container_errors(container)}")
             if st.get("Running") and not st.get("Restarting"):
                 down_since = None
             elif down_since is None:

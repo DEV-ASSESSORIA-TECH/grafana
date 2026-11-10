@@ -17,7 +17,7 @@ Dashboards e alertas do Grafana da infraestrutura (Grafana **13.3.0**), e os con
 | `docs/alerts/` | Documentação operacional de cada alerta (um arquivo por código; padrão em `contracts/alerts/docs.yml`) |
 | `deploy/` | `setup.sh` e `grafana-alerting.py`: deploy manual do alerting no servidor (ver `alerting/README.md`) |
 | `scripts/contracts.py` | Leitura dos contratos e verificação de consultas PromQL/LogQL (usado pelos dois validadores) |
-| `scripts/validate_dashboards.py` | Valida formato V2, compatibilidade com Git Sync, datasources e se as consultas usam só métricas/labels dos contratos |
+| `scripts/validate_dashboards.py` | Valida formato V2, compatibilidade com Git Sync, datasources, navegação (tag `infra`, links) e se as consultas usam só métricas/labels dos contratos |
 | `scripts/grafana_check.py` | Sincroniza `dashboards/` num Grafana 13.3.0 real e confere o resultado |
 | `scripts/validate_alerting.py` | Valida `alerting/` contra os contratos (códigos, labels, consultas, policies, inibição) |
 | `scripts/alert_docs.py` | Gera o cabeçalho dos documentos de alerta e o índice; `--check` no CI |
@@ -72,6 +72,8 @@ Não há mais `__inputs`/`__requires` nem `${DS_PROMETHEUS}`/`${DS_LOKI}`: o das
 
 ## Convenções
 
+- **Navegação:** todo dashboard tem a tag `infra`, o link **Visão geral** e o menu **Painéis** (link do tipo `dashboards`, tag `infra`, em dropdown). Dashboard novo com a tag entra sozinho no menu dos outros. O CI cobra os três.
+- **Página inicial:** a Visão geral (`overview`). Configure uma vez em *Administração → Geral → Preferências padrão → Painel inicial* (ou o botão Home e o logo levam para a tela padrão do Grafana).
 - Uma variável de seleção: **Server** nos servidores, **Host** nos hypervisors (`instance`). Job e datasource ficam fixos no JSON.
 - Serviços filtra pelas tags do Uptime Kuma (**Criticidade**, **Exposição**, **Grupo**). Tag nova no Kuma exige reiniciar o container (ver contrato `uptime-kuma`).
 - Painéis e colunas de latência do Serviços excluem monitores `push` (heartbeat dos hosts, sem tempo de resposta): `monitor_type!~"group|push"`.
@@ -101,7 +103,7 @@ Fluxo de alteração:
 2. Se o JSON foi exportado manualmente da UI, exporte no formato de recurso V2 (não o classic/v1, nem "para outra instância", que reintroduz `__inputs`) e mantenha só `apiVersion`, `kind`, `metadata.name` e `spec`.
 3. Rode as validações abaixo e abra o PR para `main`. Após o merge o Git Sync aplica a mudança.
 
-Dashboard novo: crie o arquivo no diretório da pasta certa com um UID novo (até 40 caracteres, `[a-zA-Z0-9_-]`); diretório novo exige `_folder.json`.
+Dashboard novo: crie o arquivo no diretório da pasta certa com um UID novo (até 40 caracteres, `[a-zA-Z0-9_-]`); diretório novo exige `_folder.json`. Inclua a tag `infra` e os links **Visão geral** e **Painéis** (copie de um dashboard existente).
 
 ## Validar
 

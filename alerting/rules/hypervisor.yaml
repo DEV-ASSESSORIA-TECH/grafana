@@ -88,6 +88,7 @@ groups:
             Enquanto este alerta estiver ativo, os alertas das VMs, convidados e serviços deste host ficam inibidos.
         labels:
           alert_code: HYP-101
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
           severity: critical
           area: hypervisor
           scope: hypervisor
@@ -168,6 +169,7 @@ groups:
             Enquanto este alerta estiver ativo, os alertas das VMs, convidados e serviços deste host ficam inibidos.
         labels:
           alert_code: HYP-102
+          alvo: '{{ with $$labels.monitor_name }}{{ reReplaceAll "^heartbeat-" "" . }}{{ end }}'
           severity: critical
           area: hypervisor
           scope: hypervisor
@@ -232,6 +234,7 @@ groups:
             Verifique o estado da VM e os eventos do Hyper-V.
         labels:
           alert_code: HYP-110
+          alvo: '{{ with $$labels.vm }}{{ . }}{{ end }}{{ with $$labels.instance }} ({{ . }}){{ end }}'
           severity: critical
           area: hypervisor
           scope: vm
@@ -317,6 +320,7 @@ groups:
             Caso o desligamento seja intencional, registre a manutenção e configure o silenciamento temporário do alerta.
         labels:
           alert_code: HYP-111
+          alvo: '{{ with $$labels.vm }}{{ . }}{{ end }}{{ with $$labels.instance }} ({{ . }}){{ end }}'
           severity: critical
           area: hypervisor
           scope: vm
@@ -398,6 +402,7 @@ groups:
             Caso necessário, providencie a inicialização da VM.
         labels:
           alert_code: HYP-112
+          alvo: '{{ with $$labels.vm }}{{ . }}{{ end }}{{ with $$labels.instance }} ({{ . }}){{ end }}'
           severity: warning
           area: hypervisor
           scope: vm
@@ -473,6 +478,7 @@ groups:
             Caso esta VM passe a hospedar serviços importantes, revise sua classificação de criticidade.
         labels:
           alert_code: HYP-113
+          alvo: '{{ with $$labels.vm }}{{ . }}{{ end }}{{ with $$labels.instance }} ({{ . }}){{ end }}'
           severity: info
           area: hypervisor
           scope: vm
@@ -546,6 +552,7 @@ groups:
             As informações das máquinas virtuais podem estar incompletas ou indisponíveis.
         labels:
           alert_code: HYP-301
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
           severity: warning
           area: hypervisor
           scope: collection
@@ -610,6 +617,7 @@ groups:
             Verifique a tarefa agendada \GrafanaLabs\Alloy Hypervisor Inventory, a execução do script PowerShell e o textfile collector do Alloy.
         labels:
           alert_code: HYP-302
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
           severity: warning
           area: hypervisor
           scope: collection
@@ -690,7 +698,7 @@ groups:
           __panelId__: "17"
           summary: Volume {{ $labels.volume }} do host {{ $labels.instance }} acima de 85% de uso
           description: |-
-            O volume {{ $labels.volume }} do hipervisor {{ $labels.instance }} está com {{ humanize $values.A.Value }}% de uso.
+            O volume {{ $labels.volume }} do hipervisor {{ $labels.instance }} está com {{ with $values.A }}{{ humanize .Value }}{{ end }}% de uso.
 
             Volumes cheios impedem o crescimento dos discos virtuais dinâmicos e podem pausar as VMs.
 
@@ -699,6 +707,7 @@ groups:
             O volume F: do srv-host01 (backups) fica de fora: tem limite próprio em espaço livre (HYP-203/204).
         labels:
           alert_code: HYP-201
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.volume }} · {{ . }}{{ end }}'
           severity: warning
           area: hypervisor
           scope: hypervisor
@@ -774,7 +783,7 @@ groups:
           __panelId__: "17"
           summary: Volume {{ $labels.volume }} do host {{ $labels.instance }} acima de 95% de uso
           description: |-
-            O volume {{ $labels.volume }} do hipervisor {{ $labels.instance }} está com {{ humanize $values.A.Value }}% de uso.
+            O volume {{ $labels.volume }} do hipervisor {{ $labels.instance }} está com {{ with $values.A }}{{ humanize .Value }}{{ end }}% de uso.
 
             Com o volume cheio, discos virtuais dinâmicos não crescem e o Hyper-V pausa as VMs afetadas.
 
@@ -783,6 +792,7 @@ groups:
             O volume F: do srv-host01 (backups) fica de fora: tem limite próprio em espaço livre (HYP-203/204).
         labels:
           alert_code: HYP-202
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.volume }} · {{ . }}{{ end }}'
           severity: critical
           area: hypervisor
           scope: hypervisor
@@ -845,7 +855,7 @@ groups:
           runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-203.md
           __dashboardUid__: hypervisors
           __panelId__: "17"
-          summary: 'Volume F: do srv-host01 com {{ humanize $values.A.Value }} GiB livres'
+          summary: 'Volume F: do srv-host01 com {{ with $values.A }}{{ humanize .Value }}{{ end }} GiB livres'
           description: |-
             O volume F: (backups) do srv-host01 está com menos de 200 GiB livres.
 
@@ -853,6 +863,7 @@ groups:
             Verifique se a retenção de backups está sendo aplicada.
         labels:
           alert_code: HYP-203
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.volume }} · {{ . }}{{ end }}'
           severity: warning
           area: hypervisor
           scope: hypervisor
@@ -910,13 +921,14 @@ groups:
           runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-204.md
           __dashboardUid__: hypervisors
           __panelId__: "17"
-          summary: 'Volume F: do srv-host01 com {{ humanize $values.A.Value }} GiB livres'
+          summary: 'Volume F: do srv-host01 com {{ with $values.A }}{{ humanize .Value }}{{ end }} GiB livres'
           description: |-
             O volume F: (backups) do srv-host01 está com menos de 100 GiB livres. O próximo backup pode falhar.
 
             Aplique a retenção ou remova backups antigos.
         labels:
           alert_code: HYP-204
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.volume }} · {{ . }}{{ end }}'
           severity: critical
           area: hypervisor
           scope: hypervisor
@@ -974,7 +986,7 @@ groups:
           runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-205.md
           __dashboardUid__: hypervisors
           __panelId__: "15"
-          summary: 'Host {{ $labels.instance }} com {{ humanize $values.A.Value }} GiB de memória livre'
+          summary: 'Host {{ $labels.instance }} com {{ with $values.A }}{{ humanize .Value }}{{ end }} GiB de memória livre'
           description: |-
             O host Hyper-V {{ $labels.instance }} está com menos de 2 GiB de memória disponível.
 
@@ -982,6 +994,7 @@ groups:
             O menor valor visto em 7 dias foi 4,3 GiB (srv-host01) e 3,4 GiB (srv-host01-mtc).
         labels:
           alert_code: HYP-205
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
           severity: warning
           area: hypervisor
           scope: hypervisor
@@ -1043,12 +1056,13 @@ groups:
           __panelId__: "14"
           summary: 'CPU do host {{ $labels.instance }} acima de 90%'
           description: |-
-            A CPU do host Hyper-V {{ $labels.instance }} está em {{ humanize $values.A.Value }}% há mais de 30 minutos.
+            A CPU do host Hyper-V {{ $labels.instance }} está em {{ with $values.A }}{{ humanize .Value }}{{ end }}% há mais de 30 minutos.
 
             Todas as VMs do host ficam lentas. Verifique as VMs que mais consomem CPU (painel CPU por VM).
             Medido pelo tempo de execução dos processadores lógicos do hipervisor (no host Hyper-V, "1 - idle" do Windows não fecha).
         labels:
           alert_code: HYP-206
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
           severity: warning
           area: hypervisor
           scope: hypervisor
@@ -1113,6 +1127,7 @@ groups:
             Sem o vmms não é possível gerenciar, ligar ou migrar VMs. Verifique o serviço e o Event Log do Hyper-V-VMMS.
         labels:
           alert_code: HYP-140
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.name }} · {{ . }}{{ end }}'
           severity: critical
           area: hypervisor
           scope: hypervisor
@@ -1184,6 +1199,7 @@ groups:
             Registro informativo: disco, memória e serviços dessa VM não são monitorados. Instale o Alloy se ela passar a ser relevante.
         labels:
           alert_code: HYP-303
+          alvo: '{{ with $$labels.vm }}{{ . }}{{ end }}{{ with $$labels.instance }} ({{ . }}){{ end }}'
           severity: info
           area: hypervisor
           scope: collection
@@ -1252,6 +1268,7 @@ groups:
             Verifique o console da VM no Gerenciador do Hyper-V. Enquanto este alerta estiver ativo, os alertas do convidado e dos serviços da VM ficam inibidos.
         labels:
           alert_code: HYP-114
+          alvo: '{{ with $$labels.vm }}{{ . }}{{ end }}{{ with $$labels.instance }} ({{ . }}){{ end }}'
           severity: warning
           area: hypervisor
           scope: vm
@@ -1312,11 +1329,12 @@ groups:
           __panelId__: "21"
           summary: 'VM {{ $labels.vm }} com checkpoint há mais de 7 dias'
           description: |-
-            A VM {{ $labels.vm }} no host {{ $labels.instance }} mantém checkpoint há mais de 7 dias ({{ humanize $values.A.Value }} no mínimo).
+            A VM {{ $labels.vm }} no host {{ $labels.instance }} mantém checkpoint há mais de 7 dias ({{ with $values.A }}{{ humanize .Value }}{{ end }} no mínimo).
 
             O arquivo de diferenças (.avhdx) cresce sem limite e deixa o disco mais lento. Aplique ou remova o checkpoint se ele não for mais necessário.
         labels:
           alert_code: HYP-207
+          alvo: '{{ with $$labels.vm }}{{ . }}{{ end }}{{ with $$labels.instance }} ({{ . }}){{ end }}'
           severity: info
           area: hypervisor
           scope: vm
@@ -1382,11 +1400,12 @@ groups:
           __panelId__: "34"
           summary: 'Disco virtual da VM {{ $labels.vm }} com latência alta'
           description: |-
-            A latência média do disco virtual {{ $labels.device }} da VM {{ $labels.vm }} está em {{ humanizeDuration $values.A.Value }} há mais de 15 minutos (limite 50 ms).
+            A latência média do disco virtual {{ $labels.device }} da VM {{ $labels.vm }} está em {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }} há mais de 15 minutos (limite 50 ms).
 
             Em 7 dias de referência, nenhum disco passou de 50 ms por mais de 10 minutos. Verifique o volume do host (fila, latência física, backup ou antivírus rodando) e as VMs vizinhas no mesmo volume.
         labels:
           alert_code: HYP-401
+          alvo: '{{ with $$labels.vm }}{{ . }}{{ end }}{{ with $$labels.instance }} ({{ . }}){{ end }}'
           severity: warning
           area: hypervisor
           scope: vm
@@ -1460,6 +1479,7 @@ groups:
             Verifique: w32tm /query /status e w32tm /resync.
         labels:
           alert_code: HYP-130
+          alvo: '{{ with $$labels.host }}{{ . }}{{ end }}'
           severity: warning
           area: hypervisor
           scope: hypervisor
@@ -1533,6 +1553,7 @@ groups:
             Todas as VMs do host foram derrubadas. Confirme que voltaram e investigue a causa (dump de memória, drivers, energia).
         labels:
           alert_code: HYP-131
+          alvo: '{{ with $$labels.host }}{{ . }}{{ end }}'
           severity: critical
           area: hypervisor
           scope: hypervisor

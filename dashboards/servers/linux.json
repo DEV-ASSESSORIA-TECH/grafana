@@ -20134,6 +20134,31 @@
     },
     "links": [
       {
+        "title": "Visão geral",
+        "type": "link",
+        "url": "/grafana/d/overview",
+        "icon": "dashboard",
+        "tooltip": "Página inicial: alertas e estado de todas as áreas",
+        "tags": [],
+        "asDropdown": false,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": true
+      },
+      {
+        "title": "Painéis",
+        "type": "dashboards",
+        "icon": "external link",
+        "tooltip": "",
+        "tags": [
+          "infra"
+        ],
+        "asDropdown": true,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": true
+      },
+      {
         "title": "Servidores Windows",
         "type": "dashboards",
         "icon": "external link",
@@ -20151,6 +20176,7 @@
     "liveNow": false,
     "preload": false,
     "tags": [
+      "infra",
       "linux",
       "servers"
     ],

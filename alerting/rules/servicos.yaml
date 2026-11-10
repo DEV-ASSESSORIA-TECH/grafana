@@ -87,6 +87,7 @@ groups:
             Se a VM ou o hipervisor estiverem fora, este alerta fica inibido (monitor com a tag vm).
         labels:
           alert_code: SVC-101
+          alvo: '{{ with $$labels.monitor_name }}{{ . }}{{ end }}'
           severity: critical
           area: servicos
           scope: service
@@ -172,6 +173,7 @@ groups:
             Se a VM ou o hipervisor estiverem fora, este alerta fica inibido (monitor com a tag vm).
         labels:
           alert_code: SVC-102
+          alvo: '{{ with $$labels.monitor_name }}{{ . }}{{ end }}'
           severity: warning
           area: servicos
           scope: service
@@ -237,6 +239,7 @@ groups:
             Serviço externo (terceiro): não depende da nossa infraestrutura. Confirme com o fornecedor e avise os usuários.
         labels:
           alert_code: SVC-110
+          alvo: '{{ with $$labels.monitor_name }}{{ . }}{{ end }}'
           severity: warning
           area: servicos
           scope: external
@@ -293,13 +296,14 @@ groups:
           runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-201.md
           __dashboardUid__: servicos
           __panelId__: "7"
-          summary: 'Certificado de {{ $labels.monitor_name }} vence em {{ humanize $values.A.Value }} dias'
+          summary: 'Certificado de {{ $labels.monitor_name }} vence em {{ with $values.A }}{{ humanize .Value }}{{ end }} dias'
           description: |-
-            O certificado TLS de {{ $labels.monitor_name }} vence em {{ humanize $values.A.Value }} dias.
+            O certificado TLS de {{ $labels.monitor_name }} vence em {{ with $values.A }}{{ humanize .Value }}{{ end }} dias.
 
             Verifique a renovação automática (Cloudflare, Let's Encrypt ou fornecedor).
         labels:
           alert_code: SVC-201
+          alvo: '{{ with $$labels.monitor_name }}{{ . }}{{ end }}'
           severity: warning
           area: servicos
           scope: service
@@ -356,13 +360,14 @@ groups:
           runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-202.md
           __dashboardUid__: servicos
           __panelId__: "7"
-          summary: 'Certificado de {{ $labels.monitor_name }} vence em {{ humanize $values.A.Value }} dias'
+          summary: 'Certificado de {{ $labels.monitor_name }} vence em {{ with $values.A }}{{ humanize .Value }}{{ end }} dias'
           description: |-
-            O certificado TLS de {{ $labels.monitor_name }} vence em {{ humanize $values.A.Value }} dias.
+            O certificado TLS de {{ $labels.monitor_name }} vence em {{ with $values.A }}{{ humanize .Value }}{{ end }} dias.
 
             Depois do vencimento, navegadores e integrações recusam a conexão. Renove agora.
         labels:
           alert_code: SVC-202
+          alvo: '{{ with $$labels.monitor_name }}{{ . }}{{ end }}'
           severity: critical
           area: servicos
           scope: service
@@ -426,6 +431,7 @@ groups:
             Navegadores e integrações recusam a conexão. Verifique o certificado publicado.
         labels:
           alert_code: SVC-203
+          alvo: '{{ with $$labels.monitor_name }}{{ . }}{{ end }}'
           severity: critical
           area: servicos
           scope: service
@@ -492,6 +498,7 @@ groups:
             Enquanto isso, nenhum alerta de serviço (SVC) nem de heartbeat (HYP-102) funciona. Verifique o container do Kuma no srv-mon.
         labels:
           alert_code: SVC-301
+          alvo: Uptime Kuma
           severity: critical
           area: servicos
           scope: collection

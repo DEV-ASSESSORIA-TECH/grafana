@@ -1,7 +1,7 @@
 # Contrato dos labels de alerta; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_label_contract
-version: 0.6.0
+version: 0.7.0
 id: alert-labels
 title: Labels obrigatorios e de dependencia das regras de alerta
 status: defined
@@ -15,6 +15,19 @@ labels:
     description: >-
       Codigo permanente do alerta, igual ao do catalogo (codes.yml) e ao prefixo do titulo. Nunca reutilizar um
       codigo removido.
+  alvo:
+    required: true
+    description: >-
+      O que esta com problema, em texto curto e legivel, para listas, tabelas e notificacoes (ex. srv-apps · shlink,
+      srv-contabil-ass · C:, Outline, SRV-WEB (srv-host01)). Template sobre os labels que a regra ja tem: nao muda
+      quantas instancias o alerta tem. Partes ausentes somem (with), nunca geram erro.
+    patterns:
+      servidor: '{{ with $$labels.instance }}{{ . }}{{ end }}'
+      servidor e item: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.name }} · {{ . }}{{ end }} (name, volume, mountpoint)'
+      vm: '{{ with $$labels.vm }}{{ . }}{{ end }}{{ with $$labels.instance }} ({{ . }}){{ end }}'
+      monitor: '{{ with $$labels.monitor_name }}{{ . }}{{ end }}'
+      log: '{{ with $$labels.host }}{{ . }}{{ end }}'
+      fixo: nome do componente (ex. Prometheus) quando a regra so tem um alvo
   severity:
     required: true
     values:

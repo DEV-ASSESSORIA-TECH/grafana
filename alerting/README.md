@@ -46,6 +46,7 @@ Todas as regras ficam na pasta INFRA do Grafana, um grupo por arquivo. O catálo
   ```yaml
   labels:
     alert_code: HYP-111
+    alvo: '{{ with $$labels.vm }}{{ . }}{{ end }}{{ with $$labels.instance }} ({{ . }}){{ end }}'   # SRV-WEB (srv-host01)
     severity: critical        # critical | warning | info
     area: hypervisor          # domínio do alvo (define o prefixo do código)
     scope: vm                 # hypervisor | vm | guest | service | external | collection
@@ -53,7 +54,8 @@ Todas as regras ficam na pasta INFRA do Grafana, um grupo por arquivo. O catálo
     dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
   ```
 
-- **Annotations:** `summary`, `description` e, quando o procedimento existir no Outline, `runbook_url` (igual ao `runbook` do catálogo). O painel vinculado vem de `__dashboardUid__` e `__panelId__` (texto).
+- **`alvo`:** o que está com problema, em texto curto (`srv-apps · shlink`, `srv-contabil-ass · C:`, `Outline`). Aparece na tabela de alertas do Visão geral e na linha do tempo. Padrões em `contracts/alerts/labels.yml`; partes ausentes somem (`with`), nunca dão erro.
+- **Annotations:** `summary`, `description` e `runbook_url` (link do documento do alerta, igual ao `runbook` do catálogo). O painel vinculado vem de `__dashboardUid__` e `__panelId__` (texto).
 - **Destino:** nunca `notification_settings` (envio direto a um contact point). O destino sai da policy.
 - **Faixas de código:** 1xx disponibilidade, 2xx capacidade, 3xx saúde da coleta, 4xx desempenho.
 
@@ -212,7 +214,18 @@ O comando atualiza os cabeçalhos e o índice e cria o documento de códigos nov
 
 ## Histórico de estado e dashboard Visão geral
 
-O dashboard **Visão geral** (`dashboards/overview/`) conta e desenha os alertas pela métrica `GRAFANA_ALERTS`, que o Grafana grava no Prometheus a cada mudança de estado. O mesmo histórico vai para o Loki e alimenta as telas de histórico do Grafana (hoje elas só mostram o histórico de uma regra por vez). Para ligar, no `compose.yaml`, serviço `grafana`, em `environment`:
+O dashboard **Visão geral** (`dashboards/overview/`) é a página inicial:
+
+| Linha | O que mostra |
+|---|---|
+| Áreas | Por área (Linux, Windows, Hyper-V, Serviços, Containers, Coleta): alvos reportando, críticos e avisos. Clique abre o dashboard da área |
+| Alertas | Contagem agora (críticos, avisos, pendentes, info), certificados, links de silences e a tabela **Alertas ativos**: severidade, código (abre a documentação), alvo, alerta (abre a regra), estado e área |
+| Sem dados | Alvos que reportaram nos últimos 7 dias e pararam, com "sem dados há" e "última vez visto" |
+| Atenção | Discos que enchem primeiro (sem o F: de backup do srv-host01), CPU e RAM top 5 |
+| Histórico de alertas | Linha do tempo por ocorrência: vermelho crítico, laranja aviso, azul pendente |
+| Informativos (recolhida) | Tabela dos alertas info |
+
+Ele conta e desenha os alertas pela métrica `GRAFANA_ALERTS`, que o Grafana grava no Prometheus a cada mudança de estado. O mesmo histórico vai para o Loki e alimenta as telas de histórico do Grafana (hoje elas só mostram o histórico de uma regra por vez). Para ligar, no `compose.yaml`, serviço `grafana`, em `environment`:
 
 ```yaml
 GF_UNIFIED_ALERTING_STATE_HISTORY_ENABLED: "true"
@@ -223,7 +236,7 @@ GF_UNIFIED_ALERTING_STATE_HISTORY_SECONDARIES: "prometheus"
 GF_UNIFIED_ALERTING_STATE_HISTORY_PROMETHEUS_TARGET_DATASOURCE_UID: "prometheus"
 ```
 
-Depois, `cd /opt/observability && sudo docker compose up -d grafana`. O Prometheus já aceita remote write (`--web.enable-remote-write-receiver`). Testado num Grafana 13.3.0: a série chega com todos os labels das regras (contrato `contracts/prometheus/grafana-alerts.yml`). Sem as variáveis, as contagens de alerta do dashboard mostram 0 e a linha do tempo fica vazia; o resto funciona.
+Depois, `cd /opt/observability && sudo docker compose up -d grafana`. O Prometheus já aceita remote write (`--web.enable-remote-write-receiver`). Testado num Grafana 13.3.0: a série chega com todos os labels das regras (contrato `contracts/prometheus/grafana-alerts.yml`). O datasource Prometheus precisa de `jsonData.prometheusType: Prometheus`: sem ele o Grafana grava num endereço errado (404 no log `ngalert.state.historian`). Sem o histórico, as contagens de alerta mostram 0 e a tabela e a linha do tempo ficam vazias; o resto funciona.
 
 ## Validar
 

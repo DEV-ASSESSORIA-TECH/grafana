@@ -36,6 +36,7 @@ K8S_NAME_RE = re.compile(r"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$")
 TITLE_RE = re.compile(r"^\[([A-Z]+-\d+)\] (\S(?:.*\S)?)$")
 ENV_VAR_RE = re.compile(r"(?<!\$)\$(?!\$)\{?[A-Za-z_]")  # $x interpolado pelo provisionamento ($$x nao)
 DS_GROUP = {uid: group for group, uid in DATASOURCES.items()}
+UNGUARDED_VALUE_RE = re.compile(r"\$values\.\w+\.Value")  # quebra o template quando a regra esta sem dados
 BUILTIN_LABELS = {"alertname", "grafana_folder"}
 MATCH_TYPES = {"=", "!=", "=~", "!~"}
 
@@ -121,8 +122,8 @@ for path in (ROOT / "dashboards").rglob("*.json"):
 
 # ------------------------------------------------------------------ regras
 def check_rule_labels(where, labels, code, log_only=False):
-    for name in ("alert_code", "severity", "area", "scope"):
-        if not labels.get(name):
+    for name, spec in label_spec.items():
+        if (spec or {}).get("required") and not labels.get(name):
             errors.append(f"{where}: label obrigatorio ausente: {name}")
     for name in sorted(set(labels) - known_labels):
         errors.append(f"{where}: label fora do contrato (contracts/alerts/labels.yml): {name}")
@@ -205,6 +206,10 @@ def check_rule(rel, group, rule, seen_uids, seen_codes):
     for key in ("summary", "description"):
         if not ann.get(key):
             errors.append(f"{where}: annotation obrigatoria ausente: {key}")
+    for key, value in ann.items():
+        if UNGUARDED_VALUE_RE.search(str(value)):
+            errors.append(f"{where}: annotation {key} usa $values.X.Value sem protecao; sem dados ela quebra. "
+                          f"Escrever {{{{ with $values.A }}}}{{{{ humanize .Value }}}}{{{{ end }}}}")
     for key in sorted(set(ann) - {"summary", "description", "runbook_url", "__dashboardUid__", "__panelId__"}):
         errors.append(f"{where}: annotation nao padronizada: {key}")
 

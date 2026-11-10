@@ -17,6 +17,9 @@ from pathlib import Path
 
 import yaml
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import catalogo  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 PLACEHOLDER = "A preencher."
 SCOPE_PT = {"hypervisor": "hosts", "vm": "VMs", "guest": "sistemas convidados", "service": "serviços/containers",
@@ -40,7 +43,7 @@ scopes = list(labels_contract["scope"]["values"])
 
 rules = {}  # uid -> (regra, grupo, arquivo)
 for path in sorted((ROOT / "alerting" / "rules").glob("*.yaml")):
-    for group in yaml.safe_load(path.read_text(encoding="utf-8")).get("groups") or []:
+    for group in yaml.safe_load(catalogo.render(path.read_text(encoding="utf-8"), catalogo.load()[0])[0]).get("groups") or []:
         for rule in group["rules"]:
             rules[rule["uid"]] = (rule, group, path.name)
 inhibitions = []

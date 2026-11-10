@@ -31,7 +31,7 @@ Todas as regras ficam na pasta INFRA do Grafana, um grupo por arquivo. O catálo
 
 **Decisões que estão nas consultas** (mude aqui quando mudar a operação):
 
-- **Classificação das VMs** (crítica/importante/informativa): listas de nomes em HYP-111/112/113 e, em minúsculas, em WIN-101/102 e LIN-101/102. Nesses dois, "crítica" vira `critical` e o resto `warning`. Ao reclassificar uma VM, atualize as quatro listas.
+- **Classificação de hosts, VMs, servidores e containers:** no `catalogo.yml` (ver [Catálogo](#catálogo-de-monitoramento)), nunca nas regras.
 - **Volume F: do srv-host01 (backups):** fora de HYP-201/202; tem limite próprio em GiB livres (HYP-203 < 200, HYP-204 < 100).
 - **Serviços Windows:** WIN-110 (AD, critical), WIN-111 (aplicação, warning) e WIN-112 (em curadoria, info) têm listas fixas por servidor. Serviço automático parado fora dessas listas não alerta.
 - **Excluídos de propósito:** unidades `fwupd*` (LIN-110), o container `grafana-alerting-temp` do deploy (CTR) e a memória total dos hosts Hyper-V (em host, use HYP-205).
@@ -105,6 +105,33 @@ Monte a policy padrão pelos labels (`contracts/alerts/notifications.yml`, `rout
 - Template `infra` (vem do repositório): no contact point, assunto `{{ template "infra.subject" . }}` e mensagem `{{ template "infra.message" . }}`.
 - Manutenção pontual: silence na UI.
 
+## Catálogo de monitoramento
+
+`catalogo.yml`, na raiz do repositório, é a única lista que classifica o que é monitorado. As regras não têm nomes fixos: usam marcadores que o build expande a partir do catálogo.
+
+| Seção | Chave | Classes | Efeito |
+|---|---|---|---|
+| `hosts` | instance do host Hyper-V | `critica`, `importante`, `informativa`, `ignorar` | Classe padrão das VMs do host que não estão em `vms`. A lista de hosts também alimenta HYP-101/102/130/131/140/201-206 e as exclusões dos hosts nas regras Windows |
+| `vms` | nome da VM no Hyper-V | `critica`, `importante`, `informativa`, `ignorar` | VM desligada: HYP-111 (critical), HYP-112 (warning), HYP-113 (info, não notifica) ou nada |
+| `servidores` | instance do Alloy | `critico`, `normal` (padrão), `ignorar` | Servidor sem métricas: LIN/WIN-101 (critical), LIN/WIN-102 (warning) ou nada |
+| `containers` | nome do container | `ignorar` | Fora dos alertas CTR |
+
+Desligar uma VM não exige mudar o catálogo: a classe só define o quanto o desligamento importa. Tudo o que roda numa VM desligada (servidor, containers, serviços do Kuma com a tag `vm`) fica inibido enquanto o alerta da VM estiver ativo (ver [Dependências e inibição](#dependências-e-inibição)).
+
+**Mudar uma classe:** edite `catalogo.yml` (o editor do GitHub serve), faça o merge e rode `sudo grafana-alerting deploy`.
+
+**Conferir:** `sudo grafana-alerting catalogo` (ou opção `c` do menu) compara o arquivo com o que a produção reportou nos últimos 7 dias: classe efetiva de cada VM (e se está ligada), servidores, containers (rodando ou parado) e nomes do catálogo que não existem mais.
+
+Marcadores nas regras (expansão em `scripts/catalogo.py`; o resultado é uma alternância de regex com os nomes escapados):
+
+| Marcador | Vira |
+|---|---|
+| `@catalogo:vms=critica@` | VMs listadas como `critica` |
+| `@catalogo:vms!=critica@` | VMs listadas com outra classe |
+| `@catalogo:hosts@` | todos os hosts |
+
+Lista vazia vira `""`: `=~""` não casa com nada e `!~""` não exclui nada. Para conferir uma regra expandida: `python scripts/catalogo.py --render alerting/rules/hypervisor.yaml`.
+
 ## Deploy (manual, no servidor)
 
 A ferramenta `grafana-alerting` (`deploy/`) mantém tudo em **`/opt/grafana-alerting`** e não toca em mais nada de `/opt`:
@@ -165,6 +192,7 @@ Sem argumentos, `sudo grafana-alerting` abre um menu. Comandos diretos:
 | `package [--ref REF]` | Só valida e gera o pacote |
 | `apply PACOTE [--skip-test]` | Aplica um pacote existente (também serve para outro servidor) |
 | `rollback` | Aplica de novo o pacote do deploy anterior |
+| `catalogo` | Compara o `catalogo.yml` com o que a produção reporta (ver [Catálogo](#catálogo-de-monitoramento)) |
 | `list` | Pacotes e backups |
 | `cleanup` | Remove o container e a rede temporários, se sobrarem |
 

@@ -1,0 +1,60 @@
+# Catalogo de monitoramento: a unica lista que classifica o que e monitorado.
+#
+# Mudar uma classe: edite aqui (pelo GitHub mesmo), faca o merge e rode `sudo grafana-alerting deploy`.
+# Conferir contra o que existe na producao: `sudo grafana-alerting catalogo`
+# (mostra VMs, servidores e containers que nao estao aqui e nomes daqui que sumiram).
+#
+# Desligar uma VM nao exige mexer aqui: a classe so define o quanto o desligamento importa.
+# Tudo o que roda numa VM desligada (servidor, containers, servicos do Kuma com a tag vm) fica inibido
+# enquanto o alerta da VM estiver ativo.
+versao: 1
+
+# Hosts Hyper-V (instance). A classe e o padrao das VMs dele que nao estao em `vms`.
+hosts:
+  srv-host01: informativa
+  srv-host01-mtc: critica
+
+# VMs (nome no Hyper-V) -> classe do desligamento:
+#   critica      HYP-111, critical
+#   importante   HYP-112, warning
+#   informativa  HYP-113, info (nao notifica)
+#   ignorar      nenhum alerta de VM desligada
+vms:
+  SRV-AD: critica
+  SRV-AD-TRS: critica
+  SRV-ALTOGARCAS: critica
+  SRV-AMANDA: critica
+  SRV-CONTABIL-ASS: critica
+  SRV-DOM-TRS: critica
+  SRV-MON: critica
+  SRV-RMM: critica
+  SRV-VPN: critica
+  SRV-WEB: critica
+  SRV-ADM: importante
+  SRV-DOCS: importante
+  SRV-GPS: importante
+  SRV-MN: importante
+  SRV-N8N: importante
+  SRV-SNIPE: importante
+  # SRV-APPS: desligado de proposito em 2026-11; cai no padrao do host (informativa).
+
+# Servidores (instance do Alloy) -> classe quando param de mandar metricas:
+#   critico   LIN-101 / WIN-101, critical
+#   normal    LIN-102 / WIN-102, warning (padrao de quem nao esta listado)
+#   ignorar   nenhum alerta de servidor sem metricas
+servidores:
+  srv-altogarcas: critico
+  srv-mon: critico
+  srv-rmm: critico
+  srv-vpn: critico
+  srv-web: critico
+  srv-ad: critico
+  srv-ad-trs: critico
+  srv-amanda: critico
+  srv-contabil-ass: critico
+  srv-dom-trs: critico
+  srv-seven-mtc: critico
+
+# Containers (nome) fora de tudo: alertas CTR e contagens.
+containers:
+  grafana-alerting-temp: ignorar   # ensaio do deploy (grafana-alerting test)

@@ -22,9 +22,9 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  group by (instance) (max_over_time(up{job="integrations/windows",instance=~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc"}[7d]))
+                  group by (instance) (max_over_time(up{job="integrations/windows",instance=~"@catalogo:servidores=critico@"}[7d]))
                   unless
-                  group by (instance) (up{job="integrations/windows",instance=~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc"} == 1)
+                  group by (instance) (up{job="integrations/windows",instance=~"@catalogo:servidores=critico@"} == 1)
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -34,9 +34,9 @@ groups:
                 )
                 or
                 (
-                  group by (instance) (max_over_time(up{job="integrations/windows",instance=~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc"}[7d]))
+                  group by (instance) (max_over_time(up{job="integrations/windows",instance=~"@catalogo:servidores=critico@"}[7d]))
                   unless
-                  group by (instance) (up{job="integrations/windows",instance=~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc"} == 1)
+                  group by (instance) (up{job="integrations/windows",instance=~"@catalogo:servidores=critico@"} == 1)
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (
@@ -114,9 +114,9 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  group by (instance) (max_over_time(up{job="integrations/windows",instance!~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc|srv-host01|srv-host01-mtc"}[7d]))
+                  group by (instance) (max_over_time(up{job="integrations/windows",instance!~"@catalogo:servidores!=normal@|@catalogo:hosts@"}[7d]))
                   unless
-                  group by (instance) (up{job="integrations/windows",instance!~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc|srv-host01|srv-host01-mtc"} == 1)
+                  group by (instance) (up{job="integrations/windows",instance!~"@catalogo:servidores!=normal@|@catalogo:hosts@"} == 1)
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -126,9 +126,9 @@ groups:
                 )
                 or
                 (
-                  group by (instance) (max_over_time(up{job="integrations/windows",instance!~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc|srv-host01|srv-host01-mtc"}[7d]))
+                  group by (instance) (max_over_time(up{job="integrations/windows",instance!~"@catalogo:servidores!=normal@|@catalogo:hosts@"}[7d]))
                   unless
-                  group by (instance) (up{job="integrations/windows",instance!~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc|srv-host01|srv-host01-mtc"} == 1)
+                  group by (instance) (up{job="integrations/windows",instance!~"@catalogo:servidores!=normal@|@catalogo:hosts@"} == 1)
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (
@@ -538,7 +538,7 @@ groups:
               queryType: instant
               expr: |-
                 sum by (host) (count_over_time(
-                  {job="windows-eventlog", host!~"srv-host01|srv-host01-mtc"}
+                  {job="windows-eventlog", host!~"@catalogo:hosts@"}
                   | json source, event_id
                   | source="Microsoft-Windows-Time-Service" | event_id=~"129|134|36|47"
                   [2h]
@@ -610,10 +610,10 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  100 * (1 - windows_logical_disk_free_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"}
-                    / windows_logical_disk_size_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"})
+                  100 * (1 - windows_logical_disk_free_bytes{job="integrations/windows",instance!~"@catalogo:hosts@",volume=~"[A-Z]:"}
+                    / windows_logical_disk_size_bytes{job="integrations/windows",instance!~"@catalogo:hosts@",volume=~"[A-Z]:"})
                   and on (instance, volume)
-                  windows_logical_disk_free_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"} < 20 * 2^30
+                  windows_logical_disk_free_bytes{job="integrations/windows",instance!~"@catalogo:hosts@",volume=~"[A-Z]:"} < 20 * 2^30
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -623,10 +623,10 @@ groups:
                 )
                 or
                 (
-                  100 * (1 - windows_logical_disk_free_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"}
-                    / windows_logical_disk_size_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"})
+                  100 * (1 - windows_logical_disk_free_bytes{job="integrations/windows",instance!~"@catalogo:hosts@",volume=~"[A-Z]:"}
+                    / windows_logical_disk_size_bytes{job="integrations/windows",instance!~"@catalogo:hosts@",volume=~"[A-Z]:"})
                   and on (instance, volume)
-                  windows_logical_disk_free_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"} < 20 * 2^30
+                  windows_logical_disk_free_bytes{job="integrations/windows",instance!~"@catalogo:hosts@",volume=~"[A-Z]:"} < 20 * 2^30
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (
@@ -701,8 +701,8 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  100 * (1 - windows_logical_disk_free_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"}
-                    / windows_logical_disk_size_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"})
+                  100 * (1 - windows_logical_disk_free_bytes{job="integrations/windows",instance!~"@catalogo:hosts@",volume=~"[A-Z]:"}
+                    / windows_logical_disk_size_bytes{job="integrations/windows",instance!~"@catalogo:hosts@",volume=~"[A-Z]:"})
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -712,8 +712,8 @@ groups:
                 )
                 or
                 (
-                  100 * (1 - windows_logical_disk_free_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"}
-                    / windows_logical_disk_size_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"})
+                  100 * (1 - windows_logical_disk_free_bytes{job="integrations/windows",instance!~"@catalogo:hosts@",volume=~"[A-Z]:"}
+                    / windows_logical_disk_size_bytes{job="integrations/windows",instance!~"@catalogo:hosts@",volume=~"[A-Z]:"})
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (
@@ -788,8 +788,8 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  100 * (1 - windows_memory_available_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"}
-                    / windows_memory_physical_total_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"})
+                  100 * (1 - windows_memory_available_bytes{job="integrations/windows",instance!~"@catalogo:hosts@"}
+                    / windows_memory_physical_total_bytes{job="integrations/windows",instance!~"@catalogo:hosts@"})
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -799,8 +799,8 @@ groups:
                 )
                 or
                 (
-                  100 * (1 - windows_memory_available_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"}
-                    / windows_memory_physical_total_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"})
+                  100 * (1 - windows_memory_available_bytes{job="integrations/windows",instance!~"@catalogo:hosts@"}
+                    / windows_memory_physical_total_bytes{job="integrations/windows",instance!~"@catalogo:hosts@"})
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (
@@ -875,8 +875,8 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  100 * windows_memory_committed_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"}
-                    / windows_memory_commit_limit{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"}
+                  100 * windows_memory_committed_bytes{job="integrations/windows",instance!~"@catalogo:hosts@"}
+                    / windows_memory_commit_limit{job="integrations/windows",instance!~"@catalogo:hosts@"}
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -886,8 +886,8 @@ groups:
                 )
                 or
                 (
-                  100 * windows_memory_committed_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"}
-                    / windows_memory_commit_limit{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"}
+                  100 * windows_memory_committed_bytes{job="integrations/windows",instance!~"@catalogo:hosts@"}
+                    / windows_memory_commit_limit{job="integrations/windows",instance!~"@catalogo:hosts@"}
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (
@@ -962,7 +962,7 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  100 * (1 - avg by (instance) (rate(windows_cpu_time_total{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",mode="idle"}[5m])))
+                  100 * (1 - avg by (instance) (rate(windows_cpu_time_total{job="integrations/windows",instance!~"@catalogo:hosts@",mode="idle"}[5m])))
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -972,7 +972,7 @@ groups:
                 )
                 or
                 (
-                  100 * (1 - avg by (instance) (rate(windows_cpu_time_total{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",mode="idle"}[5m])))
+                  100 * (1 - avg by (instance) (rate(windows_cpu_time_total{job="integrations/windows",instance!~"@catalogo:hosts@",mode="idle"}[5m])))
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (

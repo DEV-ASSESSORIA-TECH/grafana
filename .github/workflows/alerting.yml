@@ -12,6 +12,8 @@ on:
       - deploy/**
       - docs/**
       - scripts/alert_docs.py
+      - scripts/catalogo.py
+      - catalogo.yml
       - .github/workflows/alerting.yml
   pull_request:
     paths:
@@ -24,6 +26,8 @@ on:
       - deploy/**
       - docs/**
       - scripts/alert_docs.py
+      - scripts/catalogo.py
+      - catalogo.yml
       - .github/workflows/alerting.yml
 
 jobs:
@@ -35,6 +39,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install pyyaml
+      - name: Catalogo
+        run: python scripts/catalogo.py
       - run: python scripts/validate_alerting.py
       - name: Documentacao dos alertas
         run: python scripts/alert_docs.py --check

@@ -20,6 +20,7 @@ import sys
 
 import yaml
 
+import catalogo
 import contracts as ct
 from contracts import DATASOURCES, ROOT
 
@@ -69,12 +70,19 @@ for scope, required in scope_requires.items():
         errors.append(f"contracts/alerts/labels.yml: scope.requires[{scope}] invalido")
 
 
+CATALOGO, _cat_errors = catalogo.load()
+errors.extend(_cat_errors)
+
+
 def load_yaml(path):
     rel = path.relative_to(ROOT)
     raw = path.read_bytes()
     if b"\r" in raw:
         errors.append(f"{rel}: quebra de linha CRLF; usar LF")
     text = raw.decode("utf-8")
+    if "@catalogo" in text:
+        text, errs = catalogo.render(text, CATALOGO)
+        errors.extend(f"{rel}: {e}" for e in errs)
     if not text.strip():
         errors.append(f"{rel}: arquivo vazio")
         return []

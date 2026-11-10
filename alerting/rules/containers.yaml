@@ -23,9 +23,9 @@ groups:
               expr: |-
                 (
                   (
-                    group by (instance, name) (max_over_time(container_last_seen{job="integrations/docker",name!~"|grafana-alerting-temp"}[1d]))
+                    group by (instance, name) (max_over_time(container_last_seen{job="integrations/docker",name!~"|@catalogo:containers=ignorar@"}[1d]))
                     unless
-                    group by (instance, name) (container_last_seen{job="integrations/docker",name!~"|grafana-alerting-temp"})
+                    group by (instance, name) (container_last_seen{job="integrations/docker",name!~"|@catalogo:containers=ignorar@"})
                   )
                   and on (instance)
                   group by (instance) (up{job="integrations/docker"} == 1)
@@ -39,9 +39,9 @@ groups:
                 or
                 (
                   (
-                    group by (instance, name) (max_over_time(container_last_seen{job="integrations/docker",name!~"|grafana-alerting-temp"}[1d]))
+                    group by (instance, name) (max_over_time(container_last_seen{job="integrations/docker",name!~"|@catalogo:containers=ignorar@"}[1d]))
                     unless
-                    group by (instance, name) (container_last_seen{job="integrations/docker",name!~"|grafana-alerting-temp"})
+                    group by (instance, name) (container_last_seen{job="integrations/docker",name!~"|@catalogo:containers=ignorar@"})
                   )
                   and on (instance)
                   group by (instance) (up{job="integrations/docker"} == 1)
@@ -95,7 +95,7 @@ groups:
 
             Verifique com: docker ps -a e docker logs {{ $labels.name }}.
             Container removido de propósito some deste alerta depois de 24 horas (ou silencie).
-            O container temporário do deploy (grafana-alerting-temp) fica de fora.
+            Containers marcados como ignorar no catalogo.yml ficam de fora.
         labels:
           alert_code: CTR-101
           alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.name }} · {{ . }}{{ end }}'
@@ -120,9 +120,9 @@ groups:
               expr: |-
                 (
                   (
-                    container_health_state{job="integrations/docker",name!~"|grafana-alerting-temp"} != 1
+                    container_health_state{job="integrations/docker",name!~"|@catalogo:containers=ignorar@"} != 1
                     and
-                    container_health_state{job="integrations/docker",name!~"|grafana-alerting-temp"} != -1
+                    container_health_state{job="integrations/docker",name!~"|@catalogo:containers=ignorar@"} != -1
                   ) * 0 + 1
                 )
                 * on (instance) group_left (vm, hypervisor)
@@ -134,9 +134,9 @@ groups:
                 or
                 (
                   (
-                    container_health_state{job="integrations/docker",name!~"|grafana-alerting-temp"} != 1
+                    container_health_state{job="integrations/docker",name!~"|@catalogo:containers=ignorar@"} != 1
                     and
-                    container_health_state{job="integrations/docker",name!~"|grafana-alerting-temp"} != -1
+                    container_health_state{job="integrations/docker",name!~"|@catalogo:containers=ignorar@"} != -1
                   ) * 0 + 1
                 )
                 unless on (instance)
@@ -210,7 +210,7 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  changes(container_start_time_seconds{job="integrations/docker",name!~"|grafana-alerting-temp"}[1h])
+                  changes(container_start_time_seconds{job="integrations/docker",name!~"|@catalogo:containers=ignorar@"}[1h])
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -220,7 +220,7 @@ groups:
                 )
                 or
                 (
-                  changes(container_start_time_seconds{job="integrations/docker",name!~"|grafana-alerting-temp"}[1h])
+                  changes(container_start_time_seconds{job="integrations/docker",name!~"|@catalogo:containers=ignorar@"}[1h])
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (
@@ -293,7 +293,7 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  increase(container_oom_events_total{job="integrations/docker",name!~"|grafana-alerting-temp"}[10m])
+                  increase(container_oom_events_total{job="integrations/docker",name!~"|@catalogo:containers=ignorar@"}[10m])
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -303,7 +303,7 @@ groups:
                 )
                 or
                 (
-                  increase(container_oom_events_total{job="integrations/docker",name!~"|grafana-alerting-temp"}[10m])
+                  increase(container_oom_events_total{job="integrations/docker",name!~"|@catalogo:containers=ignorar@"}[10m])
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (

@@ -22,9 +22,9 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  group by (instance) (max_over_time(up{job="integrations/unix",instance=~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"}[7d]))
+                  group by (instance) (max_over_time(up{job="integrations/unix",instance=~"@catalogo:servidores=critico@"}[7d]))
                   unless
-                  group by (instance) (up{job="integrations/unix",instance=~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"} == 1)
+                  group by (instance) (up{job="integrations/unix",instance=~"@catalogo:servidores=critico@"} == 1)
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -34,9 +34,9 @@ groups:
                 )
                 or
                 (
-                  group by (instance) (max_over_time(up{job="integrations/unix",instance=~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"}[7d]))
+                  group by (instance) (max_over_time(up{job="integrations/unix",instance=~"@catalogo:servidores=critico@"}[7d]))
                   unless
-                  group by (instance) (up{job="integrations/unix",instance=~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"} == 1)
+                  group by (instance) (up{job="integrations/unix",instance=~"@catalogo:servidores=critico@"} == 1)
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (
@@ -114,9 +114,9 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  group by (instance) (max_over_time(up{job="integrations/unix",instance!~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"}[7d]))
+                  group by (instance) (max_over_time(up{job="integrations/unix",instance!~"@catalogo:servidores!=normal@"}[7d]))
                   unless
-                  group by (instance) (up{job="integrations/unix",instance!~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"} == 1)
+                  group by (instance) (up{job="integrations/unix",instance!~"@catalogo:servidores!=normal@"} == 1)
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -126,9 +126,9 @@ groups:
                 )
                 or
                 (
-                  group by (instance) (max_over_time(up{job="integrations/unix",instance!~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"}[7d]))
+                  group by (instance) (max_over_time(up{job="integrations/unix",instance!~"@catalogo:servidores!=normal@"}[7d]))
                   unless
-                  group by (instance) (up{job="integrations/unix",instance!~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"} == 1)
+                  group by (instance) (up{job="integrations/unix",instance!~"@catalogo:servidores!=normal@"} == 1)
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (

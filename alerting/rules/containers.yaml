@@ -1,0 +1,449 @@
+# Regras de alerta dos containers Docker. Codigos em contracts/alerts/codes.yml.
+# Labels: escrever $$labels (o provisionamento interpola variaveis de ambiente nos labels).
+# Annotations e consultas nao sao interpoladas: nelas, $labels.
+# Painel vinculado: annotations __dashboardUid__/__panelId__ (o Grafana ignora os campos dashboardUid/panelId).
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: containers-1m
+    folder: INFRA
+    interval: 1m
+    rules:
+      - uid: ctr-101
+        title: '[CTR-101] Container sumiu'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  (
+                    group by (instance, name) (max_over_time(container_last_seen{job="integrations/docker",name!~"|grafana-alerting-temp"}[1d]))
+                    unless
+                    group by (instance, name) (container_last_seen{job="integrations/docker",name!~"|grafana-alerting-temp"})
+                  )
+                  and on (instance)
+                  group by (instance) (up{job="integrations/docker"} == 1)
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  (
+                    group by (instance, name) (max_over_time(container_last_seen{job="integrations/docker",name!~"|grafana-alerting-temp"}[1d]))
+                    unless
+                    group by (instance, name) (container_last_seen{job="integrations/docker",name!~"|grafana-alerting-temp"})
+                  )
+                  and on (instance)
+                  group by (instance) (up{job="integrations/docker"} == 1)
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: 'Container {{ $labels.name }} sumiu de {{ $labels.instance }}'
+          description: |-
+            O container {{ $labels.name }} existia em {{ $labels.instance }} nas últimas 24 horas e não está mais em execução.
+
+            Verifique com: docker ps -a e docker logs {{ $labels.name }}.
+            Container removido de propósito some deste alerta depois de 24 horas (ou silencie).
+            O container temporário do deploy (grafana-alerting-temp) fica de fora.
+        labels:
+          alert_code: CTR-101
+          severity: warning
+          area: containers
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: ctr-102
+        title: '[CTR-102] Container unhealthy'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  (
+                    container_health_state{job="integrations/docker",name!~"|grafana-alerting-temp"} != 1
+                    and
+                    container_health_state{job="integrations/docker",name!~"|grafana-alerting-temp"} != -1
+                  ) * 0 + 1
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  (
+                    container_health_state{job="integrations/docker",name!~"|grafana-alerting-temp"} != 1
+                    and
+                    container_health_state{job="integrations/docker",name!~"|grafana-alerting-temp"} != -1
+                  ) * 0 + 1
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 3m
+        annotations:
+          summary: 'Container {{ $labels.name }} unhealthy em {{ $labels.instance }}'
+          description: |-
+            O healthcheck do container {{ $labels.name }} em {{ $labels.instance }} está falhando.
+
+            Verifique com: docker inspect {{ $labels.name }} (seção State.Health) e docker logs {{ $labels.name }}.
+        labels:
+          alert_code: CTR-102
+          severity: warning
+          area: containers
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: ctr-103
+        title: '[CTR-103] Container em loop de reinício'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  changes(container_start_time_seconds{job="integrations/docker",name!~"|grafana-alerting-temp"}[1h])
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  changes(container_start_time_seconds{job="integrations/docker",name!~"|grafana-alerting-temp"}[1h])
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 3
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          summary: 'Container {{ $labels.name }} reiniciando em {{ $labels.instance }}'
+          description: |-
+            O container {{ $labels.name }} em {{ $labels.instance }} reiniciou {{ humanize $values.A.Value }} vezes na última hora.
+
+            Verifique os logs do container (docker logs {{ $labels.name }}) e a memória disponível.
+        labels:
+          alert_code: CTR-103
+          severity: warning
+          area: containers
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: ctr-104
+        title: '[CTR-104] Container morto por falta de memória'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  increase(container_oom_events_total{job="integrations/docker",name!~"|grafana-alerting-temp"}[10m])
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  increase(container_oom_events_total{job="integrations/docker",name!~"|grafana-alerting-temp"}[10m])
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          summary: 'Container {{ $labels.name }} morto por falta de memória em {{ $labels.instance }}'
+          description: |-
+            O kernel matou um processo do container {{ $labels.name }} em {{ $labels.instance }} por falta de memória (OOM).
+
+            Aumente o limite de memória do container ou a memória da VM.
+        labels:
+          alert_code: CTR-104
+          severity: warning
+          area: containers
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: ctr-301
+        title: '[CTR-301] Coleta de containers parada'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  (
+                    group by (instance) (max_over_time(up{job="integrations/docker"}[1d]))
+                    unless
+                    group by (instance) (up{job="integrations/docker"} == 1)
+                  )
+                  and on (instance)
+                  group by (instance) (up{job="integrations/unix"} == 1)
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  (
+                    group by (instance) (max_over_time(up{job="integrations/docker"}[1d]))
+                    unless
+                    group by (instance) (up{job="integrations/docker"} == 1)
+                  )
+                  and on (instance)
+                  group by (instance) (up{job="integrations/unix"} == 1)
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          summary: 'Coleta de containers parada em {{ $labels.instance }}'
+          description: |-
+            O servidor {{ $labels.instance }} continua enviando métricas, mas as métricas dos containers (cAdvisor no Alloy) pararam.
+
+            Enquanto isso, os alertas CTR deste servidor não funcionam. Verifique o módulo Docker do Alloy (alloy.sh, opção Ativar Docker).
+        labels:
+          alert_code: CTR-301
+          severity: warning
+          area: containers
+          scope: collection
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false

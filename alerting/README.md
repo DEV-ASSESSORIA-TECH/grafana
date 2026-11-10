@@ -4,7 +4,7 @@ Regras, mute timings, templates e inibição do Grafana Alerting (Grafana 13.3.0
 
 | Pasta | Conteúdo | Como chega ao Grafana | Editável na UI |
 |---|---|---|---|
-| `rules/` | Grupos e regras de alerta, um arquivo por área (`hypervisor.yaml`) | Provisionamento por arquivo | Não |
+| `rules/` | Grupos e regras de alerta, um arquivo por área | Provisionamento por arquivo | Não |
 | `notifications/` | Mute timings e templates | Provisionamento por arquivo | Não (mas usáveis na UI) |
 | `inhibition/` | Regras de inibição (`InhibitionRule`) | App Platform API | Não existe UI |
 | — | Notification policies e contact points | UI | Sim |
@@ -14,6 +14,27 @@ Contratos em `contracts/alerts/`:
 - `labels.yml`: labels obrigatórios (`alert_code`, `severity`, `area`, `scope`), chaves de dependência (`dep_hypervisor`, `dep_vm`), chave canônica e receitas de consulta.
 - `codes.yml`: catálogo de códigos (código → UID, título, severidade, scope, runbook).
 - `notifications.yml`: o que vem do repositório e o que fica na UI, e os labels disponíveis para roteamento.
+
+## Cobertura
+
+Todas as regras ficam na pasta INFRA do Grafana, um grupo por arquivo. O catálogo completo está em `contracts/alerts/codes.yml`.
+
+| Arquivo | Grupo | Cobre |
+|---|---|---|
+| `hypervisor.yaml` | `hypervisor-1m`, `storage-1m`, `hypervisor-extra-1m` | Hosts Hyper-V (métricas, heartbeat, disco, F: de backup, memória, CPU, serviços vmms/vmcompute, horário e desligamento inesperado pelo Event Log), estado das VMs, inventário, VMs sem agente |
+| `windows.yaml` | `windows-1m` | Servidores Windows convidados: sem métricas, serviços do AD, de aplicação e em curadoria, reinício, disco, memória, commit, CPU |
+| `linux.yaml` | `linux-1m` | Servidores Linux: sem métricas, systemd, reinício, filesystem (uso, previsão de 24 h, somente leitura, inodes), memória, swap, CPU, relógio |
+| `containers.yaml` | `containers-1m` | Containers Docker: sumiu, unhealthy, loop de reinício, OOM, coleta parada |
+| `servicos.yaml` | `servicos-1m` | Uptime Kuma: serviços por criticidade, externos (15 min de tolerância), certificados, Kuma sem métricas |
+| `monitoramento.yaml` | `monitoramento-5m` | Prometheus: configuração inválida, falha de compactação |
+
+**Decisões que estão nas consultas** (mude aqui quando mudar a operação):
+
+- **Classificação das VMs** (crítica/importante/informativa): listas de nomes em HYP-111/112/113 e, em minúsculas, em WIN-101/102 e LIN-101/102. Nesses dois, "crítica" vira `critical` e o resto `warning`. Ao reclassificar uma VM, atualize as quatro listas.
+- **Volume F: do srv-host01 (backups):** fora de HYP-201/202; tem limite próprio em GiB livres (HYP-203 < 200, HYP-204 < 100).
+- **Serviços Windows:** WIN-110 (AD, critical), WIN-111 (aplicação, warning) e WIN-112 (em curadoria, info) têm listas fixas por servidor. Serviço automático parado fora dessas listas não alerta.
+- **Excluídos de propósito:** unidades `fwupd*` (LIN-110), o container `grafana-alerting-temp` do deploy (CTR) e a memória total dos hosts Hyper-V (em host, use HYP-205).
+- **"Sem métricas" e "container sumiu"** comparam com o que existia nos últimos 7 dias e 24 horas: servidor ou container desativado de propósito para de alertar depois desse prazo (ou silencie antes).
 
 ## Padrão das regras
 

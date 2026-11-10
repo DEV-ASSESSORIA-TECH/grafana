@@ -639,6 +639,8 @@ groups:
                     volume=~"[A-Z]:"
                   }
                 )
+                unless on (instance, volume)
+                windows_logical_disk_free_bytes{job="integrations/windows",instance="srv-host01",volume="F:"}
               instant: true
               intervalMs: 1000
               legendFormat: __auto
@@ -684,6 +686,8 @@ groups:
             Volumes cheios impedem o crescimento dos discos virtuais dinâmicos e podem pausar as VMs.
 
             Verifique checkpoints antigos, discos virtuais sobrando e arquivos temporários no volume.
+
+            O volume F: do srv-host01 (backups) fica de fora: tem limite próprio em espaço livre (HYP-203/204).
         labels:
           alert_code: HYP-201
           severity: warning
@@ -718,6 +722,8 @@ groups:
                     volume=~"[A-Z]:"
                   }
                 )
+                unless on (instance, volume)
+                windows_logical_disk_free_bytes{job="integrations/windows",instance="srv-host01",volume="F:"}
               instant: true
               intervalMs: 1000
               legendFormat: __auto
@@ -763,10 +769,547 @@ groups:
             Com o volume cheio, discos virtuais dinâmicos não crescem e o Hyper-V pausa as VMs afetadas.
 
             Libere espaço imediatamente: checkpoints antigos, discos virtuais sobrando e arquivos temporários no volume.
+
+            O volume F: do srv-host01 (backups) fica de fora: tem limite próprio em espaço livre (HYP-203/204).
         labels:
           alert_code: HYP-202
           severity: critical
           area: hypervisor
           scope: hypervisor
           dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+  - orgId: 1
+    name: hypervisor-extra-1m
+    folder: INFRA
+    interval: 1m
+    rules:
+      - uid: hyp-203
+        title: '[HYP-203] Disco de backup do host com pouco espaço'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: 'windows_logical_disk_free_bytes{job="integrations/windows",instance="srv-host01",volume="F:"} / 2^30'
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 200
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "17"
+          summary: 'Volume F: do srv-host01 com {{ humanize $values.A.Value }} GiB livres'
+          description: |-
+            O volume F: (backups) do srv-host01 está com menos de 200 GiB livres.
+
+            O padrão é oscilar entre 740 e 300 GiB livres conforme o fluxo de backup; o menor valor visto em 15 dias foi 240 GiB.
+            Verifique se a retenção de backups está sendo aplicada.
+        labels:
+          alert_code: HYP-203
+          severity: warning
+          area: hypervisor
+          scope: hypervisor
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: hyp-204
+        title: '[HYP-204] Disco de backup do host quase cheio'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: 'windows_logical_disk_free_bytes{job="integrations/windows",instance="srv-host01",volume="F:"} / 2^30'
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 100
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "17"
+          summary: 'Volume F: do srv-host01 com {{ humanize $values.A.Value }} GiB livres'
+          description: |-
+            O volume F: (backups) do srv-host01 está com menos de 100 GiB livres. O próximo backup pode falhar.
+
+            Aplique a retenção ou remova backups antigos.
+        labels:
+          alert_code: HYP-204
+          severity: critical
+          area: hypervisor
+          scope: hypervisor
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: hyp-205
+        title: '[HYP-205] Memória do host Hyper-V esgotando'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: 'windows_memory_available_bytes{job="integrations/windows",instance=~"srv-host01|srv-host01-mtc"} / 2^30'
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 2
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "15"
+          summary: 'Host {{ $labels.instance }} com {{ humanize $values.A.Value }} GiB de memória livre'
+          description: |-
+            O host Hyper-V {{ $labels.instance }} está com menos de 2 GiB de memória disponível.
+
+            A memória do host fica quase toda com as VMs (isso é normal); abaixo de 2 GiB, VMs novas não ligam e a memória dinâmica não consegue crescer.
+            O menor valor visto em 7 dias foi 4,3 GiB (srv-host01) e 3,4 GiB (srv-host01-mtc).
+        labels:
+          alert_code: HYP-205
+          severity: warning
+          area: hypervisor
+          scope: hypervisor
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: hyp-206
+        title: '[HYP-206] CPU do host Hyper-V alta'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: '100 * (1 - avg by (instance) (rate(windows_cpu_time_total{job="integrations/windows",instance=~"srv-host01|srv-host01-mtc",mode="idle"}[5m])))'
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 90
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 30m
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "14"
+          summary: 'CPU do host {{ $labels.instance }} acima de 90%'
+          description: |-
+            A CPU do host Hyper-V {{ $labels.instance }} está em {{ humanize $values.A.Value }}% há mais de 30 minutos.
+
+            Todas as VMs do host ficam lentas. Verifique as VMs que mais consomem CPU (painel CPU por VM).
+        labels:
+          alert_code: HYP-206
+          severity: warning
+          area: hypervisor
+          scope: hypervisor
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: hyp-140
+        title: '[HYP-140] Serviço do Hyper-V parado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: 'windows_service_state{job="integrations/windows",state="running",instance=~"srv-host01|srv-host01-mtc",name=~"vmms|vmcompute"}'
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "30"
+          summary: 'Serviço {{ $labels.name }} parado no host {{ $labels.instance }}'
+          description: |-
+            O serviço {{ $labels.name }} do Hyper-V não está em execução no host {{ $labels.instance }}.
+
+            Sem o vmms não é possível gerenciar, ligar ou migrar VMs. Verifique o serviço e o Event Log do Hyper-V-VMMS.
+        labels:
+          alert_code: HYP-140
+          severity: critical
+          area: hypervisor
+          scope: hypervisor
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: hyp-303
+        title: '[HYP-303] VM ligada sem monitoramento do convidado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                max by (instance, vm, guest_host) (hypervisor_vm_info{job="integrations/hypervisor"})
+                * on (instance, vm) group_left ()
+                max by (instance, vm) (hypervisor_vm_state{job="integrations/hypervisor",state="running"} == 1)
+                unless on (guest_host)
+                label_replace(
+                  group by (instance) (up{job="integrations/windows"} or up{job="integrations/unix"}),
+                  "guest_host", "$1", "instance", "(.+)")
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 30m
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "39"
+          summary: 'VM {{ $labels.vm }} ligada sem agente de monitoramento'
+          description: |-
+            A VM {{ $labels.vm }} está ligada no host {{ $labels.instance }}, mas o sistema dela não envia métricas (sem Grafana Alloy).
+
+            Registro informativo: disco, memória e serviços dessa VM não são monitorados. Instale o Alloy se ela passar a ser relevante.
+        labels:
+          alert_code: HYP-303
+          severity: info
+          area: hypervisor
+          scope: collection
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: hyp-130
+        title: '[HYP-130] Host Hyper-V sem sincronizar o horário'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 7200
+              to: 0
+            datasourceUid: loki
+            model:
+              editorMode: code
+              queryType: instant
+              expr: |-
+                sum by (host) (count_over_time(
+                  {job="windows-eventlog", host=~"srv-host01|srv-host01-mtc"}
+                  | json source, event_id
+                  | source="Microsoft-Windows-Time-Service" | event_id=~"129|134|36|47"
+                  [2h]
+                ))
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "30"
+          summary: 'Host {{ $labels.host }} sem sincronizar o horário'
+          description: |-
+            O serviço de horário do host {{ $labels.host }} registrou falhas repetidas de sincronização nas últimas 2 horas (Time-Service 129/134/36/47).
+
+            O host entrega o horário às VMs (integração do Hyper-V), inclusive aos controladores de domínio. Horário errado quebra Kerberos e certificados.
+            Verifique: w32tm /query /status e w32tm /resync.
+        labels:
+          alert_code: HYP-130
+          severity: warning
+          area: hypervisor
+          scope: hypervisor
+          dep_hypervisor: '{{ with $$labels.host }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: hyp-131
+        title: '[HYP-131] Host Hyper-V desligado inesperadamente'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 7200
+              to: 0
+            datasourceUid: loki
+            model:
+              editorMode: code
+              queryType: instant
+              expr: |-
+                sum by (host) (count_over_time(
+                  {job="windows-eventlog", host=~"srv-host01|srv-host01-mtc"}
+                  | json source, event_id
+                  | (source="Microsoft-Windows-Kernel-Power" and event_id="41")
+                    or (source="EventLog" and event_id="6008")
+                    or (source="Microsoft-Windows-WER-SystemErrorReporting" and event_id="1001")
+                  [30m]
+                ))
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "30"
+          summary: 'Host {{ $labels.host }} reiniciou após desligamento inesperado'
+          description: |-
+            O host {{ $labels.host }} registrou um desligamento inesperado (Kernel-Power 41, EventLog 6008 ou tela azul) nos últimos 30 minutos.
+
+            Todas as VMs do host foram derrubadas. Confirme que voltaram e investigue a causa (dump de memória, drivers, energia).
+        labels:
+          alert_code: HYP-131
+          severity: critical
+          area: hypervisor
+          scope: hypervisor
+          dep_hypervisor: '{{ with $$labels.host }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
         isPaused: false

@@ -38,10 +38,10 @@
         "spec": {
           "id": 1,
           "title": "Linux",
-          "description": "",
+          "description": "Servidores reportando agora sobre o total visto recentemente (laranja quando falta algum), e alertas ativos da área linux. A borda tem a cor do pior alerta. Clique no título para abrir.",
           "links": [
             {
-              "title": "Abrir o dashboard de Linux",
+              "title": "Abrir Linux",
               "url": "/grafana/d/servers-linux",
               "targetBlank": false
             }
@@ -65,7 +65,7 @@
                         "expr": "count(up{job=\"integrations/unix\"} == 1) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "no ar",
+                        "legendFormat": "noar",
                         "range": false
                       }
                     },
@@ -85,10 +85,10 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"linux\",severity=\"critical\"}) or vector(0)",
+                        "expr": "count(group by (instance) (max_over_time(up{job=\"integrations/unix\"}[7d])))",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "críticos",
+                        "legendFormat": "total",
                         "range": false
                       }
                     },
@@ -108,14 +108,83 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"linux\",severity=\"warning\"}) or vector(0)",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"linux\",severity=\"critical\"}) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "avisos",
+                        "legendFormat": "crit",
                         "range": false
                       }
                     },
                     "refId": "C",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"linux\",severity=\"warning\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "warn",
+                        "range": false
+                      }
+                    },
+                    "refId": "D",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "(count(group by (instance) (max_over_time(up{job=\"integrations/unix\"}[7d])))) - (count(up{job=\"integrations/unix\"} == 1) or vector(0))",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "faltando",
+                        "range": false
+                      }
+                    },
+                    "refId": "E",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"linux\",severity=\"critical\"}) or vector(0)) > bool 0) * 2 + ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"linux\",severity=\"warning\"}) or vector(0)) > bool 0) * ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"linux\",severity=\"critical\"}) or vector(0)) == bool 0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "estado",
+                        "range": false
+                      }
+                    },
+                    "refId": "F",
                     "hidden": false
                   }
                 }
@@ -126,28 +195,222 @@
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "stat",
+            "group": "canvas",
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "vertical",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
+                "inlineEditing": false,
+                "showAdvancedTypes": false,
+                "panZoom": false,
+                "infinitePan": false,
+                "root": {
+                  "type": "frame",
+                  "name": "Element root",
+                  "elements": [
+                    {
+                      "type": "metric-value",
+                      "name": "no ar",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "noar"
+                        },
+                        "size": 34,
+                        "color": {
+                          "field": "faltando",
+                          "fixed": "#ffffff"
+                        },
+                        "align": "right",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": 22,
+                        "left": 38,
+                        "width": 110,
+                        "height": 44
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "metric-value",
+                      "name": "total",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "total"
+                        },
+                        "size": 20,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "left",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": 18,
+                        "left": -48,
+                        "width": 60,
+                        "height": 34
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "legenda",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "servidores reportando"
+                        },
+                        "size": 11,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -8,
+                        "left": 0,
+                        "width": 220,
+                        "height": 18
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "criticos",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "crit"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -34,
+                        "left": 52,
+                        "width": 96,
+                        "height": 22
+                      },
+                      "background": {
+                        "color": {
+                          "field": "crit",
+                          "fixed": "#2F333A"
+                        }
+                      },
+                      "border": {
+                        "radius": 3,
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "avisos",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "warn"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -34,
+                        "left": -52,
+                        "width": 96,
+                        "height": 22
+                      },
+                      "background": {
+                        "color": {
+                          "field": "warn",
+                          "fixed": "#2F333A"
+                        }
+                      },
+                      "border": {
+                        "radius": 3,
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    }
                   ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 11,
-                  "valueSize": 22
-                },
-                "textMode": "value_and_name",
-                "wideLayout": true
+                  "background": {
+                    "color": {
+                      "fixed": "transparent"
+                    }
+                  },
+                  "border": {
+                    "color": {
+                      "field": "estado",
+                      "fixed": "#73BF69"
+                    },
+                    "width": 2,
+                    "radius": 4
+                  },
+                  "constraint": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                }
               },
               "fieldConfig": {
                 "defaults": {
@@ -159,36 +422,158 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "#73BF69"
-                      },
-                      {
-                        "value": 1,
-                        "color": "#F2495C"
+                        "color": "#ffffff"
                       }
                     ]
-                  },
-                  "decimals": 0
+                  }
                 },
                 "overrides": [
                   {
                     "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "A"
+                      "id": "byName",
+                      "options": "total"
                     },
                     "properties": [
                       {
-                        "id": "color",
+                        "id": "unit",
+                        "value": "prefix:/"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "faltando"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "text"
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#ffffff"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#FF9830"
+                            }
+                          ]
                         }
                       }
                     ]
                   },
                   {
                     "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "C"
+                      "id": "byName",
+                      "options": "crit"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#2F333A"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#C4162A"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "text": "0 críticos",
+                                "index": 0
+                              },
+                              "1": {
+                                "text": "1 crítico",
+                                "index": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": 2,
+                              "to": 1000000000.0,
+                              "result": {
+                                "text": "${__value.raw} críticos",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "warn"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#2F333A"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#E0752D"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "text": "0 avisos",
+                                "index": 0
+                              },
+                              "1": {
+                                "text": "1 aviso",
+                                "index": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": 2,
+                              "to": 1000000000.0,
+                              "result": {
+                                "text": "${__value.raw} avisos",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "estado"
                     },
                     "properties": [
                       {
@@ -203,6 +588,10 @@
                             {
                               "value": 1,
                               "color": "#FF9830"
+                            },
+                            {
+                              "value": 2,
+                              "color": "#F2495C"
                             }
                           ]
                         }
@@ -220,10 +609,10 @@
         "spec": {
           "id": 2,
           "title": "Windows",
-          "description": "",
+          "description": "Servidores reportando agora sobre o total visto recentemente (laranja quando falta algum), e alertas ativos da área windows. A borda tem a cor do pior alerta. Clique no título para abrir.",
           "links": [
             {
-              "title": "Abrir o dashboard de Windows",
+              "title": "Abrir Windows",
               "url": "/grafana/d/servers-windows",
               "targetBlank": false
             }
@@ -247,7 +636,7 @@
                         "expr": "count(up{job=\"integrations/windows\",instance!~\"srv-host01|srv-host01-mtc\"} == 1) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "no ar",
+                        "legendFormat": "noar",
                         "range": false
                       }
                     },
@@ -267,10 +656,10 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"windows\",severity=\"critical\"}) or vector(0)",
+                        "expr": "count(group by (instance) (max_over_time(up{job=\"integrations/windows\",instance!~\"srv-host01|srv-host01-mtc\"}[7d])))",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "críticos",
+                        "legendFormat": "total",
                         "range": false
                       }
                     },
@@ -290,14 +679,83 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"windows\",severity=\"warning\"}) or vector(0)",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"windows\",severity=\"critical\"}) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "avisos",
+                        "legendFormat": "crit",
                         "range": false
                       }
                     },
                     "refId": "C",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"windows\",severity=\"warning\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "warn",
+                        "range": false
+                      }
+                    },
+                    "refId": "D",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "(count(group by (instance) (max_over_time(up{job=\"integrations/windows\",instance!~\"srv-host01|srv-host01-mtc\"}[7d])))) - (count(up{job=\"integrations/windows\",instance!~\"srv-host01|srv-host01-mtc\"} == 1) or vector(0))",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "faltando",
+                        "range": false
+                      }
+                    },
+                    "refId": "E",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"windows\",severity=\"critical\"}) or vector(0)) > bool 0) * 2 + ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"windows\",severity=\"warning\"}) or vector(0)) > bool 0) * ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"windows\",severity=\"critical\"}) or vector(0)) == bool 0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "estado",
+                        "range": false
+                      }
+                    },
+                    "refId": "F",
                     "hidden": false
                   }
                 }
@@ -308,28 +766,222 @@
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "stat",
+            "group": "canvas",
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "vertical",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
+                "inlineEditing": false,
+                "showAdvancedTypes": false,
+                "panZoom": false,
+                "infinitePan": false,
+                "root": {
+                  "type": "frame",
+                  "name": "Element root",
+                  "elements": [
+                    {
+                      "type": "metric-value",
+                      "name": "no ar",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "noar"
+                        },
+                        "size": 34,
+                        "color": {
+                          "field": "faltando",
+                          "fixed": "#ffffff"
+                        },
+                        "align": "right",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": 22,
+                        "left": 38,
+                        "width": 110,
+                        "height": 44
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "metric-value",
+                      "name": "total",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "total"
+                        },
+                        "size": 20,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "left",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": 18,
+                        "left": -48,
+                        "width": 60,
+                        "height": 34
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "legenda",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "servidores reportando"
+                        },
+                        "size": 11,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -8,
+                        "left": 0,
+                        "width": 220,
+                        "height": 18
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "criticos",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "crit"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -34,
+                        "left": 52,
+                        "width": 96,
+                        "height": 22
+                      },
+                      "background": {
+                        "color": {
+                          "field": "crit",
+                          "fixed": "#2F333A"
+                        }
+                      },
+                      "border": {
+                        "radius": 3,
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "avisos",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "warn"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -34,
+                        "left": -52,
+                        "width": 96,
+                        "height": 22
+                      },
+                      "background": {
+                        "color": {
+                          "field": "warn",
+                          "fixed": "#2F333A"
+                        }
+                      },
+                      "border": {
+                        "radius": 3,
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    }
                   ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 11,
-                  "valueSize": 22
-                },
-                "textMode": "value_and_name",
-                "wideLayout": true
+                  "background": {
+                    "color": {
+                      "fixed": "transparent"
+                    }
+                  },
+                  "border": {
+                    "color": {
+                      "field": "estado",
+                      "fixed": "#73BF69"
+                    },
+                    "width": 2,
+                    "radius": 4
+                  },
+                  "constraint": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                }
               },
               "fieldConfig": {
                 "defaults": {
@@ -341,36 +993,158 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "#73BF69"
-                      },
-                      {
-                        "value": 1,
-                        "color": "#F2495C"
+                        "color": "#ffffff"
                       }
                     ]
-                  },
-                  "decimals": 0
+                  }
                 },
                 "overrides": [
                   {
                     "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "A"
+                      "id": "byName",
+                      "options": "total"
                     },
                     "properties": [
                       {
-                        "id": "color",
+                        "id": "unit",
+                        "value": "prefix:/"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "faltando"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "text"
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#ffffff"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#FF9830"
+                            }
+                          ]
                         }
                       }
                     ]
                   },
                   {
                     "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "C"
+                      "id": "byName",
+                      "options": "crit"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#2F333A"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#C4162A"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "text": "0 críticos",
+                                "index": 0
+                              },
+                              "1": {
+                                "text": "1 crítico",
+                                "index": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": 2,
+                              "to": 1000000000.0,
+                              "result": {
+                                "text": "${__value.raw} críticos",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "warn"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#2F333A"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#E0752D"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "text": "0 avisos",
+                                "index": 0
+                              },
+                              "1": {
+                                "text": "1 aviso",
+                                "index": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": 2,
+                              "to": 1000000000.0,
+                              "result": {
+                                "text": "${__value.raw} avisos",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "estado"
                     },
                     "properties": [
                       {
@@ -385,6 +1159,10 @@
                             {
                               "value": 1,
                               "color": "#FF9830"
+                            },
+                            {
+                              "value": 2,
+                              "color": "#F2495C"
                             }
                           ]
                         }
@@ -402,10 +1180,10 @@
         "spec": {
           "id": 3,
           "title": "Hyper-V",
-          "description": "",
+          "description": "Hosts com inventário agora sobre o total visto recentemente (laranja quando falta algum), e alertas ativos da área hypervisor. A borda tem a cor do pior alerta. Clique no título para abrir.",
           "links": [
             {
-              "title": "Abrir o dashboard de Hyper-V",
+              "title": "Abrir Hyper-V",
               "url": "/grafana/d/hypervisors",
               "targetBlank": false
             }
@@ -429,7 +1207,7 @@
                         "expr": "count(up{job=\"integrations/hypervisor\"} == 1) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "hosts",
+                        "legendFormat": "noar",
                         "range": false
                       }
                     },
@@ -449,10 +1227,10 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"hypervisor\",severity=\"critical\"}) or vector(0)",
+                        "expr": "count(group by (instance) (max_over_time(up{job=\"integrations/hypervisor\"}[7d])))",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "críticos",
+                        "legendFormat": "total",
                         "range": false
                       }
                     },
@@ -472,14 +1250,83 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"hypervisor\",severity=\"warning\"}) or vector(0)",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"hypervisor\",severity=\"critical\"}) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "avisos",
+                        "legendFormat": "crit",
                         "range": false
                       }
                     },
                     "refId": "C",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"hypervisor\",severity=\"warning\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "warn",
+                        "range": false
+                      }
+                    },
+                    "refId": "D",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "(count(group by (instance) (max_over_time(up{job=\"integrations/hypervisor\"}[7d])))) - (count(up{job=\"integrations/hypervisor\"} == 1) or vector(0))",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "faltando",
+                        "range": false
+                      }
+                    },
+                    "refId": "E",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"hypervisor\",severity=\"critical\"}) or vector(0)) > bool 0) * 2 + ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"hypervisor\",severity=\"warning\"}) or vector(0)) > bool 0) * ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"hypervisor\",severity=\"critical\"}) or vector(0)) == bool 0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "estado",
+                        "range": false
+                      }
+                    },
+                    "refId": "F",
                     "hidden": false
                   }
                 }
@@ -490,28 +1337,222 @@
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "stat",
+            "group": "canvas",
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "vertical",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
+                "inlineEditing": false,
+                "showAdvancedTypes": false,
+                "panZoom": false,
+                "infinitePan": false,
+                "root": {
+                  "type": "frame",
+                  "name": "Element root",
+                  "elements": [
+                    {
+                      "type": "metric-value",
+                      "name": "no ar",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "noar"
+                        },
+                        "size": 34,
+                        "color": {
+                          "field": "faltando",
+                          "fixed": "#ffffff"
+                        },
+                        "align": "right",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": 22,
+                        "left": 38,
+                        "width": 110,
+                        "height": 44
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "metric-value",
+                      "name": "total",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "total"
+                        },
+                        "size": 20,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "left",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": 18,
+                        "left": -48,
+                        "width": 60,
+                        "height": 34
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "legenda",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "hosts com inventário"
+                        },
+                        "size": 11,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -8,
+                        "left": 0,
+                        "width": 220,
+                        "height": 18
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "criticos",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "crit"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -34,
+                        "left": 52,
+                        "width": 96,
+                        "height": 22
+                      },
+                      "background": {
+                        "color": {
+                          "field": "crit",
+                          "fixed": "#2F333A"
+                        }
+                      },
+                      "border": {
+                        "radius": 3,
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "avisos",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "warn"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -34,
+                        "left": -52,
+                        "width": 96,
+                        "height": 22
+                      },
+                      "background": {
+                        "color": {
+                          "field": "warn",
+                          "fixed": "#2F333A"
+                        }
+                      },
+                      "border": {
+                        "radius": 3,
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    }
                   ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 11,
-                  "valueSize": 22
-                },
-                "textMode": "value_and_name",
-                "wideLayout": true
+                  "background": {
+                    "color": {
+                      "fixed": "transparent"
+                    }
+                  },
+                  "border": {
+                    "color": {
+                      "field": "estado",
+                      "fixed": "#73BF69"
+                    },
+                    "width": 2,
+                    "radius": 4
+                  },
+                  "constraint": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                }
               },
               "fieldConfig": {
                 "defaults": {
@@ -523,36 +1564,158 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "#73BF69"
-                      },
-                      {
-                        "value": 1,
-                        "color": "#F2495C"
+                        "color": "#ffffff"
                       }
                     ]
-                  },
-                  "decimals": 0
+                  }
                 },
                 "overrides": [
                   {
                     "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "A"
+                      "id": "byName",
+                      "options": "total"
                     },
                     "properties": [
                       {
-                        "id": "color",
+                        "id": "unit",
+                        "value": "prefix:/"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "faltando"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "text"
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#ffffff"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#FF9830"
+                            }
+                          ]
                         }
                       }
                     ]
                   },
                   {
                     "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "C"
+                      "id": "byName",
+                      "options": "crit"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#2F333A"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#C4162A"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "text": "0 críticos",
+                                "index": 0
+                              },
+                              "1": {
+                                "text": "1 crítico",
+                                "index": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": 2,
+                              "to": 1000000000.0,
+                              "result": {
+                                "text": "${__value.raw} críticos",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "warn"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#2F333A"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#E0752D"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "text": "0 avisos",
+                                "index": 0
+                              },
+                              "1": {
+                                "text": "1 aviso",
+                                "index": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": 2,
+                              "to": 1000000000.0,
+                              "result": {
+                                "text": "${__value.raw} avisos",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "estado"
                     },
                     "properties": [
                       {
@@ -567,6 +1730,10 @@
                             {
                               "value": 1,
                               "color": "#FF9830"
+                            },
+                            {
+                              "value": 2,
+                              "color": "#F2495C"
                             }
                           ]
                         }
@@ -584,10 +1751,10 @@
         "spec": {
           "id": 4,
           "title": "Serviços",
-          "description": "",
+          "description": "Serviços no ar agora sobre o total visto recentemente (laranja quando falta algum), e alertas ativos da área servicos. A borda tem a cor do pior alerta. Clique no título para abrir.",
           "links": [
             {
-              "title": "Abrir o dashboard de Serviços",
+              "title": "Abrir Serviços",
               "url": "/grafana/d/servicos",
               "targetBlank": false
             }
@@ -608,10 +1775,10 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\"} == 1) or vector(0)",
+                        "expr": "count(max by (monitor_id) (monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\"}) == 1) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "no ar",
+                        "legendFormat": "noar",
                         "range": false
                       }
                     },
@@ -631,10 +1798,10 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"servicos\",severity=\"critical\"}) or vector(0)",
+                        "expr": "count(group by (monitor_id) (max_over_time(monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\"}[1d])))",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "críticos",
+                        "legendFormat": "total",
                         "range": false
                       }
                     },
@@ -654,14 +1821,83 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"servicos\",severity=\"warning\"}) or vector(0)",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"servicos\",severity=\"critical\"}) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "avisos",
+                        "legendFormat": "crit",
                         "range": false
                       }
                     },
                     "refId": "C",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"servicos\",severity=\"warning\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "warn",
+                        "range": false
+                      }
+                    },
+                    "refId": "D",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "(count(group by (monitor_id) (max_over_time(monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\"}[1d])))) - (count(max by (monitor_id) (monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\"}) == 1) or vector(0))",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "faltando",
+                        "range": false
+                      }
+                    },
+                    "refId": "E",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"servicos\",severity=\"critical\"}) or vector(0)) > bool 0) * 2 + ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"servicos\",severity=\"warning\"}) or vector(0)) > bool 0) * ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"servicos\",severity=\"critical\"}) or vector(0)) == bool 0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "estado",
+                        "range": false
+                      }
+                    },
+                    "refId": "F",
                     "hidden": false
                   }
                 }
@@ -672,28 +1908,222 @@
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "stat",
+            "group": "canvas",
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "vertical",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
+                "inlineEditing": false,
+                "showAdvancedTypes": false,
+                "panZoom": false,
+                "infinitePan": false,
+                "root": {
+                  "type": "frame",
+                  "name": "Element root",
+                  "elements": [
+                    {
+                      "type": "metric-value",
+                      "name": "no ar",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "noar"
+                        },
+                        "size": 34,
+                        "color": {
+                          "field": "faltando",
+                          "fixed": "#ffffff"
+                        },
+                        "align": "right",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": 22,
+                        "left": 38,
+                        "width": 110,
+                        "height": 44
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "metric-value",
+                      "name": "total",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "total"
+                        },
+                        "size": 20,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "left",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": 18,
+                        "left": -48,
+                        "width": 60,
+                        "height": 34
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "legenda",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "serviços no ar"
+                        },
+                        "size": 11,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -8,
+                        "left": 0,
+                        "width": 220,
+                        "height": 18
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "criticos",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "crit"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -34,
+                        "left": 52,
+                        "width": 96,
+                        "height": 22
+                      },
+                      "background": {
+                        "color": {
+                          "field": "crit",
+                          "fixed": "#2F333A"
+                        }
+                      },
+                      "border": {
+                        "radius": 3,
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "avisos",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "warn"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -34,
+                        "left": -52,
+                        "width": 96,
+                        "height": 22
+                      },
+                      "background": {
+                        "color": {
+                          "field": "warn",
+                          "fixed": "#2F333A"
+                        }
+                      },
+                      "border": {
+                        "radius": 3,
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    }
                   ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 11,
-                  "valueSize": 22
-                },
-                "textMode": "value_and_name",
-                "wideLayout": true
+                  "background": {
+                    "color": {
+                      "fixed": "transparent"
+                    }
+                  },
+                  "border": {
+                    "color": {
+                      "field": "estado",
+                      "fixed": "#73BF69"
+                    },
+                    "width": 2,
+                    "radius": 4
+                  },
+                  "constraint": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                }
               },
               "fieldConfig": {
                 "defaults": {
@@ -705,36 +2135,158 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "#73BF69"
-                      },
-                      {
-                        "value": 1,
-                        "color": "#F2495C"
+                        "color": "#ffffff"
                       }
                     ]
-                  },
-                  "decimals": 0
+                  }
                 },
                 "overrides": [
                   {
                     "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "A"
+                      "id": "byName",
+                      "options": "total"
                     },
                     "properties": [
                       {
-                        "id": "color",
+                        "id": "unit",
+                        "value": "prefix:/"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "faltando"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "text"
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#ffffff"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#FF9830"
+                            }
+                          ]
                         }
                       }
                     ]
                   },
                   {
                     "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "C"
+                      "id": "byName",
+                      "options": "crit"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#2F333A"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#C4162A"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "text": "0 críticos",
+                                "index": 0
+                              },
+                              "1": {
+                                "text": "1 crítico",
+                                "index": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": 2,
+                              "to": 1000000000.0,
+                              "result": {
+                                "text": "${__value.raw} críticos",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "warn"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#2F333A"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#E0752D"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "text": "0 avisos",
+                                "index": 0
+                              },
+                              "1": {
+                                "text": "1 aviso",
+                                "index": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": 2,
+                              "to": 1000000000.0,
+                              "result": {
+                                "text": "${__value.raw} avisos",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "estado"
                     },
                     "properties": [
                       {
@@ -749,6 +2301,10 @@
                             {
                               "value": 1,
                               "color": "#FF9830"
+                            },
+                            {
+                              "value": 2,
+                              "color": "#F2495C"
                             }
                           ]
                         }
@@ -766,10 +2322,10 @@
         "spec": {
           "id": 5,
           "title": "Containers",
-          "description": "",
+          "description": "Containers rodando agora sobre o total visto recentemente (laranja quando falta algum), e alertas ativos da área containers. A borda tem a cor do pior alerta. Clique no título para abrir.",
           "links": [
             {
-              "title": "Abrir o dashboard de Containers",
+              "title": "Abrir Containers",
               "url": "/grafana/d/servers-linux",
               "targetBlank": false
             }
@@ -790,10 +2346,10 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp\"}) or vector(0)",
+                        "expr": "count(group by (instance, name) (container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp\"})) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "rodando",
+                        "legendFormat": "noar",
                         "range": false
                       }
                     },
@@ -813,10 +2369,10 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"containers\",severity=\"critical\"}) or vector(0)",
+                        "expr": "count(group by (instance, name) (max_over_time(container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp\"}[1d])))",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "críticos",
+                        "legendFormat": "total",
                         "range": false
                       }
                     },
@@ -836,14 +2392,83 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"containers\",severity=\"warning\"}) or vector(0)",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"containers\",severity=\"critical\"}) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "avisos",
+                        "legendFormat": "crit",
                         "range": false
                       }
                     },
                     "refId": "C",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"containers\",severity=\"warning\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "warn",
+                        "range": false
+                      }
+                    },
+                    "refId": "D",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "(count(group by (instance, name) (max_over_time(container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp\"}[1d])))) - (count(group by (instance, name) (container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp\"})) or vector(0))",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "faltando",
+                        "range": false
+                      }
+                    },
+                    "refId": "E",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"containers\",severity=\"critical\"}) or vector(0)) > bool 0) * 2 + ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"containers\",severity=\"warning\"}) or vector(0)) > bool 0) * ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"containers\",severity=\"critical\"}) or vector(0)) == bool 0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "estado",
+                        "range": false
+                      }
+                    },
+                    "refId": "F",
                     "hidden": false
                   }
                 }
@@ -854,28 +2479,222 @@
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "stat",
+            "group": "canvas",
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "vertical",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
+                "inlineEditing": false,
+                "showAdvancedTypes": false,
+                "panZoom": false,
+                "infinitePan": false,
+                "root": {
+                  "type": "frame",
+                  "name": "Element root",
+                  "elements": [
+                    {
+                      "type": "metric-value",
+                      "name": "no ar",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "noar"
+                        },
+                        "size": 34,
+                        "color": {
+                          "field": "faltando",
+                          "fixed": "#ffffff"
+                        },
+                        "align": "right",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": 22,
+                        "left": 38,
+                        "width": 110,
+                        "height": 44
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "metric-value",
+                      "name": "total",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "total"
+                        },
+                        "size": 20,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "left",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": 18,
+                        "left": -48,
+                        "width": 60,
+                        "height": 34
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "legenda",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "containers rodando"
+                        },
+                        "size": 11,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -8,
+                        "left": 0,
+                        "width": 220,
+                        "height": 18
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "criticos",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "crit"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -34,
+                        "left": 52,
+                        "width": 96,
+                        "height": 22
+                      },
+                      "background": {
+                        "color": {
+                          "field": "crit",
+                          "fixed": "#2F333A"
+                        }
+                      },
+                      "border": {
+                        "radius": 3,
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "avisos",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "warn"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -34,
+                        "left": -52,
+                        "width": 96,
+                        "height": 22
+                      },
+                      "background": {
+                        "color": {
+                          "field": "warn",
+                          "fixed": "#2F333A"
+                        }
+                      },
+                      "border": {
+                        "radius": 3,
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    }
                   ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 11,
-                  "valueSize": 22
-                },
-                "textMode": "value_and_name",
-                "wideLayout": true
+                  "background": {
+                    "color": {
+                      "fixed": "transparent"
+                    }
+                  },
+                  "border": {
+                    "color": {
+                      "field": "estado",
+                      "fixed": "#73BF69"
+                    },
+                    "width": 2,
+                    "radius": 4
+                  },
+                  "constraint": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                }
               },
               "fieldConfig": {
                 "defaults": {
@@ -887,36 +2706,158 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "#73BF69"
-                      },
-                      {
-                        "value": 1,
-                        "color": "#F2495C"
+                        "color": "#ffffff"
                       }
                     ]
-                  },
-                  "decimals": 0
+                  }
                 },
                 "overrides": [
                   {
                     "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "A"
+                      "id": "byName",
+                      "options": "total"
                     },
                     "properties": [
                       {
-                        "id": "color",
+                        "id": "unit",
+                        "value": "prefix:/"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "faltando"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "text"
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#ffffff"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#FF9830"
+                            }
+                          ]
                         }
                       }
                     ]
                   },
                   {
                     "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "C"
+                      "id": "byName",
+                      "options": "crit"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#2F333A"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#C4162A"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "text": "0 críticos",
+                                "index": 0
+                              },
+                              "1": {
+                                "text": "1 crítico",
+                                "index": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": 2,
+                              "to": 1000000000.0,
+                              "result": {
+                                "text": "${__value.raw} críticos",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "warn"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#2F333A"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#E0752D"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "text": "0 avisos",
+                                "index": 0
+                              },
+                              "1": {
+                                "text": "1 aviso",
+                                "index": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": 2,
+                              "to": 1000000000.0,
+                              "result": {
+                                "text": "${__value.raw} avisos",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "estado"
                     },
                     "properties": [
                       {
@@ -931,6 +2872,10 @@
                             {
                               "value": 1,
                               "color": "#FF9830"
+                            },
+                            {
+                              "value": 2,
+                              "color": "#F2495C"
                             }
                           ]
                         }
@@ -948,10 +2893,10 @@
         "spec": {
           "id": 6,
           "title": "Coleta",
-          "description": "",
+          "description": "Coletores no ar agora sobre o total visto recentemente (laranja quando falta algum), e alertas ativos da área monitoramento. A borda tem a cor do pior alerta. Clique no título para abrir.",
           "links": [
             {
-              "title": "Abrir o dashboard de Coleta",
+              "title": "Abrir Coleta",
               "url": "/grafana/alerting/list",
               "targetBlank": false
             }
@@ -975,7 +2920,7 @@
                         "expr": "(count(up{job=\"prometheus\"} == 1) or vector(0)) + (count(up{job=\"uptime-kuma\"} == 1) or vector(0))",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "coletores",
+                        "legendFormat": "noar",
                         "range": false
                       }
                     },
@@ -995,10 +2940,10 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"monitoramento\",severity=\"critical\"}) or vector(0)",
+                        "expr": "count(group by (job) (max_over_time(up{job=\"prometheus\"}[7d]))) + count(group by (job) (max_over_time(up{job=\"uptime-kuma\"}[7d])))",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "críticos",
+                        "legendFormat": "total",
                         "range": false
                       }
                     },
@@ -1018,14 +2963,83 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"monitoramento\",severity=\"warning\"}) or vector(0)",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"monitoramento\",severity=\"critical\"}) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "avisos",
+                        "legendFormat": "crit",
                         "range": false
                       }
                     },
                     "refId": "C",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"monitoramento\",severity=\"warning\"}) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "warn",
+                        "range": false
+                      }
+                    },
+                    "refId": "D",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "(count(group by (job) (max_over_time(up{job=\"prometheus\"}[7d]))) + count(group by (job) (max_over_time(up{job=\"uptime-kuma\"}[7d])))) - ((count(up{job=\"prometheus\"} == 1) or vector(0)) + (count(up{job=\"uptime-kuma\"} == 1) or vector(0)))",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "faltando",
+                        "range": false
+                      }
+                    },
+                    "refId": "E",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"monitoramento\",severity=\"critical\"}) or vector(0)) > bool 0) * 2 + ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"monitoramento\",severity=\"warning\"}) or vector(0)) > bool 0) * ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"monitoramento\",severity=\"critical\"}) or vector(0)) == bool 0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "estado",
+                        "range": false
+                      }
+                    },
+                    "refId": "F",
                     "hidden": false
                   }
                 }
@@ -1036,28 +3050,222 @@
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "stat",
+            "group": "canvas",
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "vertical",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
+                "inlineEditing": false,
+                "showAdvancedTypes": false,
+                "panZoom": false,
+                "infinitePan": false,
+                "root": {
+                  "type": "frame",
+                  "name": "Element root",
+                  "elements": [
+                    {
+                      "type": "metric-value",
+                      "name": "no ar",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "noar"
+                        },
+                        "size": 34,
+                        "color": {
+                          "field": "faltando",
+                          "fixed": "#ffffff"
+                        },
+                        "align": "right",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": 22,
+                        "left": 38,
+                        "width": 110,
+                        "height": 44
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "metric-value",
+                      "name": "total",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "total"
+                        },
+                        "size": 20,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "left",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": 18,
+                        "left": -48,
+                        "width": 60,
+                        "height": 34
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "legenda",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "coletores no ar"
+                        },
+                        "size": 11,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -8,
+                        "left": 0,
+                        "width": 220,
+                        "height": 18
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "criticos",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "crit"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -34,
+                        "left": 52,
+                        "width": 96,
+                        "height": 22
+                      },
+                      "background": {
+                        "color": {
+                          "field": "crit",
+                          "fixed": "#2F333A"
+                        }
+                      },
+                      "border": {
+                        "radius": 3,
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "avisos",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "warn"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "center",
+                        "vertical": "center"
+                      },
+                      "placement": {
+                        "top": -34,
+                        "left": -52,
+                        "width": 96,
+                        "height": 22
+                      },
+                      "background": {
+                        "color": {
+                          "field": "warn",
+                          "fixed": "#2F333A"
+                        }
+                      },
+                      "border": {
+                        "radius": 3,
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      }
+                    }
                   ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 11,
-                  "valueSize": 22
-                },
-                "textMode": "value_and_name",
-                "wideLayout": true
+                  "background": {
+                    "color": {
+                      "fixed": "transparent"
+                    }
+                  },
+                  "border": {
+                    "color": {
+                      "field": "estado",
+                      "fixed": "#73BF69"
+                    },
+                    "width": 2,
+                    "radius": 4
+                  },
+                  "constraint": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                }
               },
               "fieldConfig": {
                 "defaults": {
@@ -1069,36 +3277,158 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "#73BF69"
-                      },
-                      {
-                        "value": 1,
-                        "color": "#F2495C"
+                        "color": "#ffffff"
                       }
                     ]
-                  },
-                  "decimals": 0
+                  }
                 },
                 "overrides": [
                   {
                     "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "A"
+                      "id": "byName",
+                      "options": "total"
                     },
                     "properties": [
                       {
-                        "id": "color",
+                        "id": "unit",
+                        "value": "prefix:/"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "faltando"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "text"
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#ffffff"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#FF9830"
+                            }
+                          ]
                         }
                       }
                     ]
                   },
                   {
                     "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "C"
+                      "id": "byName",
+                      "options": "crit"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#2F333A"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#C4162A"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "text": "0 críticos",
+                                "index": 0
+                              },
+                              "1": {
+                                "text": "1 crítico",
+                                "index": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": 2,
+                              "to": 1000000000.0,
+                              "result": {
+                                "text": "${__value.raw} críticos",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "warn"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#2F333A"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#E0752D"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "text": "0 avisos",
+                                "index": 0
+                              },
+                              "1": {
+                                "text": "1 aviso",
+                                "index": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": 2,
+                              "to": 1000000000.0,
+                              "result": {
+                                "text": "${__value.raw} avisos",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "estado"
                     },
                     "properties": [
                       {
@@ -1113,6 +3443,10 @@
                             {
                               "value": 1,
                               "color": "#FF9830"
+                            },
+                            {
+                              "value": 2,
+                              "color": "#F2495C"
                             }
                           ]
                         }
@@ -1129,8 +3463,8 @@
         "kind": "Panel",
         "spec": {
           "id": 7,
-          "title": "Agora",
-          "description": "Ocorrências disparando por severidade e pendentes (condição verdadeira, esperando o tempo de confirmação). Informativos não notificam. Fonte: histórico de estado dos alertas no Prometheus (GRAFANA_ALERTS).",
+          "title": "",
+          "description": "Ocorrências critical disparando agora. Fonte: histórico de estado dos alertas no Prometheus (GRAFANA_ALERTS).",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -1151,14 +3485,81 @@
                         "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",severity=\"critical\"}) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "críticos",
+                        "legendFormat": "Críticos",
                         "range": false
                       }
                     },
                     "refId": "A",
                     "hidden": false
                   }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
                 },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 13,
+                  "valueSize": 30
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#22252B"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#C4162A"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-8": {
+        "kind": "Panel",
+        "spec": {
+          "id": 8,
+          "title": "",
+          "description": "Ocorrências warning disparando agora. Fonte: histórico de estado dos alertas no Prometheus (GRAFANA_ALERTS).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
                 {
                   "kind": "PanelQuery",
                   "spec": {
@@ -1174,14 +3575,81 @@
                         "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",severity=\"warning\"}) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "avisos",
+                        "legendFormat": "Avisos",
                         "range": false
                       }
                     },
-                    "refId": "B",
+                    "refId": "A",
                     "hidden": false
                   }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
                 },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 13,
+                  "valueSize": 30
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#22252B"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#E0752D"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-9": {
+        "kind": "Panel",
+        "spec": {
+          "id": 9,
+          "title": "",
+          "description": "Condição verdadeira, esperando o tempo de confirmação (for) para disparar. Fonte: histórico de estado dos alertas no Prometheus (GRAFANA_ALERTS).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
                 {
                   "kind": "PanelQuery",
                   "spec": {
@@ -1197,14 +3665,81 @@
                         "expr": "count(GRAFANA_ALERTS{alertstate=\"pending\",severity!=\"info\"}) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "pendentes",
+                        "legendFormat": "Pendentes",
                         "range": false
                       }
                     },
-                    "refId": "C",
+                    "refId": "A",
                     "hidden": false
                   }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
                 },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 13,
+                  "valueSize": 30
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#22252B"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#1F60C4"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-10": {
+        "kind": "Panel",
+        "spec": {
+          "id": 10,
+          "title": "",
+          "description": "Registros info disparando (não notificam; lista na linha Informativos). Fonte: histórico de estado dos alertas no Prometheus (GRAFANA_ALERTS).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
                 {
                   "kind": "PanelQuery",
                   "spec": {
@@ -1220,11 +3755,11 @@
                         "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",severity=\"info\"}) or vector(0)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "info",
+                        "legendFormat": "Informativos",
                         "range": false
                       }
                     },
-                    "refId": "D",
+                    "refId": "A",
                     "hidden": false
                   }
                 }
@@ -1239,10 +3774,10 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
-                "orientation": "vertical",
+                "orientation": "auto",
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -1252,11 +3787,11 @@
                 },
                 "showPercentChange": false,
                 "text": {
-                  "titleSize": 11,
-                  "valueSize": 24
+                  "titleSize": 13,
+                  "valueSize": 30
                 },
                 "textMode": "value_and_name",
-                "wideLayout": true
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
@@ -1268,156 +3803,127 @@
                     "steps": [
                       {
                         "value": null,
-                        "color": "#6E7480"
+                        "color": "#22252B"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#1F60C4"
                       }
                     ]
                   },
                   "decimals": 0
                 },
-                "overrides": [
-                  {
-                    "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "A"
-                    },
-                    "properties": [
-                      {
-                        "id": "thresholds",
-                        "value": {
-                          "mode": "absolute",
-                          "steps": [
-                            {
-                              "value": null,
-                              "color": "#6E7480"
-                            },
-                            {
-                              "value": 1,
-                              "color": "#F2495C"
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "B"
-                    },
-                    "properties": [
-                      {
-                        "id": "thresholds",
-                        "value": {
-                          "mode": "absolute",
-                          "steps": [
-                            {
-                              "value": null,
-                              "color": "#6E7480"
-                            },
-                            {
-                              "value": 1,
-                              "color": "#FF9830"
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "C"
-                    },
-                    "properties": [
-                      {
-                        "id": "thresholds",
-                        "value": {
-                          "mode": "absolute",
-                          "steps": [
-                            {
-                              "value": null,
-                              "color": "#6E7480"
-                            },
-                            {
-                              "value": 1,
-                              "color": "#5794F2"
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "D"
-                    },
-                    "properties": [
-                      {
-                        "id": "thresholds",
-                        "value": {
-                          "mode": "absolute",
-                          "steps": [
-                            {
-                              "value": null,
-                              "color": "#6E7480"
-                            },
-                            {
-                              "value": 1,
-                              "color": "#5794F2"
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
-          }
-        }
-      },
-      "panel-8": {
-        "kind": "Panel",
-        "spec": {
-          "id": 8,
-          "title": "Silences",
-          "description": "Silences não são gravados no Prometheus: gerencie direto no Grafana.",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "text",
-            "version": "",
-            "spec": {
-              "options": {
-                "mode": "markdown",
-                "content": "[Ver silences ativos](/grafana/alerting/silences) · [Criar silence](/grafana/alerting/silence/new)",
-                "code": {
-                  "language": "plaintext",
-                  "showLineNumbers": false,
-                  "showMiniMap": false
-                }
-              },
-              "fieldConfig": {
-                "defaults": {},
                 "overrides": []
               }
             }
           }
         }
       },
-      "panel-9": {
+      "panel-11": {
         "kind": "Panel",
         "spec": {
-          "id": 9,
+          "id": 11,
+          "title": "",
+          "description": "Dias até o certificado TLS mais próximo de vencer (monitores do Uptime Kuma). Vermelho abaixo de 3 dias, laranja abaixo de 14.",
+          "links": [
+            {
+              "title": "Abrir Serviços",
+              "url": "/grafana/d/servicos",
+              "targetBlank": false
+            }
+          ],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "min(monitor_cert_days_remaining{job=\"uptime-kuma\"})",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "Próximo certificado",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 13,
+                  "valueSize": 26
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "unit": "suffix: dias",
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#C4162A"
+                      },
+                      {
+                        "value": 3,
+                        "color": "#E0752D"
+                      },
+                      {
+                        "value": 14,
+                        "color": "#22252B"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-12": {
+        "kind": "Panel",
+        "spec": {
+          "id": 12,
           "title": "Alertas ativos",
           "description": "Uma linha por ocorrência: o que está com problema (Alvo), o código (abre a documentação) e o alerta (abre a regra). Críticos primeiro. Fonte: histórico de estado dos alertas no Prometheus (GRAFANA_ALERTS).",
           "links": [],
@@ -1706,182 +4212,10 @@
           }
         }
       },
-      "panel-10": {
+      "panel-13": {
         "kind": "Panel",
         "spec": {
-          "id": 10,
-          "title": "Certificados",
-          "description": "Certificados TLS dos monitores do Uptime Kuma que vencem em até 30 dias, e quantos dias faltam para o mais próximo.",
-          "links": [
-            {
-              "title": "Abrir Serviços",
-              "url": "/grafana/d/servicos",
-              "targetBlank": false
-            }
-          ],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "count(monitor_cert_days_remaining{job=\"uptime-kuma\"} <= 30) or vector(0)",
-                        "format": "time_series",
-                        "instant": true,
-                        "legendFormat": "até 30 dias",
-                        "range": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                },
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "min(monitor_cert_days_remaining{job=\"uptime-kuma\"})",
-                        "format": "time_series",
-                        "instant": true,
-                        "legendFormat": "mais próximo",
-                        "range": false
-                      }
-                    },
-                    "refId": "B",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "value",
-                "graphMode": "none",
-                "justifyMode": "center",
-                "orientation": "vertical",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "fields": "",
-                  "values": false
-                },
-                "showPercentChange": false,
-                "text": {
-                  "titleSize": 11,
-                  "valueSize": 22
-                },
-                "textMode": "value_and_name",
-                "wideLayout": true
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "decimals": 0,
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "#73BF69"
-                      }
-                    ]
-                  }
-                },
-                "overrides": [
-                  {
-                    "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "A"
-                    },
-                    "properties": [
-                      {
-                        "id": "thresholds",
-                        "value": {
-                          "mode": "absolute",
-                          "steps": [
-                            {
-                              "value": null,
-                              "color": "#73BF69"
-                            },
-                            {
-                              "value": 1,
-                              "color": "#FF9830"
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "B"
-                    },
-                    "properties": [
-                      {
-                        "id": "unit",
-                        "value": "suffix: dias"
-                      },
-                      {
-                        "id": "thresholds",
-                        "value": {
-                          "mode": "absolute",
-                          "steps": [
-                            {
-                              "value": null,
-                              "color": "#F2495C"
-                            },
-                            {
-                              "value": 3,
-                              "color": "#FF9830"
-                            },
-                            {
-                              "value": 14,
-                              "color": "#73BF69"
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
-          }
-        }
-      },
-      "panel-11": {
-        "kind": "Panel",
-        "spec": {
-          "id": 11,
+          "id": 13,
           "title": "",
           "description": "Alvos que reportaram nos últimos 7 dias e pararam (qualquer coleta). Servidor parado não gera alerta de CPU ou disco: ele some. Alvo desativado de propósito sai daqui depois de 7 dias.",
           "links": [],
@@ -2091,10 +4425,10 @@
           }
         }
       },
-      "panel-12": {
+      "panel-14": {
         "kind": "Panel",
         "spec": {
-          "id": 12,
+          "id": 14,
           "title": "Discos que enchem primeiro",
           "description": "Os 8 volumes mais cheios (Linux e Windows, inclusive os hosts) e em quanto tempo enchem no ritmo do último dia (mesma conta dos dashboards de servidor). O F: do srv-host01 fica de fora: o ciclo diário de backup engana a previsão, e ele tem alertas próprios (HYP-203/204).",
           "links": [],
@@ -2414,10 +4748,10 @@
           }
         }
       },
-      "panel-13": {
+      "panel-15": {
         "kind": "Panel",
         "spec": {
-          "id": 13,
+          "id": 15,
           "title": "CPU agora (top 5)",
           "description": "Servidores Linux e Windows (convidados) com mais CPU em uso agora.",
           "links": [],
@@ -2511,10 +4845,10 @@
           }
         }
       },
-      "panel-14": {
+      "panel-16": {
         "kind": "Panel",
         "spec": {
-          "id": 14,
+          "id": 16,
           "title": "RAM agora (top 5)",
           "description": "Servidores Linux e Windows (convidados) com mais memória em uso agora. Os hosts Hyper-V ficam de fora: a memória deles fica quase toda com as VMs.",
           "links": [],
@@ -2608,10 +4942,10 @@
           }
         }
       },
-      "panel-15": {
+      "panel-17": {
         "kind": "Panel",
         "spec": {
-          "id": 15,
+          "id": 17,
           "title": "",
           "description": "O que disparou e resolveu no período, por ocorrência: vermelho crítico, laranja aviso, azul pendente. Fonte: histórico de estado dos alertas no Prometheus (GRAFANA_ALERTS).",
           "links": [],
@@ -2721,10 +5055,10 @@
           }
         }
       },
-      "panel-16": {
+      "panel-18": {
         "kind": "Panel",
         "spec": {
-          "id": 16,
+          "id": 18,
           "title": "Informativos",
           "description": "Registros informativos (severity info): ficam visíveis aqui e não notificam. Fonte: histórico de estado dos alertas no Prometheus (GRAFANA_ALERTS).",
           "links": [],
@@ -3033,7 +5367,7 @@
                         "x": 0,
                         "y": 0,
                         "width": 4,
-                        "height": 5,
+                        "height": 4,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-1"
@@ -3046,7 +5380,7 @@
                         "x": 4,
                         "y": 0,
                         "width": 4,
-                        "height": 5,
+                        "height": 4,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-2"
@@ -3059,7 +5393,7 @@
                         "x": 8,
                         "y": 0,
                         "width": 4,
-                        "height": 5,
+                        "height": 4,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-3"
@@ -3072,7 +5406,7 @@
                         "x": 12,
                         "y": 0,
                         "width": 4,
-                        "height": 5,
+                        "height": 4,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-4"
@@ -3085,7 +5419,7 @@
                         "x": 16,
                         "y": 0,
                         "width": 4,
-                        "height": 5,
+                        "height": 4,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-5"
@@ -3098,7 +5432,7 @@
                         "x": 20,
                         "y": 0,
                         "width": 4,
-                        "height": 5,
+                        "height": 4,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-6"
@@ -3124,8 +5458,8 @@
                       "spec": {
                         "x": 0,
                         "y": 0,
-                        "width": 6,
-                        "height": 4,
+                        "width": 3,
+                        "height": 3,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-7"
@@ -3135,9 +5469,35 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
+                        "x": 3,
+                        "y": 0,
+                        "width": 3,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-8"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
                         "x": 0,
-                        "y": 4,
-                        "width": 6,
+                        "y": 3,
+                        "width": 3,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-9"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 3,
+                        "y": 3,
+                        "width": 3,
                         "height": 3,
                         "element": {
                           "kind": "ElementReference",
@@ -3149,12 +5509,12 @@
                       "kind": "GridLayoutItem",
                       "spec": {
                         "x": 0,
-                        "y": 7,
+                        "y": 6,
                         "width": 6,
-                        "height": 2,
+                        "height": 3,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-8"
+                          "name": "panel-11"
                         }
                       }
                     },
@@ -3167,7 +5527,7 @@
                         "height": 9,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-9"
+                          "name": "panel-12"
                         }
                       }
                     }
@@ -3194,7 +5554,7 @@
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-11"
+                          "name": "panel-13"
                         }
                       }
                     }
@@ -3221,7 +5581,7 @@
                         "height": 7,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-12"
+                          "name": "panel-14"
                         }
                       }
                     },
@@ -3234,7 +5594,7 @@
                         "height": 7,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-13"
+                          "name": "panel-15"
                         }
                       }
                     },
@@ -3247,7 +5607,7 @@
                         "height": 7,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-14"
+                          "name": "panel-16"
                         }
                       }
                     }
@@ -3274,7 +5634,7 @@
                         "height": 9,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-15"
+                          "name": "panel-17"
                         }
                       }
                     }
@@ -3301,7 +5661,7 @@
                         "height": 8,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-16"
+                          "name": "panel-18"
                         }
                       }
                     }

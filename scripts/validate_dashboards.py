@@ -263,8 +263,8 @@ for uid in sorted(set(uids) & set(folder_uids)):
 _cat, _cat_errors = catalogo.load()
 errors.extend(_cat_errors)
 for path in catalogo.sync_dashboards(_cat):
-    errors.append(f"{path.relative_to(ROOT)}: filtro de containers ignorados difere do catalogo.yml; "
-                  "rode python scripts/catalogo.py --dashboards")
+    warnings.append(f"{path.relative_to(ROOT)}: filtro de containers ignorados difere do catalogo.yml "
+                    "(o workflow catalogo regrava e faz o commit sozinho)")
 
 sys.exit(ct.report(errors, warnings,
                    f"{len(uids)} dashboards, {len(folder_uids)} pastas, {len(contracts.prom_jobs)} contratos Prometheus, "

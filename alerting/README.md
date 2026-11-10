@@ -130,7 +130,7 @@ Marcadores nas regras (expansão em `scripts/catalogo.py`; o resultado é uma al
 | `@catalogo:vms!=critica@` | VMs listadas com outra classe |
 | `@catalogo:hosts@` | todos os hosts |
 
-A severidade de CTR-101 a 104 usa um template com `match` sobre o nome do container (`@catalogo:containers=secundario@`), conferido no Grafana 13.3.0. Os dashboards não passam pelo build (o Git Sync lê o JSON direto): depois de mudar a lista de ignorados, rode `python scripts/catalogo.py --dashboards`; o CI acusa se esquecer.
+A severidade de CTR-101 a 104 usa um template com `match` sobre o nome do container (`@catalogo:containers=secundario@`), conferido no Grafana 13.3.0. Os dashboards não passam pelo build (o Git Sync lê o JSON direto): quando o catálogo muda, o workflow `catalogo` regrava o filtro de containers ignorados nos dashboards e faz o commit na mesma branch, sozinho.
 
 Lista vazia vira `""`: `=~""` não casa com nada e `!~""` não exclui nada. Para conferir uma regra expandida: `python scripts/catalogo.py --render alerting/rules/hypervisor.yaml`.
 

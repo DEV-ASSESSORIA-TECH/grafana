@@ -59,7 +59,7 @@ servidores:
 #   importante   warning (padrao de quem nao esta listado)
 #   secundario   info (aparece no Grafana, nao notifica)
 #   ignorar      fora dos alertas e das contagens dos dashboards
-# Mudou a lista de ignorados? Rode `python scripts/catalogo.py --dashboards` (o CI confere).
+# Os dashboards acompanham sozinhos: o workflow catalogo regrava o filtro de ignorados e faz o commit.
 containers:
   grafana-alerting-temp: ignorar   # ensaio do deploy (grafana-alerting test)
   warpgate: ignorar                # sera desativado

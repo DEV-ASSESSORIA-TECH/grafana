@@ -40,8 +40,10 @@ NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 MARK = re.compile(r"@catalogo:([a-z]+)(?:(!?=)([a-z,]+))?@")
 # severidade que depende do catalogo: '{{ if match "^(...)$" $labels.name }}info{{ else }}warning{{ end }}'
 SEVERITY = re.compile(r'^\{\{ if match "\^\((.*)\)\$" \$\$?labels\.name \}\}(\w+)\{\{ else \}\}(\w+)\{\{ end \}\}$')
-# filtro de containers ignorados nos dashboards (Git Sync le o JSON direto, sem build)
-DASH_IGNORE = re.compile(r'(integrations/docker\\",name!~\\"\|)([^"\\]*(?:\\\\[^"\\]*)*)(\\")')
+# filtro de containers ignorados nos dashboards (Git Sync le o JSON direto, sem build). Forma exigida, logo apos o job:
+#   Prometheus  {job="integrations/docker",name!~"|<ignorados>",...}
+#   Loki        {job="docker",container!~"|<ignorados>",...}
+DASH_IGNORE = re.compile(r'((?:integrations/docker\\",name|job=\\"docker\\",container)!~\\"\|)([^"\\]*(?:\\\\[^"\\]*)*)(\\")')
 
 
 def severity_values(value):

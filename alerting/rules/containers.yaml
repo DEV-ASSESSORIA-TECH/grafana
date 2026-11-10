@@ -89,6 +89,8 @@ groups:
         for: 5m
         annotations:
           runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/CTR-101.md
+          __dashboardUid__: containers
+          __panelId__: "9"
           summary: 'Container {{ $labels.name }} sumiu de {{ $labels.instance }}'
           description: |-
             O container {{ $labels.name }} existia em {{ $labels.instance }} nas últimas 24 horas e não está mais em execução.
@@ -182,6 +184,8 @@ groups:
         for: 3m
         annotations:
           runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/CTR-102.md
+          __dashboardUid__: containers
+          __panelId__: "9"
           summary: 'Container {{ $labels.name }} unhealthy em {{ $labels.instance }}'
           description: |-
             O healthcheck do container {{ $labels.name }} em {{ $labels.instance }} está falhando.
@@ -265,6 +269,8 @@ groups:
         for: 0s
         annotations:
           runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/CTR-103.md
+          __dashboardUid__: containers
+          __panelId__: "9"
           summary: 'Container {{ $labels.name }} reiniciando em {{ $labels.instance }}'
           description: |-
             O container {{ $labels.name }} em {{ $labels.instance }} reiniciou {{ with $values.A }}{{ humanize .Value }}{{ end }} vezes na última hora.
@@ -348,6 +354,8 @@ groups:
         for: 0s
         annotations:
           runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/CTR-104.md
+          __dashboardUid__: containers
+          __panelId__: "9"
           summary: 'Container {{ $labels.name }} morto por falta de memória em {{ $labels.instance }}'
           description: |-
             O kernel matou um processo do container {{ $labels.name }} em {{ $labels.instance }} por falta de memória (OOM).

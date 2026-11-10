@@ -34,6 +34,7 @@ Dashboards e alertas do Grafana da infraestrutura (Grafana **13.3.0**), e os con
 | Servidores Windows | `servers-windows` | `servers/windows.json` | Servidores | `integrations/windows` | `windows-eventlog` |
 | Hypervisors | `hypervisors` | `virtualization/hypervisor.json` | Virtualização | `integrations/hypervisor` (inventário) + `integrations/hyperv` (contadores) | `hyperv-eventlog` |
 | Serviços | `servicos` | `services/servicos.json` | Serviços | `uptime-kuma` | `docker` (container do Kuma) |
+| Containers | `containers` | `containers/containers.json` | Containers | `integrations/docker` (cAdvisor) + `integrations/unix` (RAM do servidor) | `docker` |
 | Visão geral | `overview` | `overview/overview.json` | Visão geral | `GRAFANA_ALERTS` (histórico de alertas) + jobs acima | — |
 
 ## Formato dos arquivos (Schema V2)
@@ -77,6 +78,8 @@ Não há mais `__inputs`/`__requires` nem `${DS_PROMETHEUS}`/`${DS_LOKI}`: o das
 - **Página inicial:** a Visão geral (`overview`). Configure uma vez em *Administração → Geral → Preferências padrão → Painel inicial* (ou o botão Home e o logo levam para a tela padrão do Grafana).
 - **Blocos de número:** status em stat de **fundo sólido**, nome em cima e valor embaixo (verde `#37872D`, laranja `#E0752D`, vermelho `#C4162A`). Informativos (sistema, ligado há, núcleos) em cinza neutro `#2F333A`. Blocos de área do Visão geral em **Canvas** nativo: valor/total, chips de críticos e avisos, borda na cor do pior alerta.
 - Uma variável de seleção: **Server** nos servidores, **Host** nos hypervisors (`instance`). Job e datasource ficam fixos no JSON.
+- **Containers:** filtros Servidor, Projeto (compose) e Container, mais a busca nos logs. A lista mostra os que sumiram primeiro (vistos em 24 h e parados agora); servidor que parou de reportar por inteiro (VM desligada) não conta como container sumido. Mem. % é sobre o limite do container ou, sem limite, sobre a RAM do servidor. Cada servidor Linux tem uma linha **Containers** com o resumo dele.
+- Containers marcados `ignorar` no `catalogo.yml` ficam fora de todos os dashboards. O filtro fica escrito no JSON logo após o job (`{job="integrations/docker",name!~"|..."}` e `{job="docker",container!~"|..."}`); o workflow `catalogo` regrava e faz o commit quando o catálogo muda.
 - Serviços filtra pelas tags do Uptime Kuma (**Criticidade**, **Exposição**, **Grupo**). Tag nova no Kuma exige reiniciar o container (ver contrato `uptime-kuma`).
 - O Serviços ignora os monitores `push` (heartbeat dos hosts, que ficam no Hyper-V) e o grupo "Disponibilidade servidores": `monitor_type!~"group|push"`. Resumo e grupos em stat de fundo sólido; disponibilidade por hora em barras (status history).
 - Certificados de terceiros (Tiflux, Sispcard) ficam fora de todos os painéis e dos alertas SVC-201/202/203: `monitor_name!~"Tiflux|Sispcard"`.

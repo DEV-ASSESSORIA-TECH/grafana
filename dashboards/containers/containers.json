@@ -1,0 +1,3033 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "containers"
+  },
+  "spec": {
+    "annotations": [
+      {
+        "kind": "AnnotationQuery",
+        "spec": {
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana",
+            "version": "v0",
+            "datasource": {
+              "name": "-- Grafana --"
+            },
+            "spec": {}
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "builtIn": true,
+          "legacyOptions": {
+            "type": "dashboard"
+          }
+        }
+      }
+    ],
+    "cursorSync": "Crosshair",
+    "description": "Containers Docker de todos os servidores (cAdvisor no Alloy): lista com estado, saúde e consumo, uso ao longo do tempo, eventos e logs. Ignorados no catalogo.yml ficam de fora.",
+    "editable": true,
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "",
+          "description": "Containers rodando agora.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(group by (instance, name) (container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"})) or vector(0)",
+                        "legendFormat": "Rodando",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 24
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#37872D"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "",
+          "description": "Vistos nas últimas 24 horas e parados agora. Servidor que parou de reportar por inteiro (VM desligada) não conta: isso já é alerta do servidor.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count((group by (instance, container_label_com_docker_compose_project, name) (max_over_time(container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[1d]))\n  unless on (instance, name) group by (instance, name) (container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}))\nunless on (instance)\n(group by (instance) (max_over_time(container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\"}[1d]))\n  unless group by (instance) (container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\"}))) or vector(0)",
+                        "legendFormat": "Sumiram",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 24
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#C4162A"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "",
+          "description": "Healthcheck do container falhando.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(container_health_state{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"} != 1 != -1) or vector(0)",
+                        "legendFormat": "Unhealthy",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 24
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#C4162A"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-4": {
+        "kind": "Panel",
+        "spec": {
+          "id": 4,
+          "title": "",
+          "description": "Reinícios no período (mesmo container, nova hora de início). Recriar com compose up não conta.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(changes(container_start_time_seconds{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[$__range])) or vector(0)",
+                        "legendFormat": "Reinícios",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 24
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#E0752D"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-5": {
+        "kind": "Panel",
+        "spec": {
+          "id": 5,
+          "title": "",
+          "description": "Containers mortos pelo kernel por falta de memória no período.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "round(sum(increase(container_oom_events_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[$__range]))) or vector(0)",
+                        "legendFormat": "OOM",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 24
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#C4162A"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-6": {
+        "kind": "Panel",
+        "spec": {
+          "id": 6,
+          "title": "",
+          "description": "Containers sem healthcheck no compose: o Docker só sabe se o processo está vivo.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "count(container_health_state{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"} == -1) or vector(0)",
+                        "legendFormat": "Sem healthcheck",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 24
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-7": {
+        "kind": "Panel",
+        "spec": {
+          "id": 7,
+          "title": "",
+          "description": "CPU somada dos containers, em núcleos.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(rate(container_cpu_usage_seconds_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[5m])) or vector(0)",
+                        "legendFormat": "CPU",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 24
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      }
+                    ]
+                  },
+                  "decimals": 2,
+                  "unit": "suffix: núcleos"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-8": {
+        "kind": "Panel",
+        "spec": {
+          "id": 8,
+          "title": "",
+          "description": "Memória em uso (working set) somada dos containers.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(container_memory_working_set_bytes{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}) or vector(0)",
+                        "legendFormat": "Memória",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 24
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      }
+                    ]
+                  },
+                  "decimals": 1,
+                  "unit": "bytes"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-9": {
+        "kind": "Panel",
+        "spec": {
+          "id": 9,
+          "title": "",
+          "description": "Um container por linha: os que sumiram aparecem primeiro, em vermelho. Clique no servidor para abrir o Linux dele e no container para filtrar este dashboard. Os cabeçalhos filtram e ordenam. CPU em % de um núcleo; Mem. % sobre o limite do container ou, sem limite, sobre a RAM do servidor. Containers marcados como ignorar no catalogo.yml ficam de fora.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "label_replace(label_replace(\n  group by (instance, container_label_com_docker_compose_project, name, image) (container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}),\n  \"image\", \"$1\", \"image\", \".*/(.+)\"),\n  \"image\", \"$1@$2\", \"image\", \"([^@]+)@sha256:([0-9a-f]{7}).*\")\nor\n0 * ((group by (instance, container_label_com_docker_compose_project, name) (max_over_time(container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[1d]))\n  unless on (instance, name) group by (instance, name) (container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}))\nunless on (instance)\n(group by (instance) (max_over_time(container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\"}[1d]))\n  unless group by (instance) (container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\"})))",
+                        "legendFormat": "",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max by (instance, name) (container_health_state{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"})",
+                        "legendFormat": "",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max by (instance, name) (time() - container_start_time_seconds{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"})",
+                        "legendFormat": "",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "C",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum by (instance, name) (changes(container_start_time_seconds{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[$__range]))",
+                        "legendFormat": "",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "D",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "100 * sum by (instance, name) (rate(container_cpu_usage_seconds_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[5m]))",
+                        "legendFormat": "",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "E",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum by (instance, name) (container_memory_working_set_bytes{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"})",
+                        "legendFormat": "",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "F",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "100 * sum by (instance, name) (container_memory_working_set_bytes{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}) / sum by (instance, name) (container_spec_memory_limit_bytes{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"} > 0)\nor\n100 * sum by (instance, name) (container_memory_working_set_bytes{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}) / on (instance) group_left () max by (instance) (node_memory_MemTotal_bytes{job=\"integrations/unix\"})",
+                        "legendFormat": "",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "G",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum by (instance, name) (rate(container_network_receive_bytes_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[5m]))",
+                        "legendFormat": "",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "H",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum by (instance, name) (rate(container_network_transmit_bytes_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[5m]))",
+                        "legendFormat": "",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "I",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum by (instance, name) (rate(container_fs_reads_bytes_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[5m]))",
+                        "legendFormat": "",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "J",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum by (instance, name) (rate(container_fs_writes_bytes_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[5m]))",
+                        "legendFormat": "",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "K",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "merge",
+                  "spec": {
+                    "options": {}
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "organize",
+                  "spec": {
+                    "options": {
+                      "excludeByName": {
+                        "Time": true
+                      },
+                      "indexByName": {
+                        "Value #A": 0,
+                        "instance": 1,
+                        "container_label_com_docker_compose_project": 2,
+                        "name": 3,
+                        "image": 4,
+                        "Value #B": 5,
+                        "Value #C": 6,
+                        "Value #D": 7,
+                        "Value #E": 8,
+                        "Value #F": 9,
+                        "Value #G": 10,
+                        "Value #H": 11,
+                        "Value #I": 12,
+                        "Value #J": 13,
+                        "Value #K": 14
+                      },
+                      "renameByName": {
+                        "instance": "Servidor",
+                        "container_label_com_docker_compose_project": "Projeto",
+                        "name": "Container",
+                        "image": "Imagem",
+                        "Value #A": "Estado",
+                        "Value #B": "Saúde",
+                        "Value #C": "Ligado há",
+                        "Value #D": "Reinícios",
+                        "Value #E": "CPU",
+                        "Value #F": "Memória",
+                        "Value #G": "Mem. %",
+                        "Value #H": "Rede ↓",
+                        "Value #I": "Rede ↑",
+                        "Value #J": "Disco leitura",
+                        "Value #K": "Disco escrita"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterByValue",
+                  "spec": {
+                    "options": {
+                      "type": "exclude",
+                      "match": "any",
+                      "filters": [
+                        {
+                          "fieldName": "Estado",
+                          "config": {
+                            "id": "isNull",
+                            "options": {}
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true,
+                "footer": {
+                  "show": false,
+                  "reducer": [
+                    "sum"
+                  ],
+                  "countRows": false
+                },
+                "sortBy": [
+                  {
+                    "displayName": "Estado",
+                    "desc": false
+                  }
+                ]
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "filterable": true,
+                    "minWidth": 70
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "text"
+                      }
+                    ]
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Estado"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "0": {
+                                "text": "sumiu",
+                                "color": "#C4162A",
+                                "index": 0
+                              },
+                              "1": {
+                                "text": "rodando",
+                                "color": "#37872D",
+                                "index": 1
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 90
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Servidor"
+                    },
+                    "properties": [
+                      {
+                        "id": "links",
+                        "value": [
+                          {
+                            "title": "Abrir o servidor Linux",
+                            "url": "/grafana/d/servers-linux?var-server=${__value.raw}&${__url_time_range}"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Container"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.minWidth",
+                        "value": 170
+                      },
+                      {
+                        "id": "links",
+                        "value": [
+                          {
+                            "title": "Filtrar por este container",
+                            "url": "/grafana/d/containers?var-servidor=${__data.fields.Servidor}&var-container=${__value.raw}&${__url_time_range}"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Imagem"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.minWidth",
+                        "value": 150
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Projeto"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.minWidth",
+                        "value": 90
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Ligado há"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 90
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Reinícios"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Saúde"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "1": {
+                                "text": "healthy",
+                                "color": "#37872D",
+                                "index": 0
+                              },
+                              "0": {
+                                "text": "unhealthy",
+                                "color": "#C4162A",
+                                "index": 1
+                              },
+                              "-1": {
+                                "text": "sem healthcheck",
+                                "color": "#8E8E9E",
+                                "index": 2
+                              }
+                            }
+                          },
+                          {
+                            "type": "range",
+                            "options": {
+                              "from": 2,
+                              "to": 9,
+                              "result": {
+                                "text": "iniciando",
+                                "color": "#E0752D",
+                                "index": 3
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "custom.minWidth",
+                        "value": 125
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Ligado há"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "dtdurations"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Reinícios"
+                    },
+                    "properties": [
+                      {
+                        "id": "decimals",
+                        "value": 0
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "text"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#E0752D"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "CPU"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      },
+                      {
+                        "id": "min",
+                        "value": 0
+                      },
+                      {
+                        "id": "max",
+                        "value": 100
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "gauge",
+                          "mode": "basic",
+                          "valueDisplayMode": "text"
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#37872D"
+                            },
+                            {
+                              "value": 50,
+                              "color": "#E0752D"
+                            },
+                            {
+                              "value": 90,
+                              "color": "#C4162A"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Memória"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "bytes"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Mem. %"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      },
+                      {
+                        "id": "min",
+                        "value": 0
+                      },
+                      {
+                        "id": "max",
+                        "value": 100
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "gauge",
+                          "mode": "basic",
+                          "valueDisplayMode": "text"
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#37872D"
+                            },
+                            {
+                              "value": 60,
+                              "color": "#E0752D"
+                            },
+                            {
+                              "value": 85,
+                              "color": "#C4162A"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Rede ↓"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "Bps"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Rede ↑"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "Bps"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Disco leitura"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "Bps"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Disco escrita"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "Bps"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-10": {
+        "kind": "Panel",
+        "spec": {
+          "id": 10,
+          "title": "CPU",
+          "description": "CPU por container, em % de um núcleo (os 10 maiores a cada instante).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "topk(10,\n  100 * sum by (instance, name) (rate(container_cpu_usage_seconds_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[$__rate_interval]))\n)",
+                        "legendFormat": "{{name}} · {{instance}}",
+                        "format": "time_series",
+                        "instant": false,
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "displayMode": "table",
+                  "placement": "right",
+                  "showLegend": true,
+                  "calcs": [
+                    "mean",
+                    "max"
+                  ],
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc",
+                  "hideZeros": true
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percent",
+                  "min": 0,
+                  "custom": {
+                    "drawStyle": "line",
+                    "lineWidth": 1,
+                    "fillOpacity": 8,
+                    "showPoints": "never",
+                    "spanNulls": false
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-11": {
+        "kind": "Panel",
+        "spec": {
+          "id": 11,
+          "title": "Memória",
+          "description": "Memória em uso (working set) por container (os 10 maiores).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "topk(10,\n  sum by (instance, name) (container_memory_working_set_bytes{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"})\n)",
+                        "legendFormat": "{{name}} · {{instance}}",
+                        "format": "time_series",
+                        "instant": false,
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "displayMode": "table",
+                  "placement": "right",
+                  "showLegend": true,
+                  "calcs": [
+                    "mean",
+                    "max"
+                  ],
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc",
+                  "hideZeros": true
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bytes",
+                  "min": 0,
+                  "custom": {
+                    "drawStyle": "line",
+                    "lineWidth": 1,
+                    "fillOpacity": 8,
+                    "showPoints": "never",
+                    "spanNulls": false
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-12": {
+        "kind": "Panel",
+        "spec": {
+          "id": 12,
+          "title": "Rede",
+          "description": "Tráfego recebido + enviado por container (os 10 maiores).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "topk(10,\n  sum by (instance, name) (rate(container_network_receive_bytes_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[$__rate_interval]) + rate(container_network_transmit_bytes_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[$__rate_interval]))\n)",
+                        "legendFormat": "{{name}} · {{instance}}",
+                        "format": "time_series",
+                        "instant": false,
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "displayMode": "table",
+                  "placement": "right",
+                  "showLegend": true,
+                  "calcs": [
+                    "mean",
+                    "max"
+                  ],
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc",
+                  "hideZeros": true
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "Bps",
+                  "min": 0,
+                  "custom": {
+                    "drawStyle": "line",
+                    "lineWidth": 1,
+                    "fillOpacity": 8,
+                    "showPoints": "never",
+                    "spanNulls": false
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-13": {
+        "kind": "Panel",
+        "spec": {
+          "id": 13,
+          "title": "Disco",
+          "description": "Leitura + escrita em disco por container (os 10 maiores).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "topk(10,\n  sum by (instance, name) (rate(container_fs_reads_bytes_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[$__rate_interval]) + rate(container_fs_writes_bytes_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[$__rate_interval]))\n)",
+                        "legendFormat": "{{name}} · {{instance}}",
+                        "format": "time_series",
+                        "instant": false,
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "displayMode": "table",
+                  "placement": "right",
+                  "showLegend": true,
+                  "calcs": [
+                    "mean",
+                    "max"
+                  ],
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc",
+                  "hideZeros": true
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "Bps",
+                  "min": 0,
+                  "custom": {
+                    "drawStyle": "line",
+                    "lineWidth": 1,
+                    "fillOpacity": 8,
+                    "showPoints": "never",
+                    "spanNulls": false
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-14": {
+        "kind": "Panel",
+        "spec": {
+          "id": 14,
+          "title": "Memória por servidor",
+          "description": "Memória dos containers somada por servidor, empilhada por projeto do compose.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum by (instance, projeto) (label_replace(label_replace(\n  container_memory_working_set_bytes{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"},\n  \"projeto\", \"$1\", \"container_label_com_docker_compose_project\", \"(.*)\"), \"projeto\", \"(sem compose)\", \"projeto\", \"\"))",
+                        "legendFormat": "",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "groupingToMatrix",
+                  "spec": {
+                    "options": {
+                      "rowField": "instance",
+                      "columnField": "projeto",
+                      "valueField": "Value",
+                      "emptyValue": "zero"
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "barchart",
+            "version": "",
+            "spec": {
+              "options": {
+                "orientation": "horizontal",
+                "stacking": "normal",
+                "showValue": "never",
+                "barWidth": 0.7,
+                "groupWidth": 0.7,
+                "xTickLabelRotation": 0,
+                "xField": "instance",
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc",
+                  "hideZeros": true
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bytes",
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "fillOpacity": 85,
+                    "lineWidth": 0
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-15": {
+        "kind": "Panel",
+        "spec": {
+          "id": 15,
+          "title": "CPU por servidor",
+          "description": "CPU dos containers somada por servidor (núcleos), empilhada por projeto.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum by (instance, projeto) (label_replace(label_replace(\n  rate(container_cpu_usage_seconds_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[5m]),\n  \"projeto\", \"$1\", \"container_label_com_docker_compose_project\", \"(.*)\"), \"projeto\", \"(sem compose)\", \"projeto\", \"\"))",
+                        "legendFormat": "",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "groupingToMatrix",
+                  "spec": {
+                    "options": {
+                      "rowField": "instance",
+                      "columnField": "projeto",
+                      "valueField": "Value",
+                      "emptyValue": "zero"
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "barchart",
+            "version": "",
+            "spec": {
+              "options": {
+                "orientation": "horizontal",
+                "stacking": "normal",
+                "showValue": "never",
+                "barWidth": 0.7,
+                "groupWidth": 0.7,
+                "xTickLabelRotation": 0,
+                "xField": "instance",
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc",
+                  "hideZeros": true
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "fillOpacity": 85,
+                    "lineWidth": 0
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-16": {
+        "kind": "Panel",
+        "spec": {
+          "id": 16,
+          "title": "",
+          "description": "Reinícios (laranja) e mortes por falta de memória (vermelho), por container. Só aparece quem teve evento.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max by (instance, name) (\n  2 * (increase(container_oom_events_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[$__interval]) > 0)\n  or (changes(container_start_time_seconds{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[$__interval]) > 0) * 0 + 1\n)",
+                        "legendFormat": "{{name}} · {{instance}}",
+                        "format": "time_series",
+                        "instant": false,
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "state-timeline",
+            "version": "",
+            "spec": {
+              "options": {
+                "mergeValues": false,
+                "showValue": "never",
+                "alignValue": "center",
+                "rowHeight": 0.8,
+                "legend": {
+                  "showLegend": true,
+                  "displayMode": "list",
+                  "placement": "bottom"
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "none",
+                  "hideZeros": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "transparent"
+                  },
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "1": {
+                          "text": "reiniciou",
+                          "color": "#E0752D",
+                          "index": 0
+                        },
+                        "2": {
+                          "text": "OOM",
+                          "color": "#C4162A",
+                          "index": 1
+                        }
+                      }
+                    }
+                  ],
+                  "custom": {
+                    "fillOpacity": 100,
+                    "lineWidth": 0
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-17": {
+        "kind": "Panel",
+        "spec": {
+          "id": 17,
+          "title": "Linhas de erro por container",
+          "description": "Linhas com error, fatal ou panic (sem diferenciar maiúsculas) por container.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "loki"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum by (container) (count_over_time({job=\"docker\",container!~\"|grafana-alerting-temp|warpgate\",host=~\"$servidor\",compose_project=~\"$projeto\",container=~\"$container\"} |~ \"(?i)(error|fatal|panic)\" [$__interval]))",
+                        "legendFormat": "{{container}}",
+                        "queryType": "range"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "displayMode": "table",
+                  "placement": "right",
+                  "showLegend": true,
+                  "calcs": [
+                    "mean",
+                    "max"
+                  ],
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc",
+                  "hideZeros": true
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "min": 0,
+                  "custom": {
+                    "drawStyle": "bars",
+                    "fillOpacity": 80,
+                    "lineWidth": 0,
+                    "stacking": {
+                      "mode": "normal",
+                      "group": "A"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-18": {
+        "kind": "Panel",
+        "spec": {
+          "id": 18,
+          "title": "Logs",
+          "description": "Logs dos containers filtrados. A caixa Busca filtra o texto (expressão regular, sem diferenciar maiúsculas).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "loki"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "{job=\"docker\",container!~\"|grafana-alerting-temp|warpgate\",host=~\"$servidor\",compose_project=~\"$projeto\",container=~\"$container\"} |~ \"(?i)$busca\"",
+                        "legendFormat": "",
+                        "queryType": "range"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "",
+            "spec": {
+              "options": {
+                "showTime": true,
+                "wrapLogMessage": true,
+                "sortOrder": "Descending",
+                "enableLogDetails": true,
+                "dedupStrategy": "none",
+                "prettifyLogMessage": false,
+                "showCommonLabels": false,
+                "showLabels": false
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-19": {
+        "kind": "Panel",
+        "spec": {
+          "id": 19,
+          "title": "",
+          "description": "Coletor de containers (cAdvisor no Alloy) de cada servidor: 1 = coletando.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max by (instance) (up{job=\"integrations/docker\",instance=~\"$servidor\"})",
+                        "legendFormat": "{{instance}}",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 18
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#C4162A"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#37872D"
+                      }
+                    ]
+                  },
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "0": {
+                          "text": "parado",
+                          "index": 0
+                        },
+                        "1": {
+                          "text": "ok",
+                          "index": 1
+                        }
+                      }
+                    }
+                  ]
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-20": {
+        "kind": "Panel",
+        "spec": {
+          "id": 20,
+          "title": "Tempo de coleta",
+          "description": "Quanto o Alloy leva para coletar os containers de cada servidor.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max by (instance) (scrape_duration_seconds{job=\"integrations/docker\",instance=~\"$servidor\"})",
+                        "legendFormat": "{{instance}}",
+                        "format": "time_series",
+                        "instant": false,
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "displayMode": "table",
+                  "placement": "right",
+                  "showLegend": true,
+                  "calcs": [
+                    "mean",
+                    "max"
+                  ],
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc",
+                  "hideZeros": true
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "s",
+                  "min": 0,
+                  "custom": {
+                    "drawStyle": "line",
+                    "lineWidth": 1,
+                    "fillOpacity": 8,
+                    "showPoints": "never",
+                    "spanNulls": false
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "RowsLayout",
+      "spec": {
+        "rows": [
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Resumo",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 3,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-1"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 3,
+                        "y": 0,
+                        "width": 3,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-2"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 6,
+                        "y": 0,
+                        "width": 3,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-3"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 9,
+                        "y": 0,
+                        "width": 3,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-4"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 3,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-5"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 15,
+                        "y": 0,
+                        "width": 3,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-6"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 18,
+                        "y": 0,
+                        "width": 3,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-7"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 21,
+                        "y": 0,
+                        "width": 3,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-8"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Containers",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-9"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Uso ao longo do tempo",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-10"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-11"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 8,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-12"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 8,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-13"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Por servidor",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-14"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-15"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Eventos",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 6,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-16"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Logs",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 7,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-17"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 7,
+                        "width": 24,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-18"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Saúde da coleta",
+              "collapse": true,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 6,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-19"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 6,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-20"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "links": [
+      {
+        "title": "Visão geral",
+        "type": "link",
+        "url": "/grafana/d/overview",
+        "icon": "dashboard",
+        "tooltip": "Página inicial: alertas e estado de todas as áreas",
+        "tags": [],
+        "asDropdown": false,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": true
+      },
+      {
+        "title": "Painéis",
+        "type": "dashboards",
+        "icon": "external link",
+        "tooltip": "",
+        "tags": [
+          "infra"
+        ],
+        "asDropdown": true,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": true
+      }
+    ],
+    "liveNow": false,
+    "preload": false,
+    "tags": [
+      "infra",
+      "containers",
+      "docker"
+    ],
+    "timeSettings": {
+      "timezone": "browser",
+      "from": "now-24h",
+      "to": "now",
+      "autoRefresh": "1m",
+      "autoRefreshIntervals": [
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h"
+      ],
+      "hideTimepicker": false,
+      "fiscalYearStartMonth": 0
+    },
+    "title": "Containers",
+    "variables": [
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "servidor",
+          "current": {
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "label": "Servidor",
+          "hide": "dontHide",
+          "refresh": "onTimeRangeChanged",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "prometheus",
+            "version": "v0",
+            "datasource": {
+              "name": "prometheus"
+            },
+            "spec": {
+              "query": "label_values(container_last_seen{job=\"integrations/docker\",name!=\"\"}, instance)",
+              "refId": "PrometheusVariableQueryEditor-servidor"
+            }
+          },
+          "regex": "",
+          "sort": "alphabeticalAsc",
+          "definition": "label_values(container_last_seen{job=\"integrations/docker\",name!=\"\"}, instance)",
+          "options": [],
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*",
+          "allowCustomValue": true
+        }
+      },
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "projeto",
+          "current": {
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "label": "Projeto",
+          "hide": "dontHide",
+          "refresh": "onTimeRangeChanged",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "prometheus",
+            "version": "v0",
+            "datasource": {
+              "name": "prometheus"
+            },
+            "spec": {
+              "query": "label_values(container_last_seen{job=\"integrations/docker\",name!=\"\",instance=~\"$servidor\"}, container_label_com_docker_compose_project)",
+              "refId": "PrometheusVariableQueryEditor-projeto"
+            }
+          },
+          "regex": "",
+          "sort": "alphabeticalAsc",
+          "definition": "label_values(container_last_seen{job=\"integrations/docker\",name!=\"\",instance=~\"$servidor\"}, container_label_com_docker_compose_project)",
+          "options": [],
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*",
+          "allowCustomValue": true
+        }
+      },
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "container",
+          "current": {
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "label": "Container",
+          "hide": "dontHide",
+          "refresh": "onTimeRangeChanged",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "prometheus",
+            "version": "v0",
+            "datasource": {
+              "name": "prometheus"
+            },
+            "spec": {
+              "query": "label_values(container_last_seen{job=\"integrations/docker\",name!=\"\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\"}, name)",
+              "refId": "PrometheusVariableQueryEditor-container"
+            }
+          },
+          "regex": "",
+          "sort": "alphabeticalAsc",
+          "definition": "label_values(container_last_seen{job=\"integrations/docker\",name!=\"\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\"}, name)",
+          "options": [],
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*",
+          "allowCustomValue": true
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "busca",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "query": "",
+          "label": "Busca nos logs",
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      }
+    ]
+  }
+}

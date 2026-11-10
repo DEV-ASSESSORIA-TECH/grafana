@@ -189,8 +189,12 @@ def http(url, path, auth, method="GET", body=None, timeout=30):
 
 def container_errors(name, lines=200):
     res = run(["docker", "logs", "--tail", str(lines), name], check=False)
-    out = [line for line in (res.stdout + res.stderr).splitlines() if "level=error" in line or line.startswith("Error")]
-    return "\n".join(out[-8:])
+    lines = (res.stdout + res.stderr).splitlines()
+    fatal = [line for line in lines if line.startswith("Error")]
+    if fatal:
+        return "  " + fatal[-1]
+    errors = list(dict.fromkeys(line for line in lines if "level=error" in line))
+    return "\n".join(f"  {line}" for line in errors[-3:])
 
 
 def wait_health(url, seconds=180, container=None):

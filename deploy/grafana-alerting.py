@@ -14,6 +14,9 @@ rede propria) -> backup de live/ -> copia -> restart do container (so se os arqu
 pela API -> conferencia na producao. Falha depois da copia restaura o backup e reinicia de novo.
 --skip-test pula o ensaio (aplicacao direta).
 
+Catalogo: catalogo.yml (raiz do repositorio) classifica hosts, VMs, servidores e containers; o build expande
+nas regras. `grafana-alerting catalogo` compara o arquivo com o que a producao reporta.
+
 Sem comando abre o menu. A cada execucao a ferramenta se atualiza pela branch configurada (--no-update evita).
 """
 import argparse
@@ -551,7 +554,7 @@ def cmd_status(cfg, args):
         remote = run(["git", "-C", REPO, "rev-parse", f"origin/{cfg['branch']}"], check=False).stdout.strip()
         if remote and remote != dep["commit"]:
             diff = run(["git", "-C", REPO, "diff", "--stat", dep["commit"], remote, "--",
-                        "alerting", "contracts/alerts"], check=False).stdout.strip()
+                        "alerting", "contracts/alerts", "catalogo.yml"], check=False).stdout.strip()
             print(f"  Pendente      {cfg['branch']} @ {remote[:7]}")
             for line in diff.splitlines():
                 print(f"                {line}")
@@ -560,6 +563,17 @@ def cmd_status(cfg, args):
     else:
         print("  Aplicado      nada ainda")
     print()
+
+
+def cmd_catalogo(cfg, args):
+    """Compara o catalogo.yml da branch configurada com o que a producao reportou nos ultimos 7 dias."""
+    head = run(["git", "-C", REPO, "rev-parse", "--short", "HEAD"], check=False).stdout.strip()
+    log(f"catalogo.yml de {cfg['branch']} @ {head or '?'} contra a producao ({cfg['url']})")
+    res = run([sys.executable, REPO / "scripts" / "catalogo.py", "--audit", "--url", cfg["url"]],
+              check=False, capture=False, env=prod_env(cfg))
+    if res.returncode != 0:
+        raise Fail("auditoria do catalogo falhou")
+    print("\n  Para mudar: edite catalogo.yml no repositorio, faca o merge e rode deploy.")
 
 
 def cmd_package(cfg, args):
@@ -624,6 +638,7 @@ MENU = [
     ("7", "Listar pacotes", "list"),
     ("8", "Remover temporarios", "cleanup"),
     ("9", "Setup / trocar token", "setup"),
+    ("c", "Conferir o catalogo com a producao", "catalogo"),
 ]
 
 
@@ -653,7 +668,7 @@ def menu(cfg, parser):
 
 def dispatch(cfg, args):
     {"setup": cmd_setup, "status": cmd_status, "deploy": cmd_deploy, "apply": cmd_apply, "test": cmd_test,
-     "package": cmd_package, "rollback": cmd_rollback, "list": cmd_list, "cleanup": cmd_cleanup,
+     "package": cmd_package, "catalogo": cmd_catalogo, "rollback": cmd_rollback, "list": cmd_list, "cleanup": cmd_cleanup,
      "update": cmd_update}[args.command](cfg, args)
 
 
@@ -682,6 +697,7 @@ def main():
     p = sub.add_parser("rollback", help="aplica de novo o pacote do deploy anterior")
     p.add_argument("--skip-test", action="store_true")
     p.add_argument("--yes", "-y", action="store_true")
+    sub.add_parser("catalogo", help="compara o catalogo.yml com o que a producao reporta")
     sub.add_parser("list", help="lista os pacotes")
     sub.add_parser("cleanup", help="remove container/rede temporarios e sobras")
     sub.add_parser("update", help="so atualiza a ferramenta")

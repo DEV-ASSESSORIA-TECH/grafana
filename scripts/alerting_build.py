@@ -14,8 +14,10 @@ Uso:
     curl -X POST -H "Authorization: Bearer $GRAFANA_TOKEN" $GRAFANA_URL/api/admin/provisioning/alerting/reload
 """
 import argparse
-import shutil
+import sys
 from pathlib import Path
+
+import catalogo
 
 ROOT = Path(__file__).resolve().parent.parent
 SECTIONS = ("rules", "notifications")
@@ -26,6 +28,9 @@ ap.add_argument("--dry-run", action="store_true", help="so mostra o que seria fe
 args = ap.parse_args()
 
 out = Path(args.out)
+cat, errors = catalogo.load()
+if errors:
+    sys.exit("catalogo.yml invalido:\n  " + "\n  ".join(errors))
 wanted = {}
 for section in SECTIONS:
     for src in sorted((ROOT / "alerting" / section).glob("*.yaml")):
@@ -35,10 +40,14 @@ if not args.dry_run:
     out.mkdir(parents=True, exist_ok=True)
 for name, src in wanted.items():
     dst = out / name
-    same = dst.exists() and dst.read_bytes() == src.read_bytes()
+    text, errors = catalogo.render(src.read_text(encoding="utf-8"), cat)
+    if errors:
+        sys.exit(f"{src.relative_to(ROOT)}: " + "; ".join(errors))
+    data = text.encode("utf-8")
+    same = dst.exists() and dst.read_bytes() == data
     print(f"{'igual ' if same else 'copia '} {src.relative_to(ROOT)} -> {dst}")
     if not same and not args.dry_run:
-        shutil.copyfile(src, dst)
+        dst.write_bytes(data)
         dst.chmod(0o644)  # o Grafana nao sobe se nao conseguir ler um arquivo de provisionamento
 for section in SECTIONS:
     for stale in sorted(out.glob(f"{section}-*.yaml")) if out.exists() else []:

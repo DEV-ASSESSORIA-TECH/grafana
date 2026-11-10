@@ -17,6 +17,9 @@ from pathlib import Path
 
 import yaml
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import catalogo  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 PLACEHOLDER = "A preencher."
 SCOPE_PT = {"hypervisor": "hosts", "vm": "VMs", "guest": "sistemas convidados", "service": "serviços/containers",
@@ -24,6 +27,11 @@ SCOPE_PT = {"hypervisor": "hosts", "vm": "VMs", "guest": "sistemas convidados", 
 EQUAL_PT = {"dep_hypervisor": "do mesmo host", "dep_vm": "da mesma VM"}
 AREA_PT = {"hypervisor": "Hipervisor", "windows": "Windows", "linux": "Linux", "containers": "Containers",
            "servicos": "Serviços", "monitoramento": "Monitoramento"}
+
+
+def sev_text(value):
+    default, alt = catalogo.severity_values(value)
+    return f"{default} ({alt} se o container for secundario no catalogo.yml)" if alt else default
 
 
 def load(path):
@@ -40,7 +48,7 @@ scopes = list(labels_contract["scope"]["values"])
 
 rules = {}  # uid -> (regra, grupo, arquivo)
 for path in sorted((ROOT / "alerting" / "rules").glob("*.yaml")):
-    for group in yaml.safe_load(path.read_text(encoding="utf-8")).get("groups") or []:
+    for group in yaml.safe_load(catalogo.render(path.read_text(encoding="utf-8"), catalogo.load()[0])[0]).get("groups") or []:
         for rule in group["rules"]:
             rules[rule["uid"]] = (rule, group, path.name)
 inhibitions = []
@@ -97,7 +105,7 @@ def header(code):
         lines += ["> **Retirado.** Este código não está mais em uso e não é reutilizado.", ""]
     lines += ["| Severidade | Área | Escopo | Dispara após | Avaliação | Fonte |",
               "|---|---|---|---|---|---|",
-              f"| {labels['severity']} | {labels['area']} | {labels['scope']} | {duration(rule['for'])} | "
+              f"| {sev_text(labels['severity'])} | {labels['area']} | {labels['scope']} | {duration(rule['for'])} | "
               f"a cada {duration(group['interval'])} (`{group['name']}`) | {source} |", ""]
     inhibits, inhibited = [], []
     for inh in inhibitions:
@@ -109,7 +117,7 @@ def header(code):
             inhibited.append(f"{', '.join(codes_matching(spec['source_matchers']))} {equal} (`{name}`)")
     lines.append(f"- **Inibe:** {'; '.join(inhibits) if inhibits else 'nada'}.")
     lines.append(f"- **É inibido por:** {'; '.join(inhibited) if inhibited else 'nada'}.")
-    lines.append(f"- **Notificação:** rota `severity = {labels['severity']}` da política padrão (UI); "
+    lines.append(f"- **Notificação:** rota `severity = {catalogo.severity_values(labels['severity'])[0]}` da política padrão (UI); "
                  f"o agrupamento é o da política.")
     links = [f"[regra no Grafana]({GRAFANA}/alerting/grafana/{entry['uid']}/view)"]
     if ann.get("__dashboardUid__"):

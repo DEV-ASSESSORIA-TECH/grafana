@@ -21,19 +21,9 @@ groups:
             model:
               editorMode: code
               expr: |-
-                absent_over_time(
-                  windows_os_info{
-                    job="integrations/windows",
-                    instance="srv-host01"
-                  }[5m]
-                )
-                or
-                absent_over_time(
-                  windows_os_info{
-                    job="integrations/windows",
-                    instance="srv-host01-mtc"
-                  }[5m]
-                )
+                group by (instance) (max_over_time(windows_os_info{job="integrations/windows",instance=~"@catalogo:hosts@"}[7d]))
+                unless
+                group by (instance) (windows_os_info{job="integrations/windows",instance=~"@catalogo:hosts@"})
               instant: true
               intervalMs: 1000
               legendFormat: __auto
@@ -111,7 +101,7 @@ groups:
                   job="uptime-kuma",
                   monitor_type="push",
                   grupo="servidores",
-                  monitor_name=~"heartbeat-srv-host01|heartbeat-srv-host01-mtc"
+                  monitor_name=~"heartbeat-(@catalogo:hosts@)"
                 }
               instant: true
               intervalMs: 1000
@@ -257,14 +247,14 @@ groups:
                 hypervisor_vm_state{
                   job="integrations/hypervisor",
                   state="running",
-                  instance="srv-host01",
-                  vm=~"SRV-VPN|SRV-RMM|SRV-ALTOGARCAS|SRV-MON|SRV-WEB|SRV-AD-TRS|SRV-AMANDA|SRV-AD|SRV-CONTABIL-ASS|SRV-DOM-TRS"
+                  instance=~"@catalogo:hosts=critica@",
+                  vm!~"@catalogo:vms!=critica@"
                 }
                 or
                 hypervisor_vm_state{
                   job="integrations/hypervisor",
                   state="running",
-                  instance="srv-host01-mtc"
+                  vm=~"@catalogo:vms=critica@"
                 }
               instant: true
               intervalMs: 1000
@@ -343,8 +333,14 @@ groups:
                 hypervisor_vm_state{
                   job="integrations/hypervisor",
                   state="running",
-                  instance!="srv-host01-mtc",
-                  vm=~"SRV-N8N|SRV-DOCS|SRV-SNIPE|SRV-APPS|SRV-ADM|SRV-GPS|SRV-MN"
+                  instance=~"@catalogo:hosts=importante@",
+                  vm!~"@catalogo:vms!=importante@"
+                }
+                or
+                hypervisor_vm_state{
+                  job="integrations/hypervisor",
+                  state="running",
+                  vm=~"@catalogo:vms=importante@"
                 }
               instant: true
               intervalMs: 1000
@@ -425,8 +421,14 @@ groups:
                 hypervisor_vm_state{
                   job="integrations/hypervisor",
                   state="running",
-                  instance!="srv-host01-mtc",
-                  vm!~"SRV-VPN|SRV-RMM|SRV-ALTOGARCAS|SRV-MON|SRV-WEB|SRV-AD-TRS|SRV-AMANDA|SRV-AD|SRV-CONTABIL-ASS|SRV-DOM-TRS|SRV-N8N|SRV-DOCS|SRV-SNIPE|SRV-APPS|SRV-ADM|SRV-GPS|SRV-MN"
+                  instance=~"@catalogo:hosts=informativa@",
+                  vm!~"@catalogo:vms!=informativa@"
+                }
+                or
+                hypervisor_vm_state{
+                  job="integrations/hypervisor",
+                  state="running",
+                  vm=~"@catalogo:vms=informativa@"
                 }
               instant: true
               intervalMs: 1000
@@ -645,13 +647,13 @@ groups:
                   1 -
                   windows_logical_disk_free_bytes{
                     job="integrations/windows",
-                    instance=~"srv-host01|srv-host01-mtc",
+                    instance=~"@catalogo:hosts@",
                     volume=~"[A-Z]:"
                   }
                   /
                   windows_logical_disk_size_bytes{
                     job="integrations/windows",
-                    instance=~"srv-host01|srv-host01-mtc",
+                    instance=~"@catalogo:hosts@",
                     volume=~"[A-Z]:"
                   }
                 )
@@ -730,13 +732,13 @@ groups:
                   1 -
                   windows_logical_disk_free_bytes{
                     job="integrations/windows",
-                    instance=~"srv-host01|srv-host01-mtc",
+                    instance=~"@catalogo:hosts@",
                     volume=~"[A-Z]:"
                   }
                   /
                   windows_logical_disk_size_bytes{
                     job="integrations/windows",
-                    instance=~"srv-host01|srv-host01-mtc",
+                    instance=~"@catalogo:hosts@",
                     volume=~"[A-Z]:"
                   }
                 )
@@ -946,7 +948,7 @@ groups:
             datasourceUid: prometheus
             model:
               editorMode: code
-              expr: 'windows_memory_available_bytes{job="integrations/windows",instance=~"srv-host01|srv-host01-mtc"} / 2^30'
+              expr: 'windows_memory_available_bytes{job="integrations/windows",instance=~"@catalogo:hosts@"} / 2^30'
               instant: true
               intervalMs: 1000
               legendFormat: __auto
@@ -1080,7 +1082,7 @@ groups:
             datasourceUid: prometheus
             model:
               editorMode: code
-              expr: 'windows_service_state{job="integrations/windows",state="running",instance=~"srv-host01|srv-host01-mtc",name=~"vmms|vmcompute"}'
+              expr: 'windows_service_state{job="integrations/windows",state="running",instance=~"@catalogo:hosts@",name=~"vmms|vmcompute"}'
               instant: true
               intervalMs: 1000
               legendFormat: __auto
@@ -1427,7 +1429,7 @@ groups:
               queryType: instant
               expr: |-
                 sum by (host) (count_over_time(
-                  {job="windows-eventlog", host=~"srv-host01|srv-host01-mtc"}
+                  {job="windows-eventlog", host=~"@catalogo:hosts@"}
                   | json source, event_id
                   | source="Microsoft-Windows-Time-Service" | event_id=~"129|134|36|47"
                   [2h]
@@ -1500,7 +1502,7 @@ groups:
               queryType: instant
               expr: |-
                 sum by (host) (count_over_time(
-                  {job="windows-eventlog", host=~"srv-host01|srv-host01-mtc"}
+                  {job="windows-eventlog", host=~"@catalogo:hosts@"}
                   | json source, event_id
                   | (source="Microsoft-Windows-Kernel-Power" and event_id="41")
                     or (source="EventLog" and event_id="6008")

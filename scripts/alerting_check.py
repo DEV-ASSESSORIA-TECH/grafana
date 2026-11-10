@@ -26,6 +26,9 @@ from pathlib import Path
 
 import yaml
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import catalogo  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 INHIBITION = "/apis/notifications.alerting.grafana.app/v1beta1/namespaces/{ns}/inhibitionrules"
 
@@ -66,10 +69,14 @@ def wait_health():
     raise SystemExit("tempo esgotado esperando o Grafana")
 
 
+CATALOGO = catalogo.load()[0]
+
+
 def load(section):
     docs = []
     for path in sorted((ROOT / "alerting" / section).glob("*.yaml")):
-        docs += [(path.relative_to(ROOT), d) for d in yaml.safe_load_all(path.read_text(encoding="utf-8")) if d]
+        text = catalogo.render(path.read_text(encoding="utf-8"), CATALOGO)[0]
+        docs += [(path.relative_to(ROOT), d) for d in yaml.safe_load_all(text) if d]
     return docs
 
 

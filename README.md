@@ -15,6 +15,7 @@ Dashboards e alertas do Grafana da infraestrutura (Grafana **13.3.0**), e os con
 | `alerting/` | Regras (`rules/`), notificações (`notifications/`) e inibição (`inhibition/`). **Fora do Git Sync** |
 | `contracts/alerts/` | Labels e dependências das regras (`labels.yml`), catálogo de códigos (`codes.yml`) e divisão repositório/UI das notificações (`notifications.yml`) |
 | `docs/alerts/` | Documentação operacional de cada alerta (um arquivo por código; padrão em `contracts/alerts/docs.yml`) |
+| `catalogo.yml` | Catálogo de monitoramento: classe de hosts, VMs, servidores e containers (ver `alerting/README.md`) |
 | `deploy/` | `setup.sh` e `grafana-alerting.py`: deploy manual do alerting no servidor (ver `alerting/README.md`) |
 | `scripts/contracts.py` | Leitura dos contratos e verificação de consultas PromQL/LogQL (usado pelos dois validadores) |
 | `scripts/validate_dashboards.py` | Valida formato V2, compatibilidade com Git Sync, datasources, navegação (tag `infra`, links) e se as consultas usam só métricas/labels dos contratos |

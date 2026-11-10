@@ -80,6 +80,7 @@ groups:
         execErrState: Error
         for: 5m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-101.md
           __dashboardUid__: servers-windows
           __panelId__: "368"
           summary: 'Servidor Windows {{ $labels.instance }} sem métricas'
@@ -170,6 +171,7 @@ groups:
         execErrState: Error
         for: 5m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-102.md
           __dashboardUid__: servers-windows
           __panelId__: "368"
           summary: 'Servidor Windows {{ $labels.instance }} sem métricas'
@@ -254,6 +256,7 @@ groups:
         execErrState: Error
         for: 3m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-110.md
           __dashboardUid__: servers-windows
           __panelId__: "7"
           summary: 'Serviço {{ $labels.name }} parado no controlador de domínio {{ $labels.instance }}'
@@ -346,6 +349,7 @@ groups:
         execErrState: Error
         for: 3m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-111.md
           __dashboardUid__: servers-windows
           __panelId__: "7"
           summary: 'Serviço {{ $labels.name }} parado em {{ $labels.instance }}'
@@ -414,6 +418,7 @@ groups:
         execErrState: Error
         for: 10m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-112.md
           __dashboardUid__: servers-windows
           __panelId__: "7"
           summary: 'Serviço {{ $labels.name }} parado em {{ $labels.instance }}'
@@ -496,6 +501,7 @@ groups:
         execErrState: Error
         for: 0s
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-120.md
           __dashboardUid__: servers-windows
           __panelId__: "51"
           summary: 'Servidor {{ $labels.instance }} reiniciado'
@@ -510,6 +516,78 @@ groups:
           scope: guest
           dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
           dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: win-130
+        title: '[WIN-130] Servidor Windows sem sincronizar o horário'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 7200
+              to: 0
+            datasourceUid: loki
+            model:
+              editorMode: code
+              queryType: instant
+              expr: |-
+                sum by (host) (count_over_time(
+                  {job="windows-eventlog", host!~"srv-host01|srv-host01-mtc"}
+                  | json source, event_id
+                  | source="Microsoft-Windows-Time-Service" | event_id=~"129|134|36|47"
+                  [2h]
+                ))
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-130.md
+          __dashboardUid__: servers-windows
+          __panelId__: "51"
+          summary: 'Servidor {{ $labels.host }} sem sincronizar o horário'
+          description: |-
+            O serviço de horário de {{ $labels.host }} registrou falhas repetidas de sincronização nas últimas 2 horas (Time-Service 129/134/36/47).
+
+            Nos controladores de domínio, horário errado quebra Kerberos para todo o domínio.
+            Verifique: w32tm /query /status, w32tm /query /source e w32tm /resync.
+        labels:
+          alert_code: WIN-130
+          severity: warning
+          area: windows
+          scope: guest
+          dep_vm: '{{ with $$labels.host }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
         isPaused: false
 
       - uid: win-201
@@ -585,6 +663,7 @@ groups:
         execErrState: Error
         for: 10m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-201.md
           __dashboardUid__: servers-windows
           __panelId__: "369"
           summary: 'Volume {{ $labels.volume }} de {{ $labels.instance }} acima de 90% de uso'
@@ -670,6 +749,7 @@ groups:
         execErrState: Error
         for: 2m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-202.md
           __dashboardUid__: servers-windows
           __panelId__: "369"
           summary: 'Volume {{ $labels.volume }} de {{ $labels.instance }} acima de 95% de uso'
@@ -755,6 +835,7 @@ groups:
         execErrState: Error
         for: 15m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-203.md
           __dashboardUid__: servers-windows
           __panelId__: "204"
           summary: 'Memória de {{ $labels.instance }} acima de 92%'
@@ -840,6 +921,7 @@ groups:
         execErrState: Error
         for: 15m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-204.md
           __dashboardUid__: servers-windows
           __panelId__: "205"
           summary: 'Commit de {{ $labels.instance }} acima de 95% do limite'
@@ -923,6 +1005,7 @@ groups:
         execErrState: Error
         for: 30m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-205.md
           __dashboardUid__: servers-windows
           __panelId__: "368"
           summary: 'CPU de {{ $labels.instance }} acima de 90%'

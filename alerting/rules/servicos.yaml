@@ -76,6 +76,7 @@ groups:
         execErrState: Error
         for: 2m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-101.md
           __dashboardUid__: servicos
           __panelId__: "14"
           summary: '{{ $labels.monitor_name }} fora do ar'
@@ -160,6 +161,7 @@ groups:
         execErrState: Error
         for: 5m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-102.md
           __dashboardUid__: servicos
           __panelId__: "14"
           summary: '{{ $labels.monitor_name }} fora do ar'
@@ -225,6 +227,7 @@ groups:
         execErrState: Error
         for: 15m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-110.md
           __dashboardUid__: servicos
           __panelId__: "14"
           summary: '{{ $labels.monitor_name }} (externo) fora do ar'
@@ -287,6 +290,7 @@ groups:
         execErrState: Error
         for: 10m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-201.md
           __dashboardUid__: servicos
           __panelId__: "7"
           summary: 'Certificado de {{ $labels.monitor_name }} vence em {{ humanize $values.A.Value }} dias'
@@ -349,6 +353,7 @@ groups:
         execErrState: Error
         for: 10m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-202.md
           __dashboardUid__: servicos
           __panelId__: "7"
           summary: 'Certificado de {{ $labels.monitor_name }} vence em {{ humanize $values.A.Value }} dias'
@@ -411,6 +416,7 @@ groups:
         execErrState: Error
         for: 10m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-203.md
           __dashboardUid__: servicos
           __panelId__: "7"
           summary: 'Certificado de {{ $labels.monitor_name }} inválido'
@@ -476,6 +482,7 @@ groups:
         execErrState: Error
         for: 5m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-301.md
           __dashboardUid__: servicos
           __panelId__: "22"
           summary: 'Uptime Kuma sem métricas'

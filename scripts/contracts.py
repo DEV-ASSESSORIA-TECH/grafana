@@ -26,7 +26,10 @@ class Contracts:
                 errors.append(f"{rel}: YAML invalido: {e}")
                 continue
             job, kind = c.get("job"), c.get("kind")
-            if kind == "observability_contract" and job:
+            if kind == "observability_contract" and c.get("selector_without_job"):
+                for group in (c.get("metric_groups") or {}).values():  # metricas sem label job (remote write)
+                    self.prom_jobs.setdefault("", set()).update(group.get("metrics_observed") or [])
+            elif kind == "observability_contract" and job:
                 metrics = set()
                 for group in (c.get("metric_groups") or {}).values():
                     metrics |= set(group.get("metrics_observed") or [])
@@ -76,6 +79,8 @@ def check_prom(where, expr, contracts, errors):
     if not metrics:
         return
     if not jobs:
+        if metrics <= contracts.prom_jobs.get("", set()):
+            return  # so metricas de contrato sem job (ex. GRAFANA_ALERTS)
         errors.append(f"{where}: consulta sem job fixo: {expr[:90]}")
         return
     unknown = jobs - contracts.prom_jobs.keys()

@@ -57,6 +57,7 @@ groups:
         execErrState: Error
         for: 10m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/MON-101.md
           summary: 'Prometheus não conseguiu recarregar a configuração'
           description: |-
             A última recarga de configuração do Prometheus falhou. Ele continua com a configuração anterior.
@@ -117,6 +118,7 @@ groups:
         execErrState: Error
         for: 0s
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/MON-102.md
           summary: 'Prometheus com falha de compactação'
           description: |-
             O Prometheus registrou falha ao compactar o banco de séries nas últimas 3 horas.

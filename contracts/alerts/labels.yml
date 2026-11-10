@@ -1,7 +1,7 @@
 # Contrato dos labels de alerta; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_label_contract
-version: 0.5.0
+version: 0.6.0
 id: alert-labels
 title: Labels obrigatorios e de dependencia das regras de alerta
 status: defined
@@ -96,6 +96,10 @@ dependency:
   chain: >-
     Com dep_vm vem sempre dep_hypervisor: com o host fora, as metricas das VMs somem e os alertas de VM nao
     disparam, entao so o alerta do host (equal dep_hypervisor) inibe convidados e servicos.
+  log_rules: >-
+    Excecao: regras so de log (Loki) do convidado levam apenas dep_vm, gerado do label host (hostname = nome da VM
+    na convencao). Loki nao faz join com o inventario, e com o host fora nenhum log chega, entao o alerta nem dispara.
+    Se o hostname for diferente do nome da VM, a inibicao por VM nao casa (o alerta sai mesmo com a VM fora).
 canonical_key:
   rule: "minusculas e todo caractere fora de [a-z0-9_] trocado por '_'. Ex. SRV-WEB -> srv_web, srv-host01 -> srv_host01."
   why: >-
@@ -136,6 +140,6 @@ rules:
   - Toda regra publica exatamente um alert_code, uma severity, uma area e um scope, entre os listados acima.
   - O prefixo do alert_code e o code_prefix da area.
   - Valores em ASCII minusculo, exatamente como escritos aqui (servicos, sem cedilha); alert_code em maiusculas.
-  - Labels exigidos pelo scope (requires) sao obrigatorios na regra; dep_vm exige dep_hypervisor.
+  - Labels exigidos pelo scope (requires) sao obrigatorios na regra; dep_vm exige dep_hypervisor (exceto regras so de log, ver dependency.log_rules).
   - scope external nunca e alvo de inibicao.
   - Valor novo de severity, area ou scope exige atualizar este contrato antes de ser usado.

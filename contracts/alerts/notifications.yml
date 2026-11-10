@@ -1,7 +1,7 @@
 # Contrato de notificacao; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_notification_contract
-version: 0.2.0
+version: 0.3.0
 id: alert-notifications
 title: Divisao de responsabilidade das notificacoes
 status: defined
@@ -12,9 +12,10 @@ managed_in_ui:
   - notification policies (arvore padrao): roteamento livre pelos labels de contracts/alerts/labels.yml
   - contact points (e-mail, webhooks, APIs)
   - silences (manutencao pontual)
+  - mute timings usados pelas rotas (ex. mute-info, que silencia a rota de info)
 managed_in_files:
-  muteTimes: alerting/notifications/mute-timings.yaml (usaveis nas policies da UI)
   templates: alerting/notifications/templates.yaml (usaveis nos contact points da UI)
+  muteTimes: alerting/notifications/mute-timings.yaml (hoje so remove o antigo 'sempre')
 routing_labels:
   - alert_code
   - severity
@@ -24,10 +25,11 @@ routing_labels:
   - dep_vm
 recommended_ui_policies:
   - matcher: severity = info
-    mute_timing: sempre
-    why: info fica visivel no Grafana e nunca notifica.
-  - group_by: [area, dep_hypervisor]
-    why: a queda de um host vira uma notificacao so.
+    why: info fica visivel no Grafana e nunca notifica (rota com um mute timing de dia inteiro, ex. mute-info na UI).
+  - group_by: [grafana_folder, alertname]
+    why: >-
+      Padrao do Grafana, mantido: uma notificacao por regra, com as instancias juntas e o codigo no assunto. A inibicao
+      ja evita a enxurrada quando um host ou VM cai. Alternativa: [area, dep_hypervisor] (uma notificacao por host).
 rules:
   - alerting/ nao declara policies, resetPolicies nem contact points (o arquivo travaria a edicao na UI e substituiria a arvore inteira).
   - Regras nao usam notification_settings (roteamento direto para contact point); o destino sai sempre da policy.

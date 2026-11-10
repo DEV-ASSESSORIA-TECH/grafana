@@ -14,11 +14,13 @@ Dashboards e alertas do Grafana da infraestrutura (Grafana **13.3.0**), e os con
 | `contracts/loki/` | Streams e labels de log observados (inclui o heartbeat dos hosts, `alloy-heartbeat`) |
 | `alerting/` | Regras (`rules/`), notificações (`notifications/`) e inibição (`inhibition/`). **Fora do Git Sync** |
 | `contracts/alerts/` | Labels e dependências das regras (`labels.yml`), catálogo de códigos (`codes.yml`) e divisão repositório/UI das notificações (`notifications.yml`) |
+| `docs/alerts/` | Documentação operacional de cada alerta (um arquivo por código; padrão em `contracts/alerts/docs.yml`) |
 | `deploy/` | `setup.sh` e `grafana-alerting.py`: deploy manual do alerting no servidor (ver `alerting/README.md`) |
 | `scripts/contracts.py` | Leitura dos contratos e verificação de consultas PromQL/LogQL (usado pelos dois validadores) |
 | `scripts/validate_dashboards.py` | Valida formato V2, compatibilidade com Git Sync, datasources e se as consultas usam só métricas/labels dos contratos |
 | `scripts/grafana_check.py` | Sincroniza `dashboards/` num Grafana 13.3.0 real e confere o resultado |
 | `scripts/validate_alerting.py` | Valida `alerting/` contra os contratos (códigos, labels, consultas, policies, inibição) |
+| `scripts/alert_docs.py` | Gera o cabeçalho dos documentos de alerta e o índice; `--check` no CI |
 | `scripts/alerting_build.py` | Achata `alerting/` na pasta de provisionamento do Grafana |
 | `scripts/alerting_inhibition.py` | Aplica `alerting/inhibition` pela App Platform API |
 | `scripts/alerting_check.py` | Confere num Grafana 13.3.0 real se `alerting/` foi carregado como está no repositório |
@@ -31,6 +33,7 @@ Dashboards e alertas do Grafana da infraestrutura (Grafana **13.3.0**), e os con
 | Servidores Windows | `servers-windows` | `servers/windows.json` | Servidores | `integrations/windows` | `windows-eventlog` |
 | Hypervisors | `hypervisors` | `virtualization/hypervisor.json` | Virtualização | `integrations/hypervisor` (inventário) + `integrations/hyperv` (contadores) | `hyperv-eventlog` |
 | Serviços | `servicos` | `services/servicos.json` | Serviços | `uptime-kuma` | `docker` (container do Kuma) |
+| Visão geral | `overview` | `overview/overview.json` | Visão geral | `GRAFANA_ALERTS` (histórico de alertas) + jobs acima | — |
 
 ## Formato dos arquivos (Schema V2)
 

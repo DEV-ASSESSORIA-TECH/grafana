@@ -80,6 +80,7 @@ groups:
         execErrState: Error
         for: 5m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-101.md
           __dashboardUid__: servers-linux
           __panelId__: "352"
           summary: 'Servidor Linux {{ $labels.instance }} sem métricas'
@@ -170,6 +171,7 @@ groups:
         execErrState: Error
         for: 5m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-102.md
           __dashboardUid__: servers-linux
           __panelId__: "352"
           summary: 'Servidor Linux {{ $labels.instance }} sem métricas'
@@ -254,6 +256,7 @@ groups:
         execErrState: Error
         for: 5m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-110.md
           __dashboardUid__: servers-linux
           __panelId__: "380"
           summary: 'Unidade {{ $labels.name }} em falha em {{ $labels.instance }}'
@@ -338,6 +341,7 @@ groups:
         execErrState: Error
         for: 0s
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-120.md
           __dashboardUid__: servers-linux
           __panelId__: "346"
           summary: 'Servidor {{ $labels.instance }} reiniciado'
@@ -352,6 +356,75 @@ groups:
           scope: guest
           dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
           dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: lin-130
+        title: '[LIN-130] OOM killer acionado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 7200
+              to: 0
+            datasourceUid: loki
+            model:
+              editorMode: code
+              queryType: instant
+              expr: |-
+                sum by (host) (count_over_time(
+                  {job="systemd-journal"} |~ "Out of memory: Killed process|invoked oom-killer"
+                  [15m]
+                ))
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-130.md
+          __dashboardUid__: servers-linux
+          __panelId__: "307"
+          summary: 'OOM killer acionado em {{ $labels.host }}'
+          description: |-
+            O kernel de {{ $labels.host }} matou um processo por falta de memória nos últimos 15 minutos.
+
+            Veja qual processo morreu: journalctl -k | grep -i "out of memory". Aumente a memória da VM ou o limite do serviço.
+        labels:
+          alert_code: LIN-130
+          severity: warning
+          area: linux
+          scope: guest
+          dep_vm: '{{ with $$labels.host }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
         isPaused: false
 
       - uid: lin-201
@@ -421,6 +494,7 @@ groups:
         execErrState: Error
         for: 10m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-201.md
           __dashboardUid__: servers-linux
           __panelId__: "353"
           summary: '{{ $labels.mountpoint }} de {{ $labels.instance }} acima de 85% de uso'
@@ -504,6 +578,7 @@ groups:
         execErrState: Error
         for: 2m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-202.md
           __dashboardUid__: servers-linux
           __panelId__: "353"
           summary: '{{ $labels.mountpoint }} de {{ $labels.instance }} acima de 95% de uso'
@@ -591,6 +666,7 @@ groups:
         execErrState: Error
         for: 30m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-203.md
           __dashboardUid__: servers-linux
           __panelId__: "353"
           summary: '{{ $labels.mountpoint }} de {{ $labels.instance }} deve encher em menos de 24 horas'
@@ -674,6 +750,7 @@ groups:
         execErrState: Error
         for: 2m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-204.md
           __dashboardUid__: servers-linux
           __panelId__: "44"
           summary: '{{ $labels.mountpoint }} de {{ $labels.instance }} está somente leitura'
@@ -757,6 +834,7 @@ groups:
         execErrState: Error
         for: 10m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-205.md
           __dashboardUid__: servers-linux
           __panelId__: "41"
           summary: 'Inodes de {{ $labels.mountpoint }} em {{ $labels.instance }} acima de 90%'
@@ -840,6 +918,7 @@ groups:
         execErrState: Error
         for: 15m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-206.md
           __dashboardUid__: servers-linux
           __panelId__: "16"
           summary: 'Memória disponível de {{ $labels.instance }} abaixo de 10%'
@@ -923,6 +1002,7 @@ groups:
         execErrState: Error
         for: 30m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-207.md
           __dashboardUid__: servers-linux
           __panelId__: "21"
           summary: 'Swap de {{ $labels.instance }} acima de 90%'
@@ -1006,6 +1086,7 @@ groups:
         execErrState: Error
         for: 30m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-208.md
           __dashboardUid__: servers-linux
           __panelId__: "352"
           summary: 'CPU de {{ $labels.instance }} acima de 90%'
@@ -1089,6 +1170,7 @@ groups:
         execErrState: Error
         for: 10m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-209.md
           __dashboardUid__: servers-linux
           __panelId__: "260"
           summary: 'Relógio de {{ $labels.instance }} desajustado'

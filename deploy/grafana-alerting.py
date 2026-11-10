@@ -595,10 +595,14 @@ def cmd_rollback(cfg, args):
 
 
 def cmd_list(cfg, args):
-    state = load_json(STATE, {})
-    current = (state.get("deployed") or {}).get("package")
+    current = (load_json(STATE, {}).get("deployed") or {}).get("package")
+    print(f"Pacotes (* = aplicado) em {PACKAGES}:")
     for p in sorted(PACKAGES.glob("*.tar.gz"), reverse=True):
-        print(f"{'*' if p.name == current else ' '} {p}")
+        if not p.name.startswith("live-backup-"):
+            print(f" {'*' if p.name == current else ' '} {p.name}")
+    print("Backups da pasta live/ (feitos antes de cada aplicacao):")
+    for p in sorted(PACKAGES.glob("live-backup-*.tar.gz"), reverse=True):
+        print(f"   {p.name}")
 
 
 def cmd_cleanup(cfg, args):
@@ -704,6 +708,9 @@ def main():
     except KeyboardInterrupt:
         cleanup_temp()
         sys.exit(130)
+    except BrokenPipeError:  # saida cortada (ex.: | head)
+        sys.stderr.close()
+        sys.exit(0)
     except (OSError, ValueError, KeyError) as e:
         cleanup_temp()
         log(f"{C['err']}ERRO inesperado:{C['r']} {type(e).__name__}: {e}")

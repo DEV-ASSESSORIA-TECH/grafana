@@ -1,0 +1,52 @@
+# Regras de inibicao (App Platform API, notifications.alerting.grafana.app/v1beta1, em beta).
+# Nao sao provisionaveis por arquivo: aplicar com scripts/alerting_inhibition.py. O Grafana nao tem UI para elas.
+# Labels usados: contracts/alerts/labels.yml (alert_code, scope, dep_hypervisor, dep_vm).
+#
+# A chave do equal e exigida NAO VAZIA nos dois lados: o Grafana trata label ausente e vazio como iguais, e um
+# alerta DatasourceNoData/DatasourceError (sem os labels da consulta, chave vazia) inibiria todo alvo sem chave.
+
+# Host fora (sem metricas ou sem heartbeat): silencia o que depende dele.
+apiVersion: notifications.alerting.grafana.app/v1beta1
+kind: InhibitionRule
+metadata:
+  name: hyp-host-indisponivel
+spec:
+  source_matchers:
+    - label: alert_code
+      type: =~
+      value: HYP-101|HYP-102
+    - label: dep_hypervisor
+      type: =~
+      value: .+
+  target_matchers:
+    - label: scope
+      type: =~
+      value: vm|guest|service|collection
+    - label: dep_hypervisor
+      type: =~
+      value: .+
+  equal:
+    - dep_hypervisor
+---
+# VM fora de execucao ou em estado critico: silencia o convidado e os servicos dela.
+apiVersion: notifications.alerting.grafana.app/v1beta1
+kind: InhibitionRule
+metadata:
+  name: hyp-vm-indisponivel
+spec:
+  source_matchers:
+    - label: alert_code
+      type: =~
+      value: HYP-11[0-3]
+    - label: dep_vm
+      type: =~
+      value: .+
+  target_matchers:
+    - label: scope
+      type: =~
+      value: guest|service
+    - label: dep_vm
+      type: =~
+      value: .+
+  equal:
+    - dep_vm

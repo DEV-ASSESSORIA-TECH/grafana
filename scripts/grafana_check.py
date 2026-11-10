@@ -11,13 +11,12 @@ container do Grafana e verifica:
 - o dashboard ficou na pasta do _folder.json do seu diretorio;
 - a leitura pela API v1 converte sem falha (clientes legados continuam lendo).
 
-Uso (Grafana 13.0.3 com o feature toggle 'provisioning' e a pasta montada):
+Uso (Grafana 13.3.0 com a pasta montada; o Git Sync nao precisa de feature toggle):
 
     docker run -d --name grafana -p 3000:3000 \\
       -v "$PWD/dashboards:/repo/dashboards:ro" \\
-      -e GF_FEATURE_TOGGLES_ENABLE=provisioning,kubernetesDashboards \\
       -e GF_PATHS_PERMITTED_PROVISIONING_PATHS=/repo \\
-      grafana/grafana:13.0.3
+      grafana/grafana:13.3.0
     python scripts/grafana_check.py --url http://localhost:3000 --path /repo/dashboards
 """
 import argparse
@@ -31,7 +30,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DASHBOARDS = ROOT / "dashboards"
-REPO = "grafana-dashboards-check"
+REPO = "grafana-check"
 PROV = "provisioning.grafana.app/v1beta1"
 
 ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -86,7 +85,7 @@ if api("GET", f"{ns}/repositories/{REPO}", ok404=True):
     wait("remocao do repositorio anterior", lambda: api("GET", f"{ns}/repositories/{REPO}", ok404=True) is None)
 api("POST", f"{ns}/repositories", {
     "apiVersion": PROV, "kind": "Repository", "metadata": {"name": REPO},
-    "spec": {"title": "grafana-dashboards (verificacao)", "type": "local",
+    "spec": {"title": "grafana (verificacao)", "type": "local",
              "local": {"path": args.path}, "workflows": [],
              "sync": {"enabled": True, "target": "folder", "intervalSeconds": 60}},
 })

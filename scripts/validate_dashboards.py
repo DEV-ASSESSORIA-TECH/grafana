@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Valida os dashboards (Dashboard Schema V2) e os contratos.
+"""Valida os dashboards (Dashboard Schema V2) contra os contratos.
 
 1. Sintaxe: JSON dos dashboards e YAML dos contratos. Arquivo vazio e erro.
 2. Git Sync: em dashboards/ so ha recursos JSON (Dashboard V2 ou _folder.json);
@@ -12,120 +12,36 @@
    ${DS_*}); toda consulta aponta para um datasource provisionado por UID.
 5. Contratos: toda metrica usada em consulta Prometheus existe no contrato do
    job fixado na consulta; toda consulta Loki usa job e labels observados.
-6. Contrato de alertas: severity e area definidos; jobs de cada area com contrato.
+
+Os alertas sao validados por validate_alerting.py.
 """
 import json
 import re
 import sys
-from pathlib import Path
 
-import yaml
+import contracts as ct
+from contracts import DATASOURCES, ROOT
 
-ROOT = Path(__file__).resolve().parent.parent
 DASHBOARDS = ROOT / "dashboards"
 errors, warnings = [], []
 
 DASHBOARD_API = "dashboard.grafana.app/v2"
 FOLDER_API = "folder.grafana.app/v1"
 FOLDER_FILE = "_folder.json"
-# UIDs reais dos datasources provisionados no Grafana (grupo da consulta -> UID)
-DATASOURCES = {"prometheus": "prometheus", "loki": "loki"}
 # datasources embutidos do Grafana (anotacoes nativas)
 BUILTIN_DATASOURCES = {("grafana", "-- Grafana --"), ("datasource", "grafana")}
 UID_RE = re.compile(r"^[a-zA-Z0-9_-]{1,40}$")
 LEGACY_KEYS = ("__inputs", "__requires", "__elements")
 
-# ---------------------------------------------------------------- contratos
-prom_jobs = {}  # job -> set(metricas)
-loki_jobs = {}  # job -> set(labels)
-alert_contracts = []  # (arquivo, contrato de labels de alerta)
-for path in sorted(ROOT.glob("contracts/**/*.yml")):
-    rel = path.relative_to(ROOT)
-    try:
-        c = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    except yaml.YAMLError as e:
-        errors.append(f"{rel}: YAML invalido: {e}")
-        continue
-    job = c.get("job")
-    if c.get("kind") == "observability_contract" and job:
-        metrics = set()
-        for group in (c.get("metric_groups") or {}).values():
-            metrics |= set(group.get("metrics_observed") or [])
-        prom_jobs[job] = metrics
-    elif c.get("kind") == "loki_log_contract" and job:
-        loki_jobs[job] = set((c.get("identity") or {}).get("observed_labels") or [])
-    elif c.get("kind") == "alert_label_contract":
-        alert_contracts.append((rel, c))
-
-# contrato de alertas: labels obrigatorios e jobs do mapeamento de area
-for rel, c in alert_contracts:
-    labels = c.get("labels") or {}
-    for name in ("severity", "area"):
-        if not (labels.get(name) or {}).get("values"):
-            errors.append(f"{rel}: label '{name}' sem valores")
-    for area, spec in ((labels.get("area") or {}).get("values") or {}).items():
-        for job in (spec or {}).get("prometheus_jobs") or []:
-            if job not in prom_jobs:
-                errors.append(f"{rel}: area {area}: job Prometheus sem contrato: {job}")
-        for job in (spec or {}).get("loki_jobs") or []:
-            if job not in loki_jobs:
-                errors.append(f"{rel}: area {area}: job Loki sem contrato: {job}")
-
-# ------------------------------------------------------------ parser PromQL
-PROM_WORDS = {"by", "without", "on", "ignoring", "group_left", "group_right",
-              "bool", "and", "or", "unless", "offset", "inf", "nan"}
-
-
-def prom_metrics(expr):
-    """Nomes de metricas usados numa expressao PromQL (aproximado, sem parser)."""
-    e = re.sub(r"\$\{?\w+(:\w+)?\}?", "", expr)               # variaveis Grafana
-    e = re.sub(r'"(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\'', "", e)  # strings
-    e = re.sub(r"\{[^}]*\}", " ", e)                          # seletores
-    e = re.sub(r"\[[^\]]*\]", " ", e)                         # ranges
-    e = re.sub(r"\b(by|without|on|ignoring|group_left|group_right)\s*\([^)]*\)", " ", e)
-    names = set()
-    for m in re.finditer(r"(?<![\w.])([a-zA-Z_:][\w:]*)(\s*\()?", e):
-        name, is_call = m.group(1), m.group(2)
-        if is_call or name.lower() in PROM_WORDS:
-            continue
-        names.add(name)
-    return names
-
-
-def jobs_in(expr):
-    return set(re.findall(r'\bjob\s*=\s*"([^"]+)"', expr))
+contracts = ct.Contracts(errors)
 
 
 def check_prom(where, expr):
-    jobs = jobs_in(expr)
-    metrics = prom_metrics(expr)
-    if not metrics:
-        return
-    if not jobs:
-        errors.append(f"{where}: consulta sem job fixo: {expr[:90]}")
-        return
-    unknown = jobs - prom_jobs.keys()
-    if unknown:
-        errors.append(f"{where}: job sem contrato: {', '.join(sorted(unknown))}")
-        return
-    allowed = set().union(*(prom_jobs[j] for j in jobs))
-    for m in sorted(metrics - allowed):
-        errors.append(f"{where}: metrica fora do contrato ({', '.join(sorted(jobs))}): {m}")
+    ct.check_prom(where, expr, contracts, errors)
 
 
 def check_loki(where, expr):
-    expr = re.sub(r"`[^`]*`", "``", expr)  # templates (label_format/line_format) nao sao seletores
-    for selector in re.findall(r"\{([^}]*)\}", expr):
-        labels = dict(re.findall(r'(\w+)\s*(?:=~|!=|!~|=)\s*"([^"]*)"', selector))
-        job = labels.get("job")
-        if not job:
-            errors.append(f"{where}: seletor Loki sem job: {{{selector}}}")
-            continue
-        if job not in loki_jobs:
-            errors.append(f"{where}: job Loki sem contrato: {job}")
-            continue
-        for label in sorted(set(labels) - loki_jobs[job]):
-            errors.append(f"{where}: label Loki nao observado em {job}: {label}")
+    ct.check_loki(where, expr, contracts, errors)
 
 
 # -------------------------------------------------------------- schema V2
@@ -327,10 +243,6 @@ for d in sorted(dirs_with_folder - dirs_with_dashboards):
 for uid in sorted(set(uids) & set(folder_uids)):
     errors.append(f"uid '{uid}' usado por dashboard ({uids[uid]}) e pasta ({folder_uids[uid]})")
 
-for w in warnings:
-    print(f"AVISO  {w}")
-for e in errors:
-    print(f"ERRO   {e}")
-print(f"{len(uids)} dashboards, {len(folder_uids)} pastas, {len(prom_jobs)} contratos Prometheus, "
-      f"{len(loki_jobs)} contratos Loki, {len(errors)} erro(s)")
-sys.exit(1 if errors else 0)
+sys.exit(ct.report(errors, warnings,
+                   f"{len(uids)} dashboards, {len(folder_uids)} pastas, {len(contracts.prom_jobs)} contratos Prometheus, "
+                   f"{len(contracts.loki_jobs)} contratos Loki"))

@@ -1,0 +1,772 @@
+# Regras de alerta do hipervisor (Hyper-V). Codigos em contracts/alerts/codes.yml.
+# Labels: escrever $$labels (o provisionamento interpola variaveis de ambiente nos labels).
+# Annotations e consultas nao sao interpoladas: nelas, $labels.
+# Painel vinculado: annotations __dashboardUid__/__panelId__ (o Grafana ignora os campos dashboardUid/panelId).
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: hypervisor-1m
+    folder: INFRA
+    interval: 1m
+    rules:
+      - uid: cg3sb66gvmnlsa
+        title: '[HYP-101] Host Hyper-V sem métricas'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                absent_over_time(
+                  windows_os_info{
+                    job="integrations/windows",
+                    instance="srv-host01"
+                  }[5m]
+                )
+                or
+                absent_over_time(
+                  windows_os_info{
+                    job="integrations/windows",
+                    instance="srv-host01-mtc"
+                  }[5m]
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "40"
+          summary: Host Hyper-V {{ $labels.instance }} deixou de reportar métricas
+          description: |-
+            O hipervisor {{ $labels.instance }} não apresenta métricas do sistema operacional há mais de 5 minutos.
+
+            Possíveis causas:
+            - Host desligado ou reiniciando.
+            - Falha de conectividade.
+            - Serviço Grafana Alloy interrompido.
+            - Falha no envio das métricas ao Prometheus.
+
+            Verifique a disponibilidade do host, a conectividade de rede e o estado do Grafana Alloy.
+
+            Enquanto este alerta estiver ativo, os alertas das VMs, convidados e serviços deste host ficam inibidos.
+        labels:
+          alert_code: HYP-101
+          severity: critical
+          area: hypervisor
+          scope: hypervisor
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: eg3tfixhztwcgd
+        title: '[HYP-102] Heartbeat do host Hyper-V ausente'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                monitor_status{
+                  job="uptime-kuma",
+                  monitor_type="push",
+                  grupo="servidores",
+                  monitor_name=~"heartbeat-srv-host01|heartbeat-srv-host01-mtc"
+                }
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 1m
+        annotations:
+          __dashboardUid__: servicos
+          __panelId__: "14"
+          summary: Heartbeat ausente no host {{ $labels.monitor_name }}
+          description: |-
+            O Uptime Kuma identificou ausência de heartbeat do hipervisor {{ $labels.monitor_name }}.
+
+            O host deixou de enviar as confirmações periódicas de disponibilidade.
+
+            Possíveis causas:
+            - Host desligado ou reiniciando.
+            - Falha de conectividade.
+            - Tarefa agendada do heartbeat interrompida.
+            - Falha na comunicação HTTPS com o Uptime Kuma.
+
+            Verifique a disponibilidade do hipervisor, a conectividade e a execução do heartbeat.
+
+            Enquanto este alerta estiver ativo, os alertas das VMs, convidados e serviços deste host ficam inibidos.
+        labels:
+          alert_code: HYP-102
+          severity: critical
+          area: hypervisor
+          scope: hypervisor
+          dep_hypervisor: '{{ with $$labels.monitor_name }}{{ . | reReplaceAll "^heartbeat-" "" | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: bg3s6ye5rzdvkd
+        title: '[HYP-110] VM em estado crítico no Hyper-V'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: hypervisor_vm_critical{job="integrations/hypervisor"}
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "39"
+          summary: VM {{ $labels.vm }} em estado crítico no Hyper-V
+          description: |-
+            O Hyper-V identificou a máquina virtual {{ $labels.vm }} em estado crítico no host {{ $labels.instance }}.
+
+            Verifique o estado da VM e os eventos do Hyper-V.
+        labels:
+          alert_code: HYP-110
+          severity: critical
+          area: hypervisor
+          scope: vm
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: dg3tetitcczr4d
+        title: '[HYP-111] VM crítica desligada'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                hypervisor_vm_state{
+                  job="integrations/hypervisor",
+                  state="running",
+                  instance="srv-host01",
+                  vm=~"SRV-VPN|SRV-RMM|SRV-ALTOGARCAS|SRV-MON|SRV-WEB|SRV-AD-TRS|SRV-AMANDA|SRV-AD|SRV-CONTABIL-ASS|SRV-DOM-TRS"
+                }
+                or
+                hypervisor_vm_state{
+                  job="integrations/hypervisor",
+                  state="running",
+                  instance="srv-host01-mtc"
+                }
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "39"
+          summary: VM crítica {{ $labels.vm }} desligada no host {{ $labels.instance }}
+          description: |-
+            A máquina virtual {{ $labels.vm }}, hospedada no hipervisor {{ $labels.instance }}, não está em execução.
+
+            Esta VM está classificada como CRÍTICA e exige correção imediata.
+
+            Verifique:
+            - O estado atual da máquina virtual no Hyper-V.
+            - Possíveis falhas na inicialização ou execução.
+            - Os eventos administrativos do Hyper-V.
+            - A disponibilidade dos recursos do hipervisor.
+
+            Caso o desligamento seja intencional, registre a manutenção e configure o silenciamento temporário do alerta.
+        labels:
+          alert_code: HYP-111
+          severity: critical
+          area: hypervisor
+          scope: vm
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: cg3teyx1dmzuof
+        title: '[HYP-112] VM importante desligada'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                hypervisor_vm_state{
+                  job="integrations/hypervisor",
+                  state="running",
+                  instance!="srv-host01-mtc",
+                  vm=~"SRV-N8N|SRV-DOCS|SRV-SNIPE|SRV-APPS|SRV-ADM|SRV-GPS|SRV-MN"
+                }
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "39"
+          summary: VM {{ $labels.vm }} desligada no host {{ $labels.instance }}
+          description: |-
+            A máquina virtual {{ $labels.vm }}, hospedada no hipervisor {{ $labels.instance }}, não está em execução há pelo menos 5 minutos.
+
+            Esta VM está classificada como IMPORTANTE (WARNING).
+
+            O desligamento é considerado suspeito e deve ser verificado pela equipe técnica.
+
+            Verifique:
+            - Se o desligamento foi planejado ou autorizado.
+            - O estado da VM no Hyper-V.
+            - Os eventos de desligamento ou falha.
+            - A necessidade de restabelecer os serviços hospedados.
+
+            Caso necessário, providencie a inicialização da VM.
+        labels:
+          alert_code: HYP-112
+          severity: warning
+          area: hypervisor
+          scope: vm
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: ag3tf34rw39q8e
+        title: '[HYP-113] VM informativa desligada'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                hypervisor_vm_state{
+                  job="integrations/hypervisor",
+                  state="running",
+                  instance!="srv-host01-mtc",
+                  vm!~"SRV-VPN|SRV-RMM|SRV-ALTOGARCAS|SRV-MON|SRV-WEB|SRV-AD-TRS|SRV-AMANDA|SRV-AD|SRV-CONTABIL-ASS|SRV-DOM-TRS|SRV-N8N|SRV-DOCS|SRV-SNIPE|SRV-APPS|SRV-ADM|SRV-GPS|SRV-MN"
+                }
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "39"
+          summary: VM {{ $labels.vm }} não está em execução no host {{ $labels.instance }}
+          description: |-
+            A máquina virtual {{ $labels.vm }}, hospedada no hipervisor {{ $labels.instance }}, não está em execução.
+
+            Esta VM não possui classificação Critical ou Warning e está sendo monitorada como INFO.
+
+            O evento é registrado para acompanhamento operacional e histórico, sem notificação.
+
+            Caso esta VM passe a hospedar serviços importantes, revise sua classificação de criticidade.
+        labels:
+          alert_code: HYP-113
+          severity: info
+          area: hypervisor
+          scope: vm
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: dg3s89i9nfnk0f
+        title: '[HYP-301] Falha no inventário do Hyper-V'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: hypervisor_inventory_success{job="integrations/hypervisor"}
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 2m
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "40"
+          summary: Falha na execução do inventário Hyper-V no host {{ $labels.instance }}
+          description: |-
+            O script de inventário do Hyper-V apresentou falha na última execução no host {{ $labels.instance }}.
+
+            A métrica hypervisor_inventory_success retornou 0, indicando que o inventário não foi concluído corretamente.
+
+            Verifique:
+            - A tarefa agendada \GrafanaLabs\Alloy Hypervisor Inventory.
+            - Os logs de execução do hypervisor-inventory.ps1.
+            - As permissões para consultar o Hyper-V.
+            - O arquivo textfile\hypervisor.prom.
+
+            As informações das máquinas virtuais podem estar incompletas ou indisponíveis.
+        labels:
+          alert_code: HYP-301
+          severity: warning
+          area: hypervisor
+          scope: collection
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: eg3s8htqlp1c0e
+        title: '[HYP-302] Inventário do Hyper-V desatualizado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: time() - hypervisor_inventory_timestamp_seconds{job="integrations/hypervisor"}
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 300
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 2m
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "40"
+          summary: Inventário do Hyper-V desatualizado no host {{ $labels.instance }}
+          description: |-
+            O inventário de máquinas virtuais do host {{ $labels.instance }} não é atualizado há mais de 5 minutos.
+
+            Verifique a tarefa agendada \GrafanaLabs\Alloy Hypervisor Inventory, a execução do script PowerShell e o textfile collector do Alloy.
+        labels:
+          alert_code: HYP-302
+          severity: warning
+          area: hypervisor
+          scope: collection
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+  - orgId: 1
+    name: storage-1m
+    folder: INFRA
+    interval: 1m
+    rules:
+      - uid: fg3ti88kxhtdsd
+        title: '[HYP-201] Armazenamento do host elevado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                100 * (
+                  1 -
+                  windows_logical_disk_free_bytes{
+                    job="integrations/windows",
+                    instance=~"srv-host01|srv-host01-mtc",
+                    volume=~"[A-Z]:"
+                  }
+                  /
+                  windows_logical_disk_size_bytes{
+                    job="integrations/windows",
+                    instance=~"srv-host01|srv-host01-mtc",
+                    volume=~"[A-Z]:"
+                  }
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 85
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "17"
+          summary: Volume {{ $labels.volume }} do host {{ $labels.instance }} acima de 85% de uso
+          description: |-
+            O volume {{ $labels.volume }} do hipervisor {{ $labels.instance }} está com {{ humanize $values.A.Value }}% de uso.
+
+            Volumes cheios impedem o crescimento dos discos virtuais dinâmicos e podem pausar as VMs.
+
+            Verifique checkpoints antigos, discos virtuais sobrando e arquivos temporários no volume.
+        labels:
+          alert_code: HYP-201
+          severity: warning
+          area: hypervisor
+          scope: hypervisor
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: dg3tiayqkuqyob
+        title: '[HYP-202] Armazenamento do host crítico'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                100 * (
+                  1 -
+                  windows_logical_disk_free_bytes{
+                    job="integrations/windows",
+                    instance=~"srv-host01|srv-host01-mtc",
+                    volume=~"[A-Z]:"
+                  }
+                  /
+                  windows_logical_disk_size_bytes{
+                    job="integrations/windows",
+                    instance=~"srv-host01|srv-host01-mtc",
+                    volume=~"[A-Z]:"
+                  }
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 95
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 2m
+        annotations:
+          __dashboardUid__: hypervisors
+          __panelId__: "17"
+          summary: Volume {{ $labels.volume }} do host {{ $labels.instance }} acima de 95% de uso
+          description: |-
+            O volume {{ $labels.volume }} do hipervisor {{ $labels.instance }} está com {{ humanize $values.A.Value }}% de uso.
+
+            Com o volume cheio, discos virtuais dinâmicos não crescem e o Hyper-V pausa as VMs afetadas.
+
+            Libere espaço imediatamente: checkpoints antigos, discos virtuais sobrando e arquivos temporários no volume.
+        labels:
+          alert_code: HYP-202
+          severity: critical
+          area: hypervisor
+          scope: hypervisor
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false

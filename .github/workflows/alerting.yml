@@ -10,6 +10,8 @@ on:
       - scripts/contracts.py
       - scripts/alerting_*.py
       - deploy/**
+      - docs/**
+      - scripts/alert_docs.py
       - .github/workflows/alerting.yml
   pull_request:
     paths:
@@ -20,6 +22,8 @@ on:
       - scripts/contracts.py
       - scripts/alerting_*.py
       - deploy/**
+      - docs/**
+      - scripts/alert_docs.py
       - .github/workflows/alerting.yml
 
 jobs:
@@ -32,6 +36,8 @@ jobs:
           python-version: "3.12"
       - run: pip install pyyaml
       - run: python scripts/validate_alerting.py
+      - name: Documentacao dos alertas
+        run: python scripts/alert_docs.py --check
       - name: Sintaxe da ferramenta de deploy
         run: |
           python -m py_compile deploy/grafana-alerting.py

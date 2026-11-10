@@ -18,7 +18,7 @@ rules:
   - uid e o UID da regra no Grafana (nao muda ao renomear o titulo).
   - title e o titulo sem o codigo; no Grafana o titulo e '[CODIGO] title'.
   - severity e scope devem ser iguais aos labels da regra; a area vem do prefixo (labels.yml).
-  - runbook e a URL do procedimento no Outline (annotation runbook_url); null ate o documento existir.
+  - runbook e a URL do documento do alerta (contracts/alerts/docs.yml): hoje docs/alerts no GitHub, depois o Outline.
 codes:
   HYP-101:
     uid: cg3sb66gvmnlsa
@@ -26,389 +26,424 @@ codes:
     severity: critical
     scope: hypervisor
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-101.md
   HYP-102:
     uid: eg3tfixhztwcgd
     title: Heartbeat do host Hyper-V ausente
     severity: critical
     scope: hypervisor
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-102.md
   HYP-110:
     uid: bg3s6ye5rzdvkd
     title: VM em estado crítico no Hyper-V
     severity: critical
     scope: vm
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-110.md
   HYP-111:
     uid: dg3tetitcczr4d
     title: VM crítica desligada
     severity: critical
     scope: vm
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-111.md
   HYP-112:
     uid: cg3teyx1dmzuof
     title: VM importante desligada
     severity: warning
     scope: vm
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-112.md
   HYP-113:
     uid: ag3tf34rw39q8e
     title: VM informativa desligada
     severity: info
     scope: vm
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-113.md
   HYP-201:
     uid: fg3ti88kxhtdsd
     title: Armazenamento do host elevado
     severity: warning
     scope: hypervisor
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-201.md
   HYP-202:
     uid: dg3tiayqkuqyob
     title: Armazenamento do host crítico
     severity: critical
     scope: hypervisor
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-202.md
   HYP-301:
     uid: dg3s89i9nfnk0f
     title: Falha no inventário do Hyper-V
     severity: warning
     scope: collection
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-301.md
   HYP-302:
     uid: eg3s8htqlp1c0e
     title: Inventário do Hyper-V desatualizado
     severity: warning
     scope: collection
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-302.md
   WIN-101:
     uid: win-101
     title: Servidor Windows crítico sem métricas
     severity: critical
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-101.md
   WIN-102:
     uid: win-102
     title: Servidor Windows sem métricas
     severity: warning
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-102.md
   WIN-110:
     uid: win-110
     title: Serviço do Active Directory parado
     severity: critical
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-110.md
   WIN-111:
     uid: win-111
     title: Serviço de aplicação parado
     severity: warning
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-111.md
   WIN-112:
     uid: win-112
     title: Serviço em curadoria parado
     severity: info
     scope: service
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-112.md
   WIN-120:
     uid: win-120
     title: Servidor Windows reiniciado
     severity: info
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-120.md
   WIN-201:
     uid: win-201
     title: Disco Windows acima de 90%
     severity: warning
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-201.md
   WIN-202:
     uid: win-202
     title: Disco Windows acima de 95%
     severity: critical
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-202.md
   WIN-203:
     uid: win-203
     title: Memória Windows alta
     severity: warning
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-203.md
   WIN-204:
     uid: win-204
     title: Commit Windows alto
     severity: warning
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-204.md
   WIN-205:
     uid: win-205
     title: CPU Windows alta
     severity: warning
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-205.md
   LIN-101:
     uid: lin-101
     title: Servidor Linux crítico sem métricas
     severity: critical
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-101.md
   LIN-102:
     uid: lin-102
     title: Servidor Linux sem métricas
     severity: warning
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-102.md
   LIN-110:
     uid: lin-110
     title: Unidade systemd em falha
     severity: warning
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-110.md
   LIN-120:
     uid: lin-120
     title: Servidor Linux reiniciado
     severity: info
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-120.md
   LIN-201:
     uid: lin-201
     title: Filesystem Linux acima de 85%
     severity: warning
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-201.md
   LIN-202:
     uid: lin-202
     title: Filesystem Linux acima de 95%
     severity: critical
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-202.md
   LIN-203:
     uid: lin-203
     title: Filesystem Linux enche em 24 horas
     severity: warning
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-203.md
   LIN-204:
     uid: lin-204
     title: Filesystem Linux somente leitura
     severity: critical
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-204.md
   LIN-205:
     uid: lin-205
     title: Inodes Linux acima de 90%
     severity: warning
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-205.md
   LIN-206:
     uid: lin-206
     title: Memória Linux esgotando
     severity: warning
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-206.md
   LIN-207:
     uid: lin-207
     title: Swap Linux quase cheio
     severity: warning
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-207.md
   LIN-208:
     uid: lin-208
     title: CPU Linux alta
     severity: warning
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-208.md
   LIN-209:
     uid: lin-209
     title: Relógio Linux desajustado
     severity: warning
     scope: guest
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-209.md
   CTR-101:
     uid: ctr-101
     title: Container sumiu
     severity: warning
     scope: service
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/CTR-101.md
   CTR-102:
     uid: ctr-102
     title: Container unhealthy
     severity: warning
     scope: service
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/CTR-102.md
   CTR-103:
     uid: ctr-103
     title: Container em loop de reinício
     severity: warning
     scope: service
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/CTR-103.md
   CTR-104:
     uid: ctr-104
     title: Container morto por falta de memória
     severity: warning
     scope: service
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/CTR-104.md
   CTR-301:
     uid: ctr-301
     title: Coleta de containers parada
     severity: warning
     scope: collection
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/CTR-301.md
   SVC-101:
     uid: svc-101
     title: Serviço crítico fora do ar
     severity: critical
     scope: service
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-101.md
   SVC-102:
     uid: svc-102
     title: Serviço fora do ar
     severity: warning
     scope: service
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-102.md
   SVC-110:
     uid: svc-110
     title: Serviço externo fora do ar
     severity: warning
     scope: external
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-110.md
   SVC-201:
     uid: svc-201
     title: Certificado vence em 14 dias
     severity: warning
     scope: service
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-201.md
   SVC-202:
     uid: svc-202
     title: Certificado vence em 3 dias
     severity: critical
     scope: service
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-202.md
   SVC-203:
     uid: svc-203
     title: Certificado inválido
     severity: critical
     scope: service
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-203.md
   SVC-301:
     uid: svc-301
     title: Uptime Kuma sem métricas
     severity: critical
     scope: collection
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SVC-301.md
   MON-101:
     uid: mon-101
     title: Prometheus com configuração inválida
     severity: warning
     scope: collection
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/MON-101.md
   MON-102:
     uid: mon-102
     title: Prometheus com falha de compactação
     severity: warning
     scope: collection
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/MON-102.md
   HYP-203:
     uid: hyp-203
     title: Disco de backup do host com pouco espaço
     severity: warning
     scope: hypervisor
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-203.md
   HYP-204:
     uid: hyp-204
     title: Disco de backup do host quase cheio
     severity: critical
     scope: hypervisor
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-204.md
   HYP-205:
     uid: hyp-205
     title: Memória do host Hyper-V esgotando
     severity: warning
     scope: hypervisor
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-205.md
   HYP-206:
     uid: hyp-206
     title: CPU do host Hyper-V alta
     severity: warning
     scope: hypervisor
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-206.md
   HYP-140:
     uid: hyp-140
     title: Serviço do Hyper-V parado
     severity: critical
     scope: hypervisor
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-140.md
   HYP-303:
     uid: hyp-303
     title: VM ligada sem monitoramento do convidado
     severity: info
     scope: collection
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-303.md
   HYP-130:
     uid: hyp-130
     title: Host Hyper-V sem sincronizar o horário
     severity: warning
     scope: hypervisor
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-130.md
   HYP-131:
     uid: hyp-131
     title: Host Hyper-V desligado inesperadamente
     severity: critical
     scope: hypervisor
     status: active
-    runbook: null
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-131.md
+  WIN-130:
+    uid: win-130
+    title: Servidor Windows sem sincronizar o horário
+    severity: warning
+    scope: guest
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/WIN-130.md
+  LIN-130:
+    uid: lin-130
+    title: OOM killer acionado
+    severity: warning
+    scope: guest
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/LIN-130.md
+  HYP-114:
+    uid: hyp-114
+    title: VM ligada sem resposta do convidado
+    severity: warning
+    scope: vm
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-114.md
+  HYP-207:
+    uid: hyp-207
+    title: Checkpoint antigo
+    severity: info
+    scope: vm
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-207.md
+  HYP-401:
+    uid: hyp-401
+    title: Disco virtual lento
+    severity: warning
+    scope: vm
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-401.md

@@ -1,0 +1,49 @@
+# Contrato da metrica de estado dos alertas do Grafana; nao provisionar este YAML no Grafana.
+schema_version: 2
+kind: observability_contract
+version: 0.1.0
+id: grafana-alerts
+title: Estado dos alertas do Grafana (GRAFANA_ALERTS)
+status: planned
+job: null
+selector_without_job: true
+source:
+  producer: Grafana 13.3.0, historico de estado dos alertas com backend multiple (primary loki, secondaries prometheus)
+  collection: >-
+    O Grafana grava cada mudanca de estado no Prometheus por remote write (flag --web.enable-remote-write-receiver,
+    ja ativa). Nao ha scrape nem label job.
+  grafana_env:
+    GF_UNIFIED_ALERTING_STATE_HISTORY_ENABLED: 'true'
+    GF_UNIFIED_ALERTING_STATE_HISTORY_BACKEND: multiple
+    GF_UNIFIED_ALERTING_STATE_HISTORY_PRIMARY: loki
+    GF_UNIFIED_ALERTING_STATE_HISTORY_LOKI_REMOTE_URL: http://loki:3100
+    GF_UNIFIED_ALERTING_STATE_HISTORY_SECONDARIES: prometheus
+    GF_UNIFIED_ALERTING_STATE_HISTORY_PROMETHEUS_TARGET_DATASOURCE_UID: prometheus
+  note: >-
+    Status planned: verificado num Grafana 13.3.0 de teste (labels abaixo). Vira observed_baseline quando as
+    variaveis estiverem no compose de producao. O Loki recebe o mesmo historico no stream {from="state-history"},
+    usado pelas telas de historico do Grafana.
+metric_groups:
+  alert_state:
+    title: Instancias de alerta pendentes ou disparando
+    metrics_observed:
+      - GRAFANA_ALERTS
+    labels:
+      GRAFANA_ALERTS:
+        - alertname
+        - alertstate
+        - grafana_alertstate
+        - grafana_folder
+        - grafana_rule_uid
+        - alert_code
+        - severity
+        - area
+        - scope
+        - dep_hypervisor
+        - dep_vm
+    interpretation: >-
+      Valor 1 enquanto a instancia esta pendente ou disparando (alertstate pending|firing); some quando volta ao
+      normal. Traz todos os labels da regra (contracts/alerts/labels.yml) e os da consulta (instance, vm...).
+      Alerta silenciado, inibido ou em mute timing continua firing aqui: isso e notificacao, nao estado.
+rules:
+  - Consultas usam GRAFANA_ALERTS sem job (selector_without_job); filtrar por alert_code, severity ou area.

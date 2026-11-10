@@ -88,6 +88,7 @@ groups:
         execErrState: Error
         for: 5m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/CTR-101.md
           summary: 'Container {{ $labels.name }} sumiu de {{ $labels.instance }}'
           description: |-
             O container {{ $labels.name }} existia em {{ $labels.instance }} nas últimas 24 horas e não está mais em execução.
@@ -179,6 +180,7 @@ groups:
         execErrState: Error
         for: 3m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/CTR-102.md
           summary: 'Container {{ $labels.name }} unhealthy em {{ $labels.instance }}'
           description: |-
             O healthcheck do container {{ $labels.name }} em {{ $labels.instance }} está falhando.
@@ -260,6 +262,7 @@ groups:
         execErrState: Error
         for: 0s
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/CTR-103.md
           summary: 'Container {{ $labels.name }} reiniciando em {{ $labels.instance }}'
           description: |-
             O container {{ $labels.name }} em {{ $labels.instance }} reiniciou {{ humanize $values.A.Value }} vezes na última hora.
@@ -341,6 +344,7 @@ groups:
         execErrState: Error
         for: 0s
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/CTR-104.md
           summary: 'Container {{ $labels.name }} morto por falta de memória em {{ $labels.instance }}'
           description: |-
             O kernel matou um processo do container {{ $labels.name }} em {{ $labels.instance }} por falta de memória (OOM).
@@ -434,6 +438,7 @@ groups:
         execErrState: Error
         for: 10m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/CTR-301.md
           summary: 'Coleta de containers parada em {{ $labels.instance }}'
           description: |-
             O servidor {{ $labels.instance }} continua enviando métricas, mas as métricas dos containers (cAdvisor no Alloy) pararam.

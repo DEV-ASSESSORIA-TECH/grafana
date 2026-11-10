@@ -70,6 +70,7 @@ groups:
         execErrState: Error
         for: 1m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-101.md
           __dashboardUid__: hypervisors
           __panelId__: "40"
           summary: Host Hyper-V {{ $labels.instance }} deixou de reportar métricas
@@ -147,6 +148,7 @@ groups:
         execErrState: Error
         for: 1m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-102.md
           __dashboardUid__: servicos
           __panelId__: "14"
           summary: Heartbeat ausente no host {{ $labels.monitor_name }}
@@ -220,6 +222,7 @@ groups:
         execErrState: Error
         for: 2m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-110.md
           __dashboardUid__: hypervisors
           __panelId__: "39"
           summary: VM {{ $labels.vm }} em estado crítico no Hyper-V
@@ -296,6 +299,7 @@ groups:
         execErrState: Error
         for: 2m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-111.md
           __dashboardUid__: hypervisors
           __panelId__: "39"
           summary: VM crítica {{ $labels.vm }} desligada no host {{ $labels.instance }}
@@ -374,6 +378,7 @@ groups:
         execErrState: Error
         for: 5m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-112.md
           __dashboardUid__: hypervisors
           __panelId__: "39"
           summary: VM {{ $labels.vm }} desligada no host {{ $labels.instance }}
@@ -454,6 +459,7 @@ groups:
         execErrState: Error
         for: 2m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-113.md
           __dashboardUid__: hypervisors
           __panelId__: "39"
           summary: VM {{ $labels.vm }} não está em execução no host {{ $labels.instance }}
@@ -522,6 +528,7 @@ groups:
         execErrState: Error
         for: 2m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-301.md
           __dashboardUid__: hypervisors
           __panelId__: "40"
           summary: Falha na execução do inventário Hyper-V no host {{ $labels.instance }}
@@ -593,6 +600,7 @@ groups:
         execErrState: Error
         for: 2m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-302.md
           __dashboardUid__: hypervisors
           __panelId__: "40"
           summary: Inventário do Hyper-V desatualizado no host {{ $labels.instance }}
@@ -677,6 +685,7 @@ groups:
         execErrState: Error
         for: 5m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-201.md
           __dashboardUid__: hypervisors
           __panelId__: "17"
           summary: Volume {{ $labels.volume }} do host {{ $labels.instance }} acima de 85% de uso
@@ -760,6 +769,7 @@ groups:
         execErrState: Error
         for: 2m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-202.md
           __dashboardUid__: hypervisors
           __panelId__: "17"
           summary: Volume {{ $labels.volume }} do host {{ $labels.instance }} acima de 95% de uso
@@ -832,6 +842,7 @@ groups:
         execErrState: Error
         for: 5m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-203.md
           __dashboardUid__: hypervisors
           __panelId__: "17"
           summary: 'Volume F: do srv-host01 com {{ humanize $values.A.Value }} GiB livres'
@@ -896,6 +907,7 @@ groups:
         execErrState: Error
         for: 2m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-204.md
           __dashboardUid__: hypervisors
           __panelId__: "17"
           summary: 'Volume F: do srv-host01 com {{ humanize $values.A.Value }} GiB livres'
@@ -959,6 +971,7 @@ groups:
         execErrState: Error
         for: 10m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-205.md
           __dashboardUid__: hypervisors
           __panelId__: "15"
           summary: 'Host {{ $labels.instance }} com {{ humanize $values.A.Value }} GiB de memória livre'
@@ -986,7 +999,9 @@ groups:
             datasourceUid: prometheus
             model:
               editorMode: code
-              expr: '100 * (1 - avg by (instance) (rate(windows_cpu_time_total{job="integrations/windows",instance=~"srv-host01|srv-host01-mtc",mode="idle"}[5m])))'
+              expr: |-
+                100 * sum by (instance) (rate(windows_hyperv_hypervisor_logical_processor_total_run_time_total{job="integrations/hyperv"}[5m]))
+                  / count by (instance) (windows_hyperv_hypervisor_logical_processor_total_run_time_total{job="integrations/hyperv"})
               instant: true
               intervalMs: 1000
               legendFormat: __auto
@@ -1023,6 +1038,7 @@ groups:
         execErrState: Error
         for: 30m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-206.md
           __dashboardUid__: hypervisors
           __panelId__: "14"
           summary: 'CPU do host {{ $labels.instance }} acima de 90%'
@@ -1030,6 +1046,7 @@ groups:
             A CPU do host Hyper-V {{ $labels.instance }} está em {{ humanize $values.A.Value }}% há mais de 30 minutos.
 
             Todas as VMs do host ficam lentas. Verifique as VMs que mais consomem CPU (painel CPU por VM).
+            Medido pelo tempo de execução dos processadores lógicos do hipervisor (no host Hyper-V, "1 - idle" do Windows não fecha).
         labels:
           alert_code: HYP-206
           severity: warning
@@ -1086,6 +1103,7 @@ groups:
         execErrState: Error
         for: 2m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-140.md
           __dashboardUid__: hypervisors
           __panelId__: "30"
           summary: 'Serviço {{ $labels.name }} parado no host {{ $labels.instance }}'
@@ -1156,6 +1174,7 @@ groups:
         execErrState: Error
         for: 30m
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-303.md
           __dashboardUid__: hypervisors
           __panelId__: "39"
           summary: 'VM {{ $labels.vm }} ligada sem agente de monitoramento'
@@ -1169,6 +1188,210 @@ groups:
           area: hypervisor
           scope: collection
           dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: hyp-114
+        title: '[HYP-114] VM ligada sem resposta do convidado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                hypervisor_vm_heartbeat{job="integrations/hypervisor"} == 0
+                and on (instance, vm)
+                hypervisor_vm_state{job="integrations/hypervisor",state="running"} == 1
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-114.md
+          __dashboardUid__: hypervisors
+          __panelId__: "39"
+          summary: 'VM {{ $labels.vm }} ligada sem resposta do sistema convidado'
+          description: |-
+            A VM {{ $labels.vm }} está ligada no host {{ $labels.instance }}, mas o sistema dentro dela parou de responder ao heartbeat do Hyper-V há mais de 5 minutos.
+
+            Sinal de VM travada (tela azul, kernel panic, congelamento) ou de serviço de integração parado.
+            Verifique o console da VM no Gerenciador do Hyper-V. Enquanto este alerta estiver ativo, os alertas do convidado e dos serviços da VM ficam inibidos.
+        labels:
+          alert_code: HYP-114
+          severity: warning
+          area: hypervisor
+          scope: vm
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: hyp-207
+        title: '[HYP-207] Checkpoint antigo'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: 'min_over_time(hypervisor_vm_checkpoints{job="integrations/hypervisor"}[7d])'
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 1h
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-207.md
+          __dashboardUid__: hypervisors
+          __panelId__: "21"
+          summary: 'VM {{ $labels.vm }} com checkpoint há mais de 7 dias'
+          description: |-
+            A VM {{ $labels.vm }} no host {{ $labels.instance }} mantém checkpoint há mais de 7 dias ({{ humanize $values.A.Value }} no mínimo).
+
+            O arquivo de diferenças (.avhdx) cresce sem limite e deixa o disco mais lento. Aplique ou remova o checkpoint se ele não for mais necessário.
+        labels:
+          alert_code: HYP-207
+          severity: info
+          area: hypervisor
+          scope: vm
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: hyp-401
+        title: '[HYP-401] Disco virtual lento'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                1e-7 * rate(windows_hyperv_virtual_storage_device_latency_seconds{job="integrations/hyperv"}[5m])
+                  / (rate(windows_hyperv_virtual_storage_device_operations_read_total{job="integrations/hyperv"}[5m])
+                     + rate(windows_hyperv_virtual_storage_device_operations_written_total{job="integrations/hyperv"}[5m]) > 1)
+                * on (instance, device) group_left (vm)
+                max by (instance, device, vm) (hypervisor_vm_disk_info{job="integrations/hypervisor"})
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0.05
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 15m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-401.md
+          __dashboardUid__: hypervisors
+          __panelId__: "34"
+          summary: 'Disco virtual da VM {{ $labels.vm }} com latência alta'
+          description: |-
+            A latência média do disco virtual {{ $labels.device }} da VM {{ $labels.vm }} está em {{ humanizeDuration $values.A.Value }} há mais de 15 minutos (limite 50 ms).
+
+            Em 7 dias de referência, nenhum disco passou de 50 ms por mais de 10 minutos. Verifique o volume do host (fila, latência física, backup ou antivírus rodando) e as VMs vizinhas no mesmo volume.
+        labels:
+          alert_code: HYP-401
+          severity: warning
+          area: hypervisor
+          scope: vm
+          dep_hypervisor: '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
         isPaused: false
 
       - uid: hyp-130
@@ -1226,6 +1449,7 @@ groups:
         execErrState: Error
         for: 0s
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-130.md
           __dashboardUid__: hypervisors
           __panelId__: "30"
           summary: 'Host {{ $labels.host }} sem sincronizar o horário'
@@ -1299,6 +1523,7 @@ groups:
         execErrState: Error
         for: 0s
         annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-131.md
           __dashboardUid__: hypervisors
           __panelId__: "30"
           summary: 'Host {{ $labels.host }} reiniciou após desligamento inesperado'

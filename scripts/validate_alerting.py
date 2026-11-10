@@ -120,7 +120,7 @@ for path in (ROOT / "dashboards").rglob("*.json"):
 
 
 # ------------------------------------------------------------------ regras
-def check_rule_labels(where, labels, code):
+def check_rule_labels(where, labels, code, log_only=False):
     for name in ("alert_code", "severity", "area", "scope"):
         if not labels.get(name):
             errors.append(f"{where}: label obrigatorio ausente: {name}")
@@ -140,9 +140,11 @@ def check_rule_labels(where, labels, code):
     if scope and scope not in scopes:
         errors.append(f"{where}: scope invalido: {scope}")
     for name in scope_requires.get(scope) or []:
+        if log_only and name == "dep_hypervisor":
+            continue  # regra so de log: sem join com o inventario (labels.yml, dependency.log_rules)
         if not labels.get(name):
             errors.append(f"{where}: scope {scope} exige o label {name}")
-    if labels.get("dep_vm") and not labels.get("dep_hypervisor"):
+    if labels.get("dep_vm") and not labels.get("dep_hypervisor") and not log_only:
         errors.append(f"{where}: dep_vm exige dep_hypervisor (com o host fora, so o alerta do host inibe)")
     if scope == "external" and set(labels) & dep_labels:
         errors.append(f"{where}: scope external nao tem chave de dependencia")
@@ -176,7 +178,8 @@ def check_rule(rel, group, rule, seen_uids, seen_codes):
         errors.append(f"{where}: titulo fora do formato '[CODIGO] titulo' (sem espacos/tabs nas pontas): {title!r}")
     elif m.group(1) != code:
         errors.append(f"{where}: codigo do titulo ({m.group(1)}) diferente do label alert_code ({code})")
-    check_rule_labels(where, labels, code)
+    sources = {q.get("datasourceUid") for q in rule.get("data") or []} - {"__expr__"}
+    check_rule_labels(where, labels, code, log_only=sources == {DATASOURCES["loki"]})
 
     if code:
         if code in seen_codes:

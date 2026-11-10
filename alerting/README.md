@@ -14,6 +14,7 @@ Contratos em `contracts/alerts/`:
 - `labels.yml`: labels obrigatórios (`alert_code`, `severity`, `area`, `scope`), chaves de dependência (`dep_hypervisor`, `dep_vm`), chave canônica e receitas de consulta.
 - `codes.yml`: catálogo de códigos (código → UID, título, severidade, scope, runbook).
 - `notifications.yml`: o que vem do repositório e o que fica na UI, e os labels disponíveis para roteamento.
+- `docs.yml`: padrão da documentação de cada alerta (`docs/alerts/`).
 
 ## Cobertura
 
@@ -21,9 +22,9 @@ Todas as regras ficam na pasta INFRA do Grafana, um grupo por arquivo. O catálo
 
 | Arquivo | Grupo | Cobre |
 |---|---|---|
-| `hypervisor.yaml` | `hypervisor-1m`, `storage-1m`, `hypervisor-extra-1m` | Hosts Hyper-V (métricas, heartbeat, disco, F: de backup, memória, CPU, serviços vmms/vmcompute, horário e desligamento inesperado pelo Event Log), estado das VMs, inventário, VMs sem agente |
-| `windows.yaml` | `windows-1m` | Servidores Windows convidados: sem métricas, serviços do AD, de aplicação e em curadoria, reinício, disco, memória, commit, CPU |
-| `linux.yaml` | `linux-1m` | Servidores Linux: sem métricas, systemd, reinício, filesystem (uso, previsão de 24 h, somente leitura, inodes), memória, swap, CPU, relógio |
+| `hypervisor.yaml` | `hypervisor-1m`, `storage-1m`, `hypervisor-extra-1m` | Hosts Hyper-V (métricas, heartbeat, disco, F: de backup, memória, CPU, serviços vmms/vmcompute, horário e desligamento inesperado pelo Event Log), estado das VMs, VM travada, checkpoint antigo, latência de disco virtual, inventário, VMs sem agente |
+| `windows.yaml` | `windows-1m` | Servidores Windows convidados: sem métricas, serviços do AD, de aplicação e em curadoria, reinício, horário (Event Log), disco, memória, commit, CPU |
+| `linux.yaml` | `linux-1m` | Servidores Linux: sem métricas, systemd, reinício, OOM killer (journal), filesystem (uso, previsão de 24 h, somente leitura, inodes), memória, swap, CPU, relógio |
 | `containers.yaml` | `containers-1m` | Containers Docker: sumiu, unhealthy, loop de reinício, OOM, coleta parada |
 | `servicos.yaml` | `servicos-1m` | Uptime Kuma: serviços por criticidade, externos (15 min de tolerância), certificados, Kuma sem métricas |
 | `monitoramento.yaml` | `monitoramento-5m` | Prometheus: configuração inválida, falha de compactação |
@@ -34,6 +35,7 @@ Todas as regras ficam na pasta INFRA do Grafana, um grupo por arquivo. O catálo
 - **Volume F: do srv-host01 (backups):** fora de HYP-201/202; tem limite próprio em GiB livres (HYP-203 < 200, HYP-204 < 100).
 - **Serviços Windows:** WIN-110 (AD, critical), WIN-111 (aplicação, warning) e WIN-112 (em curadoria, info) têm listas fixas por servidor. Serviço automático parado fora dessas listas não alerta.
 - **Excluídos de propósito:** unidades `fwupd*` (LIN-110), o container `grafana-alerting-temp` do deploy (CTR) e a memória total dos hosts Hyper-V (em host, use HYP-205).
+- **Deixados de fora de propósito:** erros do armazenamento virtual do Hyper-V (o contador sobe em todos os discos, é ruído de base) e saúde do Loki (se ele cair, as regras de log entram em erro e o Grafana gera `DatasourceError` com os labels da regra).
 - **"Sem métricas" e "container sumiu"** comparam com o que existia nos últimos 7 dias e 24 horas: servidor ou container desativado de propósito para de alertar depois desse prazo (ou silencie antes).
 
 ## Padrão das regras
@@ -96,7 +98,7 @@ Alertas inibidos continuam visíveis no Grafana (estado `suppressed`); só a not
 
 Monte a policy padrão pelos labels (`contracts/alerts/notifications.yml`, `routing_labels`). Recomendado:
 
-- Rota `severity = info` com o mute timing **`sempre`** (vem do repositório): o alerta aparece no Grafana e nunca notifica.
+- Rota `severity = info` com um mute timing de dia inteiro (hoje o `mute-info`, criado na UI): o alerta aparece no Grafana e nunca notifica.
 - Agrupamento por `area` e `dep_hypervisor`: a queda de um host vira uma notificação só.
 - Template `infra` (vem do repositório): no contact point, assunto `{{ template "infra.subject" . }}` e mensagem `{{ template "infra.message" . }}`.
 - Manutenção pontual: silence na UI.
@@ -193,6 +195,35 @@ deleteRules:
   - orgId: 1
     uid: <uid>
 ```
+
+## Documentação dos alertas
+
+Cada código tem um documento curto em [`docs/alerts/`](../docs/alerts/README.md): cabeçalho gerado (severidade, tempo até disparar, quem inibe e quem é inibido, notificação e links) e três seções escritas à mão: **O que significa**, **Verificar** e **Resolver**. O padrão está em `contracts/alerts/docs.yml`.
+
+Toda regra publica `runbook_url` com o link do documento. Ele aparece no alerta da UI e, com o template `infra`, no e-mail ("Procedimento"). Hoje o link aponta para o GitHub; quando a documentação for para o Outline, muda só a URL.
+
+Ao criar ou alterar uma regra:
+
+```bash
+python scripts/alert_docs.py --write
+```
+
+O comando atualiza os cabeçalhos e o índice e cria o documento de códigos novos com as seções em "A preencher.". Preencha as seções; o CI (`--check`) falha enquanto houver seção vazia ou cabeçalho desatualizado.
+
+## Histórico de estado e dashboard Visão geral
+
+O dashboard **Visão geral** (`dashboards/overview/`) conta e desenha os alertas pela métrica `GRAFANA_ALERTS`, que o Grafana grava no Prometheus a cada mudança de estado. O mesmo histórico vai para o Loki e alimenta as telas de histórico do Grafana (hoje elas só mostram o histórico de uma regra por vez). Para ligar, no `compose.yaml`, serviço `grafana`, em `environment`:
+
+```yaml
+GF_UNIFIED_ALERTING_STATE_HISTORY_ENABLED: "true"
+GF_UNIFIED_ALERTING_STATE_HISTORY_BACKEND: "multiple"
+GF_UNIFIED_ALERTING_STATE_HISTORY_PRIMARY: "loki"
+GF_UNIFIED_ALERTING_STATE_HISTORY_LOKI_REMOTE_URL: "http://loki:3100"
+GF_UNIFIED_ALERTING_STATE_HISTORY_SECONDARIES: "prometheus"
+GF_UNIFIED_ALERTING_STATE_HISTORY_PROMETHEUS_TARGET_DATASOURCE_UID: "prometheus"
+```
+
+Depois, `cd /opt/observability && sudo docker compose up -d grafana`. O Prometheus já aceita remote write (`--web.enable-remote-write-receiver`). Testado num Grafana 13.3.0: a série chega com todos os labels das regras (contrato `contracts/prometheus/grafana-alerts.yml`). Sem as variáveis, as contagens de alerta do dashboard mostram 0 e a linha do tempo fica vazia; o resto funciona.
 
 ## Validar
 

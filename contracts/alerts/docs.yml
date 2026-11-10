@@ -1,0 +1,46 @@
+# Contrato da documentacao operacional dos alertas; nao provisionar este YAML no Grafana.
+schema_version: 1
+kind: alert_doc_contract
+version: 0.1.0
+id: alert-docs
+title: Documentacao operacional dos alertas
+status: defined
+scope: >-
+  Um documento curto por codigo de alerta, para quem recebe o alerta saber o que e e o que fazer. Comeca em
+  docs/alerts/ e depois e publicado no Outline como documentacao operacional.
+path: docs/alerts/{code}.md
+index: docs/alerts/README.md
+runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/{code}.md
+grafana_url: https://mon.assessoriatech.com/grafana
+generated:
+  tool: scripts/alert_docs.py
+  markers:
+    begin: '<!-- inicio: gerado por scripts/alert_docs.py (nao editar entre os marcadores) -->'
+    end: '<!-- fim: gerado -->'
+  content:
+    - 'Titulo: # CODIGO · titulo (catalogo)'
+    - 'Tabela: severidade, area, escopo, tempo ate disparar (for) e avaliacao (intervalo e grupo)'
+    - 'Inibe / e inibido por: calculado de alerting/inhibition contra os labels da regra'
+    - 'Notificacao: rota da severidade na politica padrao (UI); agrupamento definido na UI'
+    - 'Links: regra no Grafana, painel vinculado e arquivo da regra no repositorio'
+  index: tabela com todos os codigos (codigo, titulo, severidade, area), gerada inteira
+manual:
+  sections:
+    - title: O que significa
+      content: Uma ou duas frases, linguagem simples. O que o alerta indica e o impacto.
+    - title: Verificar
+      content: Lista curta (2 a 5 itens) do que olhar primeiro, com comandos quando ajudar.
+    - title: Resolver
+      content: Lista curta (1 a 4 itens) de acoes. Procedimento longo vira documento proprio e entra como link.
+rules:
+  - Todo codigo active do catalogo tem documento; documento de codigo retired fica, com o cabecalho marcando retired.
+  - O trecho entre os marcadores e sempre regenerado (alert_docs.py --write); o CI falha se estiver desatualizado.
+  - As tres secoes manuais existem, nessa ordem, e nao ficam vazias.
+  - Toda regra publica a annotation runbook_url com a URL deste documento (igual ao runbook do catalogo).
+  - O repositorio e publico. Nada de senhas, tokens, IPs internos, nomes de pessoas ou dados de clientes.
+  - Curto. Se passar de uma tela, o excesso vira um procedimento separado, linkado em Resolver.
+outline:
+  status: planned
+  note: >-
+    Publicacao futura: uma colecao por area, um documento por codigo, mesmo conteudo. Quando existir, runbook_url
+    passa a apontar para o Outline.

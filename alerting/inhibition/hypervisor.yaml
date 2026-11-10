@@ -28,7 +28,7 @@ spec:
   equal:
     - dep_hypervisor
 ---
-# VM fora de execucao ou em estado critico: silencia o convidado e os servicos dela.
+# VM fora de execucao, em estado critico ou travada: silencia o convidado e os servicos dela.
 apiVersion: notifications.alerting.grafana.app/v1beta1
 kind: InhibitionRule
 metadata:
@@ -37,7 +37,7 @@ spec:
   source_matchers:
     - label: alert_code
       type: =~
-      value: HYP-11[0-3]
+      value: HYP-11[0-4]
     - label: dep_vm
       type: =~
       value: .+

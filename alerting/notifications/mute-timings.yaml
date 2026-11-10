@@ -1,10 +1,7 @@
-# Mute timings. Manutencoes pontuais usam silences na UI (nao entram no Git).
+# Mute timings provisionados. Hoje nenhum: a rota de info usa o mute timing da UI (mute-info).
+# 'sempre' foi provisionado antes e e removido abaixo; a exclusao pode sair depois que todos os
+# ambientes tiverem aplicado esta versao.
 apiVersion: 1
-muteTimes:
-  # Sempre ativo: usado na rota de severity=info, que nao notifica.
+deleteMuteTimes:
   - orgId: 1
     name: sempre
-    time_intervals:
-      - times:
-          - start_time: '00:00'
-            end_time: '24:00'

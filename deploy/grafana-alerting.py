@@ -273,10 +273,15 @@ def extract(package, dest):
 
 # ------------------------------------------------------------------ ensaio
 def cleanup_temp(quiet=True):
+    """Remove o container e a rede do ensaio (nunca toca em outros containers ou redes)."""
     run(["docker", "rm", "-f", TEMP_NAME], check=False)
     run(["docker", "network", "rm", TEMP_NAME], check=False)
     if not quiet:
         ok(f"container e rede {TEMP_NAME} removidos")
+
+
+def cleanup_work():
+    """Sobras de execucoes interrompidas (as pastas de trabalho somem sozinhas no fim de cada execucao)."""
     for w in HOME.glob("work-*"):
         shutil.rmtree(w, ignore_errors=True)
 
@@ -575,6 +580,7 @@ def cmd_list(cfg, args):
 
 def cmd_cleanup(cfg, args):
     cleanup_temp(quiet=False)
+    cleanup_work()
 
 
 def cmd_update(cfg, args):
@@ -662,6 +668,8 @@ def main():
     if not args.no_update:
         self_update(cfg, sys.argv[1:])
         cfg = config()
+    if HOME.is_dir():
+        cleanup_work()
     try:
         if args.command:
             dispatch(cfg, args)
@@ -673,6 +681,10 @@ def main():
     except KeyboardInterrupt:
         cleanup_temp()
         sys.exit(130)
+    except (OSError, ValueError, KeyError) as e:
+        cleanup_temp()
+        log(f"{C['err']}ERRO inesperado:{C['r']} {type(e).__name__}: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

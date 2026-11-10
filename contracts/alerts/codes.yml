@@ -90,3 +90,325 @@ codes:
     scope: collection
     status: active
     runbook: null
+  WIN-101:
+    uid: win-101
+    title: Servidor Windows crítico sem métricas
+    severity: critical
+    scope: guest
+    status: active
+    runbook: null
+  WIN-102:
+    uid: win-102
+    title: Servidor Windows sem métricas
+    severity: warning
+    scope: guest
+    status: active
+    runbook: null
+  WIN-110:
+    uid: win-110
+    title: Serviço do Active Directory parado
+    severity: critical
+    scope: guest
+    status: active
+    runbook: null
+  WIN-111:
+    uid: win-111
+    title: Serviço de aplicação parado
+    severity: warning
+    scope: guest
+    status: active
+    runbook: null
+  WIN-112:
+    uid: win-112
+    title: Serviço em curadoria parado
+    severity: info
+    scope: service
+    status: active
+    runbook: null
+  WIN-120:
+    uid: win-120
+    title: Servidor Windows reiniciado
+    severity: info
+    scope: guest
+    status: active
+    runbook: null
+  WIN-201:
+    uid: win-201
+    title: Disco Windows acima de 90%
+    severity: warning
+    scope: guest
+    status: active
+    runbook: null
+  WIN-202:
+    uid: win-202
+    title: Disco Windows acima de 95%
+    severity: critical
+    scope: guest
+    status: active
+    runbook: null
+  WIN-203:
+    uid: win-203
+    title: Memória Windows alta
+    severity: warning
+    scope: guest
+    status: active
+    runbook: null
+  WIN-204:
+    uid: win-204
+    title: Commit Windows alto
+    severity: warning
+    scope: guest
+    status: active
+    runbook: null
+  WIN-205:
+    uid: win-205
+    title: CPU Windows alta
+    severity: warning
+    scope: guest
+    status: active
+    runbook: null
+  LIN-101:
+    uid: lin-101
+    title: Servidor Linux crítico sem métricas
+    severity: critical
+    scope: guest
+    status: active
+    runbook: null
+  LIN-102:
+    uid: lin-102
+    title: Servidor Linux sem métricas
+    severity: warning
+    scope: guest
+    status: active
+    runbook: null
+  LIN-110:
+    uid: lin-110
+    title: Unidade systemd em falha
+    severity: warning
+    scope: guest
+    status: active
+    runbook: null
+  LIN-120:
+    uid: lin-120
+    title: Servidor Linux reiniciado
+    severity: info
+    scope: guest
+    status: active
+    runbook: null
+  LIN-201:
+    uid: lin-201
+    title: Filesystem Linux acima de 85%
+    severity: warning
+    scope: guest
+    status: active
+    runbook: null
+  LIN-202:
+    uid: lin-202
+    title: Filesystem Linux acima de 95%
+    severity: critical
+    scope: guest
+    status: active
+    runbook: null
+  LIN-203:
+    uid: lin-203
+    title: Filesystem Linux enche em 24 horas
+    severity: warning
+    scope: guest
+    status: active
+    runbook: null
+  LIN-204:
+    uid: lin-204
+    title: Filesystem Linux somente leitura
+    severity: critical
+    scope: guest
+    status: active
+    runbook: null
+  LIN-205:
+    uid: lin-205
+    title: Inodes Linux acima de 90%
+    severity: warning
+    scope: guest
+    status: active
+    runbook: null
+  LIN-206:
+    uid: lin-206
+    title: Memória Linux esgotando
+    severity: warning
+    scope: guest
+    status: active
+    runbook: null
+  LIN-207:
+    uid: lin-207
+    title: Swap Linux quase cheio
+    severity: warning
+    scope: guest
+    status: active
+    runbook: null
+  LIN-208:
+    uid: lin-208
+    title: CPU Linux alta
+    severity: warning
+    scope: guest
+    status: active
+    runbook: null
+  LIN-209:
+    uid: lin-209
+    title: Relógio Linux desajustado
+    severity: warning
+    scope: guest
+    status: active
+    runbook: null
+  CTR-101:
+    uid: ctr-101
+    title: Container sumiu
+    severity: warning
+    scope: service
+    status: active
+    runbook: null
+  CTR-102:
+    uid: ctr-102
+    title: Container unhealthy
+    severity: warning
+    scope: service
+    status: active
+    runbook: null
+  CTR-103:
+    uid: ctr-103
+    title: Container em loop de reinício
+    severity: warning
+    scope: service
+    status: active
+    runbook: null
+  CTR-104:
+    uid: ctr-104
+    title: Container morto por falta de memória
+    severity: warning
+    scope: service
+    status: active
+    runbook: null
+  CTR-301:
+    uid: ctr-301
+    title: Coleta de containers parada
+    severity: warning
+    scope: collection
+    status: active
+    runbook: null
+  SVC-101:
+    uid: svc-101
+    title: Serviço crítico fora do ar
+    severity: critical
+    scope: service
+    status: active
+    runbook: null
+  SVC-102:
+    uid: svc-102
+    title: Serviço fora do ar
+    severity: warning
+    scope: service
+    status: active
+    runbook: null
+  SVC-110:
+    uid: svc-110
+    title: Serviço externo fora do ar
+    severity: warning
+    scope: external
+    status: active
+    runbook: null
+  SVC-201:
+    uid: svc-201
+    title: Certificado vence em 14 dias
+    severity: warning
+    scope: service
+    status: active
+    runbook: null
+  SVC-202:
+    uid: svc-202
+    title: Certificado vence em 3 dias
+    severity: critical
+    scope: service
+    status: active
+    runbook: null
+  SVC-203:
+    uid: svc-203
+    title: Certificado inválido
+    severity: critical
+    scope: service
+    status: active
+    runbook: null
+  SVC-301:
+    uid: svc-301
+    title: Uptime Kuma sem métricas
+    severity: critical
+    scope: collection
+    status: active
+    runbook: null
+  MON-101:
+    uid: mon-101
+    title: Prometheus com configuração inválida
+    severity: warning
+    scope: collection
+    status: active
+    runbook: null
+  MON-102:
+    uid: mon-102
+    title: Prometheus com falha de compactação
+    severity: warning
+    scope: collection
+    status: active
+    runbook: null
+  HYP-203:
+    uid: hyp-203
+    title: Disco de backup do host com pouco espaço
+    severity: warning
+    scope: hypervisor
+    status: active
+    runbook: null
+  HYP-204:
+    uid: hyp-204
+    title: Disco de backup do host quase cheio
+    severity: critical
+    scope: hypervisor
+    status: active
+    runbook: null
+  HYP-205:
+    uid: hyp-205
+    title: Memória do host Hyper-V esgotando
+    severity: warning
+    scope: hypervisor
+    status: active
+    runbook: null
+  HYP-206:
+    uid: hyp-206
+    title: CPU do host Hyper-V alta
+    severity: warning
+    scope: hypervisor
+    status: active
+    runbook: null
+  HYP-140:
+    uid: hyp-140
+    title: Serviço do Hyper-V parado
+    severity: critical
+    scope: hypervisor
+    status: active
+    runbook: null
+  HYP-303:
+    uid: hyp-303
+    title: VM ligada sem monitoramento do convidado
+    severity: info
+    scope: collection
+    status: active
+    runbook: null
+  HYP-130:
+    uid: hyp-130
+    title: Host Hyper-V sem sincronizar o horário
+    severity: warning
+    scope: hypervisor
+    status: active
+    runbook: null
+  HYP-131:
+    uid: hyp-131
+    title: Host Hyper-V desligado inesperadamente
+    severity: critical
+    scope: hypervisor
+    status: active
+    runbook: null

@@ -1,0 +1,130 @@
+# Regras de alerta do proprio monitoramento. Codigos em contracts/alerts/codes.yml.
+# Labels: escrever $$labels (o provisionamento interpola variaveis de ambiente nos labels).
+# Annotations e consultas nao sao interpoladas: nelas, $labels.
+# Painel vinculado: annotations __dashboardUid__/__panelId__ (o Grafana ignora os campos dashboardUid/panelId).
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: monitoramento-5m
+    folder: INFRA
+    interval: 5m
+    rules:
+      - uid: mon-101
+        title: '[MON-101] Prometheus com configuração inválida'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: 'prometheus_config_last_reload_successful{job="prometheus"}'
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          summary: 'Prometheus não conseguiu recarregar a configuração'
+          description: |-
+            A última recarga de configuração do Prometheus falhou. Ele continua com a configuração anterior.
+
+            Verifique o prometheus.yml e os logs do container observability-prometheus-1.
+        labels:
+          alert_code: MON-101
+          severity: warning
+          area: monitoramento
+          scope: collection
+        isPaused: false
+
+      - uid: mon-102
+        title: '[MON-102] Prometheus com falha de compactação'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: 'increase(prometheus_tsdb_compactions_failed_total{job="prometheus"}[3h])'
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          summary: 'Prometheus com falha de compactação'
+          description: |-
+            O Prometheus registrou falha ao compactar o banco de séries nas últimas 3 horas.
+
+            Falhas repetidas fazem o disco crescer e podem corromper dados. Verifique os logs e o espaço em /var/lib/prometheus.
+        labels:
+          alert_code: MON-102
+          severity: warning
+          area: monitoramento
+          scope: collection
+        isPaused: false

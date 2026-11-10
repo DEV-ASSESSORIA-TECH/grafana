@@ -1,0 +1,491 @@
+# Regras de alerta dos servicos (Uptime Kuma). Codigos em contracts/alerts/codes.yml.
+# Labels: escrever $$labels (o provisionamento interpola variaveis de ambiente nos labels).
+# Annotations e consultas nao sao interpoladas: nelas, $labels.
+# Painel vinculado: annotations __dashboardUid__/__panelId__ (o Grafana ignora os campos dashboardUid/panelId).
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: servicos-1m
+    folder: INFRA
+    interval: 1m
+    rules:
+      - uid: svc-101
+        title: '[SVC-101] Serviço crítico fora do ar'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  monitor_status{job="uptime-kuma",monitor_type!~"group|push",grupo!="externo",criticidade=~"critico|critica"}
+                )
+                * on (vm) group_left (hypervisor)
+                max by (vm, hypervisor) (
+                  label_replace(label_replace(
+                    last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h]),
+                    "vm", "$1", "vm_key", "(.+)"), "hypervisor", "$1", "instance", "(.+)")
+                )
+                or
+                (
+                  monitor_status{job="uptime-kuma",monitor_type!~"group|push",grupo!="externo",criticidade=~"critico|critica"}
+                )
+                unless on (vm)
+                max by (vm, hypervisor) (
+                  label_replace(label_replace(
+                    last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h]),
+                    "vm", "$1", "vm_key", "(.+)"), "hypervisor", "$1", "instance", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          __dashboardUid__: servicos
+          __panelId__: "14"
+          summary: '{{ $labels.monitor_name }} fora do ar'
+          description: |-
+            O Uptime Kuma marca {{ $labels.monitor_name }} como fora do ar há mais de 2 minutos.
+
+            Serviço classificado como crítico. Verifique o serviço e a VM onde ele roda.
+            Se a VM ou o hipervisor estiverem fora, este alerta fica inibido (monitor com a tag vm).
+        labels:
+          alert_code: SVC-101
+          severity: critical
+          area: servicos
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: svc-102
+        title: '[SVC-102] Serviço fora do ar'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  monitor_status{job="uptime-kuma",monitor_type!~"group|push",grupo!="externo",criticidade="alta"}
+                )
+                * on (vm) group_left (hypervisor)
+                max by (vm, hypervisor) (
+                  label_replace(label_replace(
+                    last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h]),
+                    "vm", "$1", "vm_key", "(.+)"), "hypervisor", "$1", "instance", "(.+)")
+                )
+                or
+                (
+                  monitor_status{job="uptime-kuma",monitor_type!~"group|push",grupo!="externo",criticidade="alta"}
+                )
+                unless on (vm)
+                max by (vm, hypervisor) (
+                  label_replace(label_replace(
+                    last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h]),
+                    "vm", "$1", "vm_key", "(.+)"), "hypervisor", "$1", "instance", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          __dashboardUid__: servicos
+          __panelId__: "14"
+          summary: '{{ $labels.monitor_name }} fora do ar'
+          description: |-
+            O Uptime Kuma marca {{ $labels.monitor_name }} como fora do ar há mais de 5 minutos.
+
+            Verifique o serviço e a VM onde ele roda.
+            Se a VM ou o hipervisor estiverem fora, este alerta fica inibido (monitor com a tag vm).
+        labels:
+          alert_code: SVC-102
+          severity: warning
+          area: servicos
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: svc-110
+        title: '[SVC-110] Serviço externo fora do ar'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: 'monitor_status{job="uptime-kuma",monitor_type!~"group|push",grupo="externo"}'
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 15m
+        annotations:
+          __dashboardUid__: servicos
+          __panelId__: "14"
+          summary: '{{ $labels.monitor_name }} (externo) fora do ar'
+          description: |-
+            O Uptime Kuma marca {{ $labels.monitor_name }} como fora do ar há mais de 15 minutos.
+
+            Serviço externo (terceiro): não depende da nossa infraestrutura. Confirme com o fornecedor e avise os usuários.
+        labels:
+          alert_code: SVC-110
+          severity: warning
+          area: servicos
+          scope: external
+        isPaused: false
+
+      - uid: svc-201
+        title: '[SVC-201] Certificado vence em 14 dias'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: 'monitor_cert_days_remaining{job="uptime-kuma"}'
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 14
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          __dashboardUid__: servicos
+          __panelId__: "7"
+          summary: 'Certificado de {{ $labels.monitor_name }} vence em {{ humanize $values.A.Value }} dias'
+          description: |-
+            O certificado TLS de {{ $labels.monitor_name }} vence em {{ humanize $values.A.Value }} dias.
+
+            Verifique a renovação automática (Cloudflare, Let's Encrypt ou fornecedor).
+        labels:
+          alert_code: SVC-201
+          severity: warning
+          area: servicos
+          scope: service
+        isPaused: false
+
+      - uid: svc-202
+        title: '[SVC-202] Certificado vence em 3 dias'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: 'monitor_cert_days_remaining{job="uptime-kuma"}'
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 3
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          __dashboardUid__: servicos
+          __panelId__: "7"
+          summary: 'Certificado de {{ $labels.monitor_name }} vence em {{ humanize $values.A.Value }} dias'
+          description: |-
+            O certificado TLS de {{ $labels.monitor_name }} vence em {{ humanize $values.A.Value }} dias.
+
+            Depois do vencimento, navegadores e integrações recusam a conexão. Renove agora.
+        labels:
+          alert_code: SVC-202
+          severity: critical
+          area: servicos
+          scope: service
+        isPaused: false
+
+      - uid: svc-203
+        title: '[SVC-203] Certificado inválido'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: 'monitor_cert_is_valid{job="uptime-kuma"}'
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          __dashboardUid__: servicos
+          __panelId__: "7"
+          summary: 'Certificado de {{ $labels.monitor_name }} inválido'
+          description: |-
+            O Uptime Kuma considera inválido o certificado TLS de {{ $labels.monitor_name }} (vencido, cadeia incompleta ou nome errado).
+
+            Navegadores e integrações recusam a conexão. Verifique o certificado publicado.
+        labels:
+          alert_code: SVC-203
+          severity: critical
+          area: servicos
+          scope: service
+        isPaused: false
+
+      - uid: svc-301
+        title: '[SVC-301] Uptime Kuma sem métricas'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (1 - up{job="uptime-kuma"})
+                or
+                absent_over_time(up{job="uptime-kuma"}[5m])
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          __dashboardUid__: servicos
+          __panelId__: "22"
+          summary: 'Uptime Kuma sem métricas'
+          description: |-
+            O Prometheus não consegue coletar as métricas do Uptime Kuma há mais de 5 minutos.
+
+            Enquanto isso, nenhum alerta de serviço (SVC) nem de heartbeat (HYP-102) funciona. Verifique o container do Kuma no srv-mon.
+        labels:
+          alert_code: SVC-301
+          severity: critical
+          area: servicos
+          scope: collection
+        isPaused: false

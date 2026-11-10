@@ -1,0 +1,1106 @@
+# Regras de alerta dos servidores Linux. Codigos em contracts/alerts/codes.yml.
+# Labels: escrever $$labels (o provisionamento interpola variaveis de ambiente nos labels).
+# Annotations e consultas nao sao interpoladas: nelas, $labels.
+# Painel vinculado: annotations __dashboardUid__/__panelId__ (o Grafana ignora os campos dashboardUid/panelId).
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: linux-1m
+    folder: INFRA
+    interval: 1m
+    rules:
+      - uid: lin-101
+        title: '[LIN-101] Servidor Linux crítico sem métricas'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  group by (instance) (max_over_time(up{job="integrations/unix",instance=~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"}[7d]))
+                  unless
+                  group by (instance) (up{job="integrations/unix",instance=~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"} == 1)
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  group by (instance) (max_over_time(up{job="integrations/unix",instance=~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"}[7d]))
+                  unless
+                  group by (instance) (up{job="integrations/unix",instance=~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"} == 1)
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          __dashboardUid__: servers-linux
+          __panelId__: "352"
+          summary: 'Servidor Linux {{ $labels.instance }} sem métricas'
+          description: |-
+            O servidor {{ $labels.instance }} (classificado como crítico) parou de enviar métricas há mais de 5 minutos.
+
+            Possíveis causas: servidor desligado ou travado, Grafana Alloy parado, falha de rede até o monitoramento.
+
+            Se a VM ou o hipervisor estiverem fora, este alerta fica inibido pelo alerta deles.
+            Servidor desativado de propósito some deste alerta depois de 7 dias (ou silencie).
+        labels:
+          alert_code: LIN-101
+          severity: critical
+          area: linux
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: lin-102
+        title: '[LIN-102] Servidor Linux sem métricas'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  group by (instance) (max_over_time(up{job="integrations/unix",instance!~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"}[7d]))
+                  unless
+                  group by (instance) (up{job="integrations/unix",instance!~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"} == 1)
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  group by (instance) (max_over_time(up{job="integrations/unix",instance!~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"}[7d]))
+                  unless
+                  group by (instance) (up{job="integrations/unix",instance!~"srv-vpn|srv-rmm|srv-altogarcas|srv-mon|srv-web"} == 1)
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          __dashboardUid__: servers-linux
+          __panelId__: "352"
+          summary: 'Servidor Linux {{ $labels.instance }} sem métricas'
+          description: |-
+            O servidor {{ $labels.instance }} parou de enviar métricas há mais de 5 minutos.
+
+            Possíveis causas: servidor desligado ou travado, Grafana Alloy parado, falha de rede até o monitoramento.
+            Servidor desativado de propósito some deste alerta depois de 7 dias (ou silencie).
+        labels:
+          alert_code: LIN-102
+          severity: warning
+          area: linux
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: lin-110
+        title: '[LIN-110] Unidade systemd em falha'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  node_systemd_unit_state{job="integrations/unix",state="failed",name!~"fwupd.*"} == 1
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  node_systemd_unit_state{job="integrations/unix",state="failed",name!~"fwupd.*"} == 1
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          __dashboardUid__: servers-linux
+          __panelId__: "380"
+          summary: 'Unidade {{ $labels.name }} em falha em {{ $labels.instance }}'
+          description: |-
+            A unidade systemd {{ $labels.name }} está em estado failed em {{ $labels.instance }}.
+
+            Verifique com: systemctl status {{ $labels.name }} e journalctl -u {{ $labels.name }}.
+            Unidades fwupd (atualização de firmware) ficam de fora: falham sempre em VM.
+        labels:
+          alert_code: LIN-110
+          severity: warning
+          area: linux
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: lin-120
+        title: '[LIN-120] Servidor Linux reiniciado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  time() - node_boot_time_seconds{job="integrations/unix"}
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  time() - node_boot_time_seconds{job="integrations/unix"}
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 900
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          __dashboardUid__: servers-linux
+          __panelId__: "346"
+          summary: 'Servidor {{ $labels.instance }} reiniciado'
+          description: |-
+            O servidor {{ $labels.instance }} foi ligado há menos de 15 minutos.
+
+            Registro informativo. Se o reinício não foi planejado, verifique o journal do boot anterior (journalctl -b -1).
+        labels:
+          alert_code: LIN-120
+          severity: info
+          area: linux
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: lin-201
+        title: '[LIN-201] Filesystem Linux acima de 85%'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  100 * (1 - node_filesystem_avail_bytes{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"} / node_filesystem_size_bytes{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"})
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  100 * (1 - node_filesystem_avail_bytes{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"} / node_filesystem_size_bytes{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"})
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 85
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          __dashboardUid__: servers-linux
+          __panelId__: "353"
+          summary: '{{ $labels.mountpoint }} de {{ $labels.instance }} acima de 85% de uso'
+          description: |-
+            O filesystem {{ $labels.mountpoint }} de {{ $labels.instance }} está com {{ humanize $values.A.Value }}% de uso.
+
+            Verifique logs, imagens e volumes Docker antigos (docker system df) ou aumente o disco virtual.
+        labels:
+          alert_code: LIN-201
+          severity: warning
+          area: linux
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: lin-202
+        title: '[LIN-202] Filesystem Linux acima de 95%'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  100 * (1 - node_filesystem_avail_bytes{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"} / node_filesystem_size_bytes{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"})
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  100 * (1 - node_filesystem_avail_bytes{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"} / node_filesystem_size_bytes{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"})
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 95
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          __dashboardUid__: servers-linux
+          __panelId__: "353"
+          summary: '{{ $labels.mountpoint }} de {{ $labels.instance }} acima de 95% de uso'
+          description: |-
+            O filesystem {{ $labels.mountpoint }} de {{ $labels.instance }} está com {{ humanize $values.A.Value }}% de uso.
+
+            Com o filesystem cheio, serviços e bancos de dados param de gravar. Libere espaço imediatamente.
+        labels:
+          alert_code: LIN-202
+          severity: critical
+          area: linux
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: lin-203
+        title: '[LIN-203] Filesystem Linux enche em 24 horas'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  predict_linear(node_filesystem_avail_bytes{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"}[6h], 24 * 3600) < 0
+                  and on (instance, mountpoint)
+                  100 * (1 - node_filesystem_avail_bytes{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"} / node_filesystem_size_bytes{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"}) > 70
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  predict_linear(node_filesystem_avail_bytes{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"}[6h], 24 * 3600) < 0
+                  and on (instance, mountpoint)
+                  100 * (1 - node_filesystem_avail_bytes{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"} / node_filesystem_size_bytes{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"}) > 70
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 30m
+        annotations:
+          __dashboardUid__: servers-linux
+          __panelId__: "353"
+          summary: '{{ $labels.mountpoint }} de {{ $labels.instance }} deve encher em menos de 24 horas'
+          description: |-
+            No ritmo das últimas 6 horas, o filesystem {{ $labels.mountpoint }} de {{ $labels.instance }} enche em menos de 24 horas (já acima de 70% de uso).
+
+            Identifique o que está crescendo (logs, backups, volumes Docker) antes que ele lote.
+        labels:
+          alert_code: LIN-203
+          severity: warning
+          area: linux
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: lin-204
+        title: '[LIN-204] Filesystem Linux somente leitura'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  node_filesystem_readonly{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"} == 1
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  node_filesystem_readonly{job="integrations/unix",fstype=~"ext4|xfs|btrfs|vfat"} == 1
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          __dashboardUid__: servers-linux
+          __panelId__: "44"
+          summary: '{{ $labels.mountpoint }} de {{ $labels.instance }} está somente leitura'
+          description: |-
+            O filesystem {{ $labels.mountpoint }} de {{ $labels.instance }} foi montado ou remontado como somente leitura.
+
+            O kernel faz isso após erro de disco ou de filesystem. Verifique o dmesg e o disco virtual no Hyper-V.
+        labels:
+          alert_code: LIN-204
+          severity: critical
+          area: linux
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: lin-205
+        title: '[LIN-205] Inodes Linux acima de 90%'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  100 * (1 - node_filesystem_files_free{job="integrations/unix",fstype=~"ext4|xfs"} / node_filesystem_files{job="integrations/unix",fstype=~"ext4|xfs"})
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  100 * (1 - node_filesystem_files_free{job="integrations/unix",fstype=~"ext4|xfs"} / node_filesystem_files{job="integrations/unix",fstype=~"ext4|xfs"})
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 90
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          __dashboardUid__: servers-linux
+          __panelId__: "41"
+          summary: 'Inodes de {{ $labels.mountpoint }} em {{ $labels.instance }} acima de 90%'
+          description: |-
+            O filesystem {{ $labels.mountpoint }} de {{ $labels.instance }} está com {{ humanize $values.A.Value }}% dos inodes em uso.
+
+            Sem inodes, nenhum arquivo novo é criado mesmo com espaço livre. Procure diretórios com muitos arquivos pequenos.
+        labels:
+          alert_code: LIN-205
+          severity: warning
+          area: linux
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: lin-206
+        title: '[LIN-206] Memória Linux esgotando'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  100 * node_memory_MemAvailable_bytes{job="integrations/unix"} / node_memory_MemTotal_bytes{job="integrations/unix"}
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  100 * node_memory_MemAvailable_bytes{job="integrations/unix"} / node_memory_MemTotal_bytes{job="integrations/unix"}
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 10
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 15m
+        annotations:
+          __dashboardUid__: servers-linux
+          __panelId__: "16"
+          summary: 'Memória disponível de {{ $labels.instance }} abaixo de 10%'
+          description: |-
+            A memória disponível de {{ $labels.instance }} está em {{ humanize $values.A.Value }}% há mais de 15 minutos.
+
+            Abaixo disso o kernel pode acionar o OOM killer. Verifique os processos e containers que mais consomem memória.
+        labels:
+          alert_code: LIN-206
+          severity: warning
+          area: linux
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: lin-207
+        title: '[LIN-207] Swap Linux quase cheio'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  100 * (1 - node_memory_SwapFree_bytes{job="integrations/unix"} / (node_memory_SwapTotal_bytes{job="integrations/unix"} > 0))
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  100 * (1 - node_memory_SwapFree_bytes{job="integrations/unix"} / (node_memory_SwapTotal_bytes{job="integrations/unix"} > 0))
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 90
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 30m
+        annotations:
+          __dashboardUid__: servers-linux
+          __panelId__: "21"
+          summary: 'Swap de {{ $labels.instance }} acima de 90%'
+          description: |-
+            O swap de {{ $labels.instance }} está {{ humanize $values.A.Value }}% ocupado há mais de 30 minutos.
+
+            Sinal de falta de memória: o servidor fica lento e pode acionar o OOM killer. Considere aumentar a memória da VM.
+        labels:
+          alert_code: LIN-207
+          severity: warning
+          area: linux
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: lin-208
+        title: '[LIN-208] CPU Linux alta'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{job="integrations/unix",mode="idle"}[5m])))
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{job="integrations/unix",mode="idle"}[5m])))
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 90
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 30m
+        annotations:
+          __dashboardUid__: servers-linux
+          __panelId__: "352"
+          summary: 'CPU de {{ $labels.instance }} acima de 90%'
+          description: |-
+            A CPU de {{ $labels.instance }} está em {{ humanize $values.A.Value }}% há mais de 30 minutos.
+
+            Verifique os processos e containers que mais consomem CPU.
+        labels:
+          alert_code: LIN-208
+          severity: warning
+          area: linux
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: lin-209
+        title: '[LIN-209] Relógio Linux desajustado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  abs(node_time_seconds{job="integrations/unix"} - timestamp(node_time_seconds{job="integrations/unix"}))
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  abs(node_time_seconds{job="integrations/unix"} - timestamp(node_time_seconds{job="integrations/unix"}))
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 5
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          __dashboardUid__: servers-linux
+          __panelId__: "260"
+          summary: 'Relógio de {{ $labels.instance }} desajustado'
+          description: |-
+            O relógio de {{ $labels.instance }} está {{ humanize $values.A.Value }} segundos fora do horário do monitoramento.
+
+            Relógio errado quebra autenticação (TOTP, Kerberos, OAuth) e certificados. Verifique o NTP (timedatectl).
+        labels:
+          alert_code: LIN-209
+          severity: warning
+          area: linux
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false

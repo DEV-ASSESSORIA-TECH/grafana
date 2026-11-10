@@ -1,0 +1,940 @@
+# Regras de alerta dos servidores Windows (convidados). Codigos em contracts/alerts/codes.yml.
+# Labels: escrever $$labels (o provisionamento interpola variaveis de ambiente nos labels).
+# Annotations e consultas nao sao interpoladas: nelas, $labels.
+# Painel vinculado: annotations __dashboardUid__/__panelId__ (o Grafana ignora os campos dashboardUid/panelId).
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: windows-1m
+    folder: INFRA
+    interval: 1m
+    rules:
+      - uid: win-101
+        title: '[WIN-101] Servidor Windows crítico sem métricas'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  group by (instance) (max_over_time(up{job="integrations/windows",instance=~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc"}[7d]))
+                  unless
+                  group by (instance) (up{job="integrations/windows",instance=~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc"} == 1)
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  group by (instance) (max_over_time(up{job="integrations/windows",instance=~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc"}[7d]))
+                  unless
+                  group by (instance) (up{job="integrations/windows",instance=~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc"} == 1)
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          __dashboardUid__: servers-windows
+          __panelId__: "368"
+          summary: 'Servidor Windows {{ $labels.instance }} sem métricas'
+          description: |-
+            O servidor {{ $labels.instance }} (classificado como crítico) parou de enviar métricas há mais de 5 minutos.
+
+            Possíveis causas: servidor desligado ou travado, Grafana Alloy parado, falha de rede até o monitoramento.
+
+            Se a VM ou o hipervisor estiverem fora, este alerta fica inibido pelo alerta deles.
+            Servidor desativado de propósito some deste alerta depois de 7 dias (ou silencie).
+        labels:
+          alert_code: WIN-101
+          severity: critical
+          area: windows
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: win-102
+        title: '[WIN-102] Servidor Windows sem métricas'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  group by (instance) (max_over_time(up{job="integrations/windows",instance!~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc|srv-host01|srv-host01-mtc"}[7d]))
+                  unless
+                  group by (instance) (up{job="integrations/windows",instance!~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc|srv-host01|srv-host01-mtc"} == 1)
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  group by (instance) (max_over_time(up{job="integrations/windows",instance!~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc|srv-host01|srv-host01-mtc"}[7d]))
+                  unless
+                  group by (instance) (up{job="integrations/windows",instance!~"srv-ad|srv-ad-trs|srv-contabil-ass|srv-dom-trs|srv-amanda|srv-seven-mtc|srv-host01|srv-host01-mtc"} == 1)
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          __dashboardUid__: servers-windows
+          __panelId__: "368"
+          summary: 'Servidor Windows {{ $labels.instance }} sem métricas'
+          description: |-
+            O servidor {{ $labels.instance }} parou de enviar métricas há mais de 5 minutos.
+
+            Possíveis causas: servidor desligado ou travado, Grafana Alloy parado, falha de rede até o monitoramento.
+            Servidor desativado de propósito some deste alerta depois de 7 dias (ou silencie).
+        labels:
+          alert_code: WIN-102
+          severity: warning
+          area: windows
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: win-110
+        title: '[WIN-110] Serviço do Active Directory parado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  windows_service_state{job="integrations/windows",state="running",instance=~"srv-ad|srv-ad-trs",name=~"NTDS|DNS|Netlogon|Kdc|DFSR|ADWS|W32Time"}
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  windows_service_state{job="integrations/windows",state="running",instance=~"srv-ad|srv-ad-trs",name=~"NTDS|DNS|Netlogon|Kdc|DFSR|ADWS|W32Time"}
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 3m
+        annotations:
+          __dashboardUid__: servers-windows
+          __panelId__: "7"
+          summary: 'Serviço {{ $labels.name }} parado no controlador de domínio {{ $labels.instance }}'
+          description: |-
+            O serviço {{ $labels.name }} não está em execução no controlador de domínio {{ $labels.instance }}.
+
+            Sem ele, autenticação, DNS, replicação ou horário do domínio podem falhar.
+            Verifique o serviço e o Event Log (Directory Service, DNS Server, DFS Replication).
+        labels:
+          alert_code: WIN-110
+          severity: critical
+          area: windows
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: win-111
+        title: '[WIN-111] Serviço de aplicação parado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  windows_service_state{job="integrations/windows",state="running",instance="srv-contabil-ass",name=~"SQLANYs_Servidor_Dominio17|ServicoDominioAtendimento|postgresql-x64-17|MySQL"}
+                  or
+                  windows_service_state{job="integrations/windows",state="running",instance="srv-dom-trs",name=~"SQLANYs_Servidor_Dominio17|ServicoDominioAtendimento|W3SVC"}
+                  or
+                  windows_service_state{job="integrations/windows",state="running",instance="srv-seven-mtc",name="MySQL"}
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  windows_service_state{job="integrations/windows",state="running",instance="srv-contabil-ass",name=~"SQLANYs_Servidor_Dominio17|ServicoDominioAtendimento|postgresql-x64-17|MySQL"}
+                  or
+                  windows_service_state{job="integrations/windows",state="running",instance="srv-dom-trs",name=~"SQLANYs_Servidor_Dominio17|ServicoDominioAtendimento|W3SVC"}
+                  or
+                  windows_service_state{job="integrations/windows",state="running",instance="srv-seven-mtc",name="MySQL"}
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 3m
+        annotations:
+          __dashboardUid__: servers-windows
+          __panelId__: "7"
+          summary: 'Serviço {{ $labels.name }} parado em {{ $labels.instance }}'
+          description: |-
+            O serviço {{ $labels.name }} não está em execução em {{ $labels.instance }}.
+
+            É um serviço de aplicação (banco de dados ou sistema Domínio). Os usuários podem estar sem acesso.
+            Verifique o serviço e o Event Log (Application).
+        labels:
+          alert_code: WIN-111
+          severity: warning
+          area: windows
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: win-112
+        title: '[WIN-112] Serviço em curadoria parado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                windows_service_state{job="integrations/windows",state="running",name="ServicoBackupNuvem"}
+                or
+                windows_service_state{job="integrations/windows",state="running",instance="srv-host01",name="ServicoDominioAtendimento"}
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          __dashboardUid__: servers-windows
+          __panelId__: "7"
+          summary: 'Serviço {{ $labels.name }} parado em {{ $labels.instance }}'
+          description: |-
+            O serviço {{ $labels.name }} não está em execução em {{ $labels.instance }}.
+
+            Serviço em curadoria: ainda não está definido se deve rodar neste servidor. Registro informativo, sem notificação.
+            Quando a curadoria terminar, mova o serviço para WIN-111 ou retire-o desta regra.
+        labels:
+          alert_code: WIN-112
+          severity: info
+          area: windows
+          scope: service
+        isPaused: false
+
+      - uid: win-120
+        title: '[WIN-120] Servidor Windows reiniciado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  time() - windows_system_boot_time_timestamp{job="integrations/windows"}
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  time() - windows_system_boot_time_timestamp{job="integrations/windows"}
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 900
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          __dashboardUid__: servers-windows
+          __panelId__: "51"
+          summary: 'Servidor {{ $labels.instance }} reiniciado'
+          description: |-
+            O servidor {{ $labels.instance }} foi ligado há menos de 15 minutos.
+
+            Registro informativo. Se o reinício não foi planejado, verifique o Event Log (Kernel-Power 41, EventLog 6008).
+        labels:
+          alert_code: WIN-120
+          severity: info
+          area: windows
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: win-201
+        title: '[WIN-201] Disco Windows acima de 90%'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  100 * (1 - windows_logical_disk_free_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"}
+                    / windows_logical_disk_size_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"})
+                  and on (instance, volume)
+                  windows_logical_disk_free_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"} < 20 * 2^30
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  100 * (1 - windows_logical_disk_free_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"}
+                    / windows_logical_disk_size_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"})
+                  and on (instance, volume)
+                  windows_logical_disk_free_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"} < 20 * 2^30
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 90
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          __dashboardUid__: servers-windows
+          __panelId__: "369"
+          summary: 'Volume {{ $labels.volume }} de {{ $labels.instance }} acima de 90% de uso'
+          description: |-
+            O volume {{ $labels.volume }} de {{ $labels.instance }} está com {{ humanize $values.A.Value }}% de uso e menos de 20 GiB livres.
+
+            Libere espaço (temporários, logs, backups locais antigos) ou aumente o disco virtual.
+        labels:
+          alert_code: WIN-201
+          severity: warning
+          area: windows
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: win-202
+        title: '[WIN-202] Disco Windows acima de 95%'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  100 * (1 - windows_logical_disk_free_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"}
+                    / windows_logical_disk_size_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"})
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  100 * (1 - windows_logical_disk_free_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"}
+                    / windows_logical_disk_size_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",volume=~"[A-Z]:"})
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 95
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          __dashboardUid__: servers-windows
+          __panelId__: "369"
+          summary: 'Volume {{ $labels.volume }} de {{ $labels.instance }} acima de 95% de uso'
+          description: |-
+            O volume {{ $labels.volume }} de {{ $labels.instance }} está com {{ humanize $values.A.Value }}% de uso.
+
+            Com o volume cheio, serviços e bancos de dados param de gravar. Libere espaço imediatamente.
+        labels:
+          alert_code: WIN-202
+          severity: critical
+          area: windows
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: win-203
+        title: '[WIN-203] Memória Windows alta'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  100 * (1 - windows_memory_available_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"}
+                    / windows_memory_physical_total_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"})
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  100 * (1 - windows_memory_available_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"}
+                    / windows_memory_physical_total_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"})
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 92
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 15m
+        annotations:
+          __dashboardUid__: servers-windows
+          __panelId__: "204"
+          summary: 'Memória de {{ $labels.instance }} acima de 92%'
+          description: |-
+            A memória em uso de {{ $labels.instance }} está em {{ humanize $values.A.Value }}% há mais de 15 minutos.
+
+            Verifique os processos que mais consomem memória ou aumente a memória da VM.
+        labels:
+          alert_code: WIN-203
+          severity: warning
+          area: windows
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: win-204
+        title: '[WIN-204] Commit Windows alto'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  100 * windows_memory_committed_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"}
+                    / windows_memory_commit_limit{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"}
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  100 * windows_memory_committed_bytes{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"}
+                    / windows_memory_commit_limit{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc"}
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 95
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 15m
+        annotations:
+          __dashboardUid__: servers-windows
+          __panelId__: "205"
+          summary: 'Commit de {{ $labels.instance }} acima de 95% do limite'
+          description: |-
+            A memória comprometida de {{ $labels.instance }} está em {{ humanize $values.A.Value }}% do limite (RAM + arquivo de paginação).
+
+            Perto de 100%, novos processos e alocações falham. Verifique vazamentos de memória ou aumente a memória da VM.
+        labels:
+          alert_code: WIN-204
+          severity: warning
+          area: windows
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: win-205
+        title: '[WIN-205] CPU Windows alta'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  100 * (1 - avg by (instance) (rate(windows_cpu_time_total{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",mode="idle"}[5m])))
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  100 * (1 - avg by (instance) (rate(windows_cpu_time_total{job="integrations/windows",instance!~"srv-host01|srv-host01-mtc",mode="idle"}[5m])))
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 90
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 30m
+        annotations:
+          __dashboardUid__: servers-windows
+          __panelId__: "368"
+          summary: 'CPU de {{ $labels.instance }} acima de 90%'
+          description: |-
+            A CPU de {{ $labels.instance }} está em {{ humanize $values.A.Value }}% há mais de 30 minutos.
+
+            Verifique os processos que mais consomem CPU.
+        labels:
+          alert_code: WIN-205
+          severity: warning
+          area: windows
+          scope: guest
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false

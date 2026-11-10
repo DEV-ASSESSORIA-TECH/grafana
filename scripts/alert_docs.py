@@ -29,6 +29,11 @@ AREA_PT = {"hypervisor": "Hipervisor", "windows": "Windows", "linux": "Linux", "
            "servicos": "Serviços", "monitoramento": "Monitoramento"}
 
 
+def sev_text(value):
+    default, alt = catalogo.severity_values(value)
+    return f"{default} ({alt} se o container for secundario no catalogo.yml)" if alt else default
+
+
 def load(path):
     return yaml.safe_load((ROOT / path).read_text(encoding="utf-8"))
 
@@ -100,7 +105,7 @@ def header(code):
         lines += ["> **Retirado.** Este código não está mais em uso e não é reutilizado.", ""]
     lines += ["| Severidade | Área | Escopo | Dispara após | Avaliação | Fonte |",
               "|---|---|---|---|---|---|",
-              f"| {labels['severity']} | {labels['area']} | {labels['scope']} | {duration(rule['for'])} | "
+              f"| {sev_text(labels['severity'])} | {labels['area']} | {labels['scope']} | {duration(rule['for'])} | "
               f"a cada {duration(group['interval'])} (`{group['name']}`) | {source} |", ""]
     inhibits, inhibited = [], []
     for inh in inhibitions:
@@ -112,7 +117,7 @@ def header(code):
             inhibited.append(f"{', '.join(codes_matching(spec['source_matchers']))} {equal} (`{name}`)")
     lines.append(f"- **Inibe:** {'; '.join(inhibits) if inhibits else 'nada'}.")
     lines.append(f"- **É inibido por:** {'; '.join(inhibited) if inhibited else 'nada'}.")
-    lines.append(f"- **Notificação:** rota `severity = {labels['severity']}` da política padrão (UI); "
+    lines.append(f"- **Notificação:** rota `severity = {catalogo.severity_values(labels['severity'])[0]}` da política padrão (UI); "
                  f"o agrupamento é o da política.")
     links = [f"[regra no Grafana]({GRAFANA}/alerting/grafana/{entry['uid']}/view)"]
     if ann.get("__dashboardUid__"):

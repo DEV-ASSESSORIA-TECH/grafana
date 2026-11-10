@@ -2346,7 +2346,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(group by (instance, name) (container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp\"})) or vector(0)",
+                        "expr": "count(group by (instance, name) (container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\"})) or vector(0)",
                         "format": "time_series",
                         "instant": true,
                         "legendFormat": "noar",
@@ -2369,7 +2369,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(group by (instance, name) (max_over_time(container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp\"}[1d])))",
+                        "expr": "count(group by (instance, name) (max_over_time(container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\"}[1d])))",
                         "format": "time_series",
                         "instant": true,
                         "legendFormat": "total",
@@ -2438,7 +2438,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "(count(group by (instance, name) (max_over_time(container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp\"}[1d])))) - (count(group by (instance, name) (container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp\"})) or vector(0))",
+                        "expr": "(count(group by (instance, name) (max_over_time(container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\"}[1d])))) - (count(group by (instance, name) (container_last_seen{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\"})) or vector(0))",
                         "format": "time_series",
                         "instant": true,
                         "legendFormat": "faltando",

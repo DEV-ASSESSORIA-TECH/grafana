@@ -137,8 +137,9 @@ def check_rule_labels(where, labels, code, log_only=False):
         errors.append(f"{where}: label fora do contrato (contracts/alerts/labels.yml): {name}")
     if code and not code_re.match(code):
         errors.append(f"{where}: alert_code fora do formato {code_re.pattern}: {code}")
-    if labels.get("severity") and labels["severity"] not in severities:
-        errors.append(f"{where}: severity invalida: {labels['severity']}")
+    for sev in catalogo.severity_values(labels.get("severity")):
+        if sev and sev not in severities:
+            errors.append(f"{where}: severity invalida: {sev}")
     area = labels.get("area")
     if area and area not in areas:
         errors.append(f"{where}: area invalida: {area}")
@@ -202,6 +203,8 @@ def check_rule(rel, group, rule, seen_uids, seen_codes):
                 errors.append(f"{where}: {code} esta '{entry.get('status')}' no catalogo")
             for key in ("uid", "severity", "scope"):
                 got = uid if key == "uid" else labels.get(key)
+                if key == "severity":
+                    got = catalogo.severity_values(got)[0]
                 if entry.get(key) != got:
                     errors.append(f"{where}: {key} {got!r} difere do catalogo ({entry.get(key)!r})")
             if m and entry.get("title") != m.group(2):

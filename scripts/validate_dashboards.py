@@ -20,6 +20,7 @@ import json
 import re
 import sys
 
+import catalogo
 import contracts as ct
 from contracts import DATASOURCES, ROOT
 
@@ -258,6 +259,12 @@ for d in sorted(dirs_with_folder - dirs_with_dashboards):
     warnings.append(f"{d.relative_to(ROOT)}: pasta sem dashboards")
 for uid in sorted(set(uids) & set(folder_uids)):
     errors.append(f"uid '{uid}' usado por dashboard ({uids[uid]}) e pasta ({folder_uids[uid]})")
+
+_cat, _cat_errors = catalogo.load()
+errors.extend(_cat_errors)
+for path in catalogo.sync_dashboards(_cat):
+    errors.append(f"{path.relative_to(ROOT)}: filtro de containers ignorados difere do catalogo.yml; "
+                  "rode python scripts/catalogo.py --dashboards")
 
 sys.exit(ct.report(errors, warnings,
                    f"{len(uids)} dashboards, {len(folder_uids)} pastas, {len(contracts.prom_jobs)} contratos Prometheus, "

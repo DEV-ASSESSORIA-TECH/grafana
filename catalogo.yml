@@ -55,6 +55,16 @@ servidores:
   srv-dom-trs: critico
   srv-seven-mtc: critico
 
-# Containers (nome) fora de tudo: alertas CTR e contagens.
+# Containers (nome) -> classe nos alertas CTR-101 a CTR-104 (sumiu, unhealthy, loop de reinicio, OOM):
+#   importante   warning (padrao de quem nao esta listado)
+#   secundario   info (aparece no Grafana, nao notifica)
+#   ignorar      fora dos alertas e das contagens dos dashboards
+# Mudou a lista de ignorados? Rode `python scripts/catalogo.py --dashboards` (o CI confere).
 containers:
   grafana-alerting-temp: ignorar   # ensaio do deploy (grafana-alerting test)
+  warpgate: ignorar                # sera desativado
+  headplane: secundario
+  n8n: secundario
+  n8n-postgres: secundario
+  snipe-it-app: secundario
+  snipe-it-db: secundario

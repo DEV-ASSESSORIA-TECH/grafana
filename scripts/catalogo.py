@@ -34,10 +34,34 @@ SECTIONS = {
     "hosts": (("critica", "importante", "informativa", "ignorar"), None),
     "vms": (("critica", "importante", "informativa", "ignorar"), None),
     "servidores": (("critico", "normal", "ignorar"), "normal"),
-    "containers": (("ignorar",), None),
+    "containers": (("importante", "secundario", "ignorar"), "importante"),
 }
 NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 MARK = re.compile(r"@catalogo:([a-z]+)(?:(!?=)([a-z,]+))?@")
+# severidade que depende do catalogo: '{{ if match "^(...)$" $labels.name }}info{{ else }}warning{{ end }}'
+SEVERITY = re.compile(r'^\{\{ if match "\^\((.*)\)\$" \$\$?labels\.name \}\}(\w+)\{\{ else \}\}(\w+)\{\{ end \}\}$')
+# filtro de containers ignorados nos dashboards (Git Sync le o JSON direto, sem build)
+DASH_IGNORE = re.compile(r'(integrations/docker\\",name!~\\"\|)([^"\\]*(?:\\\\[^"\\]*)*)(\\")')
+
+
+def severity_values(value):
+    """(padrao, alternativa) de uma severidade com template do catalogo; (valor, None) se fixa."""
+    m = SEVERITY.match(value or "")
+    return (m.group(3), m.group(2)) if m else (value, None)
+
+
+def sync_dashboards(cat, write=False, root=ROOT):
+    """Confere (ou grava) o filtro de containers ignorados nos dashboards. Devolve os arquivos fora do catalogo."""
+    want = json.dumps(regex(names(cat, "containers", "=", "ignorar")))[1:-1]
+    stale = []
+    for path in sorted((root / "dashboards").rglob("*.json")):
+        text = path.read_text(encoding="utf-8")
+        new = DASH_IGNORE.sub(lambda m: m.group(1) + want + m.group(3), text)
+        if new != text:
+            stale.append(path)
+            if write:
+                path.write_text(new, encoding="utf-8")
+    return stale
 
 
 class UniqueLoader(yaml.SafeLoader):
@@ -192,7 +216,7 @@ def audit(cat, url, token):
 
     head("Containers (visto nos ultimos 7 dias)")
     for c in sorted(set(cat["containers"]) | set(containers)):
-        cls = cat["containers"].get(c, "monitorado")
+        cls = cat["containers"].get(c, "importante")
         where = ", ".join(sorted(containers.get(c, []))) or "-"
         state = "rodando" if c in running else "parado/removido" if c in containers else "nao existe"
         note = ""
@@ -207,6 +231,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--render", metavar="ARQUIVO", help="mostra o arquivo com os marcadores expandidos")
     ap.add_argument("--audit", action="store_true", help="compara com a producao (GRAFANA_TOKEN no ambiente)")
+    ap.add_argument("--dashboards", action="store_true",
+                    help="grava nos dashboards o filtro de containers ignorados (o CI confere)")
     ap.add_argument("--url", default=os.environ.get("GRAFANA_URL", ""))
     args = ap.parse_args()
     cat, errors = load()
@@ -220,6 +246,10 @@ def main():
             print(f"ERRO {e}", file=sys.stderr)
         print(text, end="")
         sys.exit(1 if errs else 0)
+    if args.dashboards:
+        for p in sync_dashboards(cat, write=True):
+            print(f"atualizado {p.relative_to(ROOT)}")
+        return
     if args.audit:
         token = os.environ.get("GRAFANA_TOKEN", "")
         if not args.url or not token:

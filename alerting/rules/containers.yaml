@@ -99,7 +99,7 @@ groups:
         labels:
           alert_code: CTR-101
           alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.name }} · {{ . }}{{ end }}'
-          severity: warning
+          severity: '{{ if match "^(@catalogo:containers=secundario@)$" $$labels.name }}info{{ else }}warning{{ end }}'
           area: containers
           scope: service
           dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
@@ -190,7 +190,7 @@ groups:
         labels:
           alert_code: CTR-102
           alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.name }} · {{ . }}{{ end }}'
-          severity: warning
+          severity: '{{ if match "^(@catalogo:containers=secundario@)$" $$labels.name }}info{{ else }}warning{{ end }}'
           area: containers
           scope: service
           dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
@@ -273,7 +273,7 @@ groups:
         labels:
           alert_code: CTR-103
           alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.name }} · {{ . }}{{ end }}'
-          severity: warning
+          severity: '{{ if match "^(@catalogo:containers=secundario@)$" $$labels.name }}info{{ else }}warning{{ end }}'
           area: containers
           scope: service
           dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
@@ -356,7 +356,7 @@ groups:
         labels:
           alert_code: CTR-104
           alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.name }} · {{ . }}{{ end }}'
-          severity: warning
+          severity: '{{ if match "^(@catalogo:containers=secundario@)$" $$labels.name }}info{{ else }}warning{{ end }}'
           area: containers
           scope: service
           dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'

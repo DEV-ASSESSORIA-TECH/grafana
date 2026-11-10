@@ -8,6 +8,8 @@ on:
       - scripts/validate_dashboards.py
       - scripts/contracts.py
       - scripts/grafana_check.py
+      - scripts/catalogo.py
+      - catalogo.yml
       - .github/workflows/dashboards.yml
   pull_request:
     paths:
@@ -16,6 +18,8 @@ on:
       - scripts/validate_dashboards.py
       - scripts/contracts.py
       - scripts/grafana_check.py
+      - scripts/catalogo.py
+      - catalogo.yml
       - .github/workflows/dashboards.yml
 
 jobs:

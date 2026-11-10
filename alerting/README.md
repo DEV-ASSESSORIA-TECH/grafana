@@ -114,7 +114,7 @@ Monte a policy padrão pelos labels (`contracts/alerts/notifications.yml`, `rout
 | `hosts` | instance do host Hyper-V | `critica`, `importante`, `informativa`, `ignorar` | Classe padrão das VMs do host que não estão em `vms`. A lista de hosts também alimenta HYP-101/102/130/131/140/201-206 e as exclusões dos hosts nas regras Windows |
 | `vms` | nome da VM no Hyper-V | `critica`, `importante`, `informativa`, `ignorar` | VM desligada: HYP-111 (critical), HYP-112 (warning), HYP-113 (info, não notifica) ou nada |
 | `servidores` | instance do Alloy | `critico`, `normal` (padrão), `ignorar` | Servidor sem métricas: LIN/WIN-101 (critical), LIN/WIN-102 (warning) ou nada |
-| `containers` | nome do container | `ignorar` | Fora dos alertas CTR |
+| `containers` | nome do container | `importante` (padrão), `secundario`, `ignorar` | CTR-101 a 104 em warning, em info (não notifica) ou fora dos alertas e das contagens dos dashboards |
 
 Desligar uma VM não exige mudar o catálogo: a classe só define o quanto o desligamento importa. Tudo o que roda numa VM desligada (servidor, containers, serviços do Kuma com a tag `vm`) fica inibido enquanto o alerta da VM estiver ativo (ver [Dependências e inibição](#dependências-e-inibição)).
 
@@ -129,6 +129,8 @@ Marcadores nas regras (expansão em `scripts/catalogo.py`; o resultado é uma al
 | `@catalogo:vms=critica@` | VMs listadas como `critica` |
 | `@catalogo:vms!=critica@` | VMs listadas com outra classe |
 | `@catalogo:hosts@` | todos os hosts |
+
+A severidade de CTR-101 a 104 usa um template com `match` sobre o nome do container (`@catalogo:containers=secundario@`), conferido no Grafana 13.3.0. Os dashboards não passam pelo build (o Git Sync lê o JSON direto): depois de mudar a lista de ignorados, rode `python scripts/catalogo.py --dashboards`; o CI acusa se esquecer.
 
 Lista vazia vira `""`: `=~""` não casa com nada e `!~""` não exclui nada. Para conferir uma regra expandida: `python scripts/catalogo.py --render alerting/rules/hypervisor.yaml`.
 

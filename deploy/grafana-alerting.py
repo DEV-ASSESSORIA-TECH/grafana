@@ -187,9 +187,16 @@ def http(url, path, auth, method="GET", body=None, timeout=30):
         return resp.status, json.load(resp)
 
 
-def wait_health(url, seconds=180):
+def container_errors(name, lines=200):
+    res = run(["docker", "logs", "--tail", str(lines), name], check=False)
+    out = [line for line in (res.stdout + res.stderr).splitlines() if "level=error" in line or line.startswith("Error")]
+    return "\n".join(out[-8:])
+
+
+def wait_health(url, seconds=180, container=None):
+    """Espera o /api/health. Com container, desiste cedo se ele parar ou ficar reiniciando."""
     deadline = time.time() + seconds
-    last = ""
+    last, down_since = "", None
     while time.time() < deadline:
         try:
             status, body = http(url, "/api/health", "")
@@ -197,8 +204,18 @@ def wait_health(url, seconds=180):
                 return body
         except (OSError, ValueError) as e:
             last = str(e)
+        if container:
+            st = inspect(container)["State"]
+            if st.get("Running") and not st.get("Restarting"):
+                down_since = None
+            elif down_since is None:
+                down_since = time.time()
+            elif time.time() - down_since > 10:
+                raise Fail(f"o container {container} nao fica de pe ({st.get('Status')}):\n"
+                           f"{container_errors(container)}")
         time.sleep(3)
-    raise Fail(f"Grafana nao respondeu em {seconds}s ({url}/api/health): {last}")
+    detail = f"\n{container_errors(container)}" if container else ""
+    raise Fail(f"Grafana nao respondeu em {seconds}s ({url}/api/health): {last}{detail}")
 
 
 # ---------------------------------------------------------------- pacotes
@@ -318,11 +335,9 @@ def rehearse(cfg, pkg_dir):
             time.sleep(1)
         url = f"http://{ip}:3000"
         try:
-            wait_health(url, 120)
-        except Fail:
-            logs = run(["docker", "logs", "--tail", "40", TEMP_NAME], check=False)
-            raise Fail("o Grafana temporario nao subiu com o pacote (em producao ele tambem nao subiria):\n"
-                       + (logs.stdout + logs.stderr)[-3000:])
+            wait_health(url, 120, container=TEMP_NAME)
+        except Fail as e:
+            raise Fail(f"o Grafana temporario nao subiu com o pacote (em producao ele tambem nao subiria): {e}")
         env = {**os.environ, "GRAFANA_TOKEN": "", "NO_PROXY": "*", "no_proxy": "*"}
         env.pop("GRAFANA_TOKEN")
         scripts = pkg_dir / "src" / "scripts"
@@ -368,7 +383,7 @@ def restart(cfg):
     name = prod_container(cfg)
     log(f"reiniciando o container {name}")
     run(["docker", "restart", name])
-    wait_health(cfg["url"])
+    wait_health(cfg["url"], container=name)
     ok("Grafana de producao respondendo")
 
 

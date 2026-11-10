@@ -218,8 +218,8 @@ O dashboard **Visão geral** (`dashboards/overview/`) é a página inicial:
 
 | Linha | O que mostra |
 |---|---|
-| Áreas | Por área (Linux, Windows, Hyper-V, Serviços, Containers, Coleta): alvos reportando, críticos e avisos. Clique abre o dashboard da área |
-| Alertas | Contagem agora (críticos, avisos, pendentes, info), certificados, links de silences e a tabela **Alertas ativos**: severidade, código (abre a documentação), alvo, alerta (abre a regra), estado e área |
+| Áreas | Por área (Linux, Windows, Hyper-V, Serviços, Containers, Coleta), em Canvas: alvos reportando sobre o total (laranja quando falta algum), chips de críticos e avisos e borda na cor do pior alerta. Clique no título abre o dashboard |
+| Alertas | Blocos de fundo sólido (críticos, avisos, pendentes, info, próximo certificado) e a tabela **Alertas ativos**: severidade, código (abre a documentação), alvo, alerta (abre a regra), estado e área. Silences pelo link no topo |
 | Sem dados | Alvos que reportaram nos últimos 7 dias e pararam, com "sem dados há" e "última vez visto" |
 | Atenção | Discos que enchem primeiro (sem o F: de backup do srv-host01), CPU e RAM top 5 |
 | Histórico de alertas | Linha do tempo por ocorrência: vermelho crítico, laranja aviso, azul pendente |

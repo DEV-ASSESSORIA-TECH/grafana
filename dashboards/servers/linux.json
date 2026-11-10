@@ -13493,7 +13493,7 @@
         "spec": {
           "id": 354,
           "title": "",
-          "description": "",
+          "description": "Menor espaço livre entre os volumes do servidor, sem /boot (partição pequena por natureza). A tabela Armazenamento mostra todos.",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -13511,7 +13511,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "min(node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"})",
+                        "expr": "min(node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot.*|/run.*|/var/lib/docker/.+|/snap/.+\"})",
                         "format": "time_series",
                         "instant": true,
                         "range": false
@@ -13683,7 +13683,7 @@
         "spec": {
           "id": 356,
           "title": "",
-          "description": "",
+          "description": "Volume que enche primeiro na tendência de 1 dia (até 90 dias), sem /boot.",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -13701,7 +13701,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "((min(max by (mountpoint) ((node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"} / (-deriv(node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot/efi|/run.*|/var/lib/docker/.+|/snap/.+\"}[1d]) > 0)) < 7776000))) / 86400) or on () vector(-1)",
+                        "expr": "((min(max by (mountpoint) ((node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot.*|/run.*|/var/lib/docker/.+|/snap/.+\"} / (-deriv(node_filesystem_avail_bytes{job=\"integrations/unix\",instance=\"$server\",fstype!~\"tmpfs|devtmpfs|overlay|squashfs|ramfs|nsfs|fuse.*\",mountpoint!~\"/boot.*|/run.*|/var/lib/docker/.+|/snap/.+\"}[1d]) > 0)) < 7776000))) / 86400) or on () vector(-1)",
                         "format": "time_series",
                         "instant": true,
                         "range": false

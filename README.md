@@ -77,7 +77,8 @@ Não há mais `__inputs`/`__requires` nem `${DS_PROMETHEUS}`/`${DS_LOKI}`: o das
 - **Blocos de número:** status em stat de **fundo sólido**, nome em cima e valor embaixo (verde `#37872D`, laranja `#E0752D`, vermelho `#C4162A`). Informativos (sistema, ligado há, núcleos) em cinza neutro `#2F333A`. Blocos de área do Visão geral em **Canvas** nativo: valor/total, chips de críticos e avisos, borda na cor do pior alerta.
 - Uma variável de seleção: **Server** nos servidores, **Host** nos hypervisors (`instance`). Job e datasource ficam fixos no JSON.
 - Serviços filtra pelas tags do Uptime Kuma (**Criticidade**, **Exposição**, **Grupo**). Tag nova no Kuma exige reiniciar o container (ver contrato `uptime-kuma`).
-- Painéis e colunas de latência do Serviços excluem monitores `push` (heartbeat dos hosts, sem tempo de resposta): `monitor_type!~"group|push"`.
+- O Serviços ignora os monitores `push` (heartbeat dos hosts, que ficam no Hyper-V) e o grupo "Disponibilidade servidores": `monitor_type!~"group|push"`. Resumo e grupos em stat de fundo sólido; disponibilidade por hora em barras (status history).
+- Certificados de terceiros (Tiflux, Sispcard) ficam fora de todos os painéis e dos alertas SVC-201/202/203: `monitor_name!~"Tiflux|Sispcard"`.
 - Toda consulta fixa o `job`. Toda métrica (Prometheus) e label (Loki) usada precisa existir no contrato desse job — o CI falha caso contrário.
 - Os dashboards seguem o mesmo layout: **Resumo** (medidores + status) → **CPU / Memória / Disco** → **Rede** (placa principal) → **Logs** → seções de detalhe recolhidas.
 - Bytes em base 1024 (GiB, MiB/s) nos dois dashboards; rede em bits/s.

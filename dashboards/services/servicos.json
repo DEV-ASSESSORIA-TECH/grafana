@@ -37,8 +37,8 @@
         "kind": "Panel",
         "spec": {
           "id": 10,
-          "title": "Estado",
-          "description": "Monitores de grupo do Kuma: ficam DOWN quando algum membro cai. Não respondem aos filtros.",
+          "title": "Infraestrutura",
+          "description": "Grupo Infraestrutura do Uptime Kuma: estado agora e disponibilidade do grupo inteiro em 1 e 30 dias (calculada pelo Kuma).",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -56,14 +56,60 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "monitor_status{job=\"uptime-kuma\",monitor_type=\"group\"}",
+                        "expr": "max(monitor_status{job=\"uptime-kuma\",monitor_type=\"group\",monitor_name=\"Infraestrutura\"})",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "{{monitor_name}}",
+                        "legendFormat": "Estado",
                         "range": false
                       }
                     },
                     "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "100 * max(monitor_uptime_ratio{job=\"uptime-kuma\",monitor_type=\"group\",monitor_name=\"Infraestrutura\",window=\"1d\"})",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "1d",
+                        "range": false
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "100 * max(monitor_uptime_ratio{job=\"uptime-kuma\",monitor_type=\"group\",monitor_name=\"Infraestrutura\",window=\"30d\"})",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "30d",
+                        "range": false
+                      }
+                    },
+                    "refId": "C",
                     "hidden": false
                   }
                 }
@@ -78,7 +124,7 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "background",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
                 "orientation": "auto",
@@ -92,55 +138,136 @@
                 "showPercentChange": false,
                 "text": {
                   "titleSize": 12,
-                  "valueSize": 18
+                  "valueSize": 20
                 },
                 "textMode": "value_and_name",
-                "wideLayout": true
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
-                  "unit": "short",
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      }
+                    ]
+                  },
+                  "decimals": 0,
                   "mappings": [
                     {
                       "type": "value",
                       "options": {
                         "0": {
                           "text": "DOWN",
-                          "color": "#F2495C",
-                          "index": 1
+                          "color": "#C4162A",
+                          "index": 0
                         },
                         "1": {
                           "text": "UP",
-                          "color": "#73BF69",
-                          "index": 0
+                          "color": "#37872D",
+                          "index": 1
                         },
                         "2": {
                           "text": "PENDENTE",
-                          "color": "#FF9830",
+                          "color": "#E0752D",
                           "index": 2
                         },
                         "3": {
                           "text": "MANUTENÇÃO",
-                          "color": "#5794F2",
+                          "color": "#1F60C4",
                           "index": 3
                         }
                       }
                     }
-                  ],
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
+                  ]
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "1d"
+                    },
+                    "properties": [
                       {
-                        "value": null,
-                        "color": "text"
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#C4162A"
+                            },
+                            {
+                              "value": 99,
+                              "color": "#E0752D"
+                            },
+                            {
+                              "value": 99.9,
+                              "color": "#37872D"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": []
                       }
                     ]
                   },
-                  "color": {
-                    "mode": "thresholds"
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "30d"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#C4162A"
+                            },
+                            {
+                              "value": 99,
+                              "color": "#E0752D"
+                            },
+                            {
+                              "value": 99.9,
+                              "color": "#37872D"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": []
+                      }
+                    ]
                   }
-                },
-                "overrides": []
+                ]
               }
             }
           }
@@ -150,8 +277,8 @@
         "kind": "Panel",
         "spec": {
           "id": 11,
-          "title": "Disponibilidade 1d",
-          "description": "Disponibilidade do grupo inteiro calculada pelo Kuma.",
+          "title": "Aplicações",
+          "description": "Grupo Aplicações do Uptime Kuma: estado agora e disponibilidade do grupo inteiro em 1 e 30 dias (calculada pelo Kuma).",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -169,14 +296,60 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "100 * monitor_uptime_ratio{job=\"uptime-kuma\",monitor_type=\"group\",window=\"1d\"}",
+                        "expr": "max(monitor_status{job=\"uptime-kuma\",monitor_type=\"group\",monitor_name=\"Aplicações\"})",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "{{monitor_name}}",
+                        "legendFormat": "Estado",
                         "range": false
                       }
                     },
                     "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "100 * max(monitor_uptime_ratio{job=\"uptime-kuma\",monitor_type=\"group\",monitor_name=\"Aplicações\",window=\"1d\"})",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "1d",
+                        "range": false
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "100 * max(monitor_uptime_ratio{job=\"uptime-kuma\",monitor_type=\"group\",monitor_name=\"Aplicações\",window=\"30d\"})",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "30d",
+                        "range": false
+                      }
+                    },
+                    "refId": "C",
                     "hidden": false
                   }
                 }
@@ -191,7 +364,7 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
                 "orientation": "auto",
@@ -205,37 +378,136 @@
                 "showPercentChange": false,
                 "text": {
                   "titleSize": 12,
-                  "valueSize": 18
+                  "valueSize": 20
                 },
                 "textMode": "value_and_name",
-                "wideLayout": true
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
-                  "unit": "percent",
-                  "decimals": 2,
+                  "color": {
+                    "mode": "thresholds"
+                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
                       {
                         "value": null,
-                        "color": "red"
-                      },
-                      {
-                        "value": 99,
-                        "color": "orange"
-                      },
-                      {
-                        "value": 99.9,
-                        "color": "green"
+                        "color": "#2F333A"
                       }
                     ]
                   },
-                  "color": {
-                    "mode": "thresholds"
-                  }
+                  "decimals": 0,
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "0": {
+                          "text": "DOWN",
+                          "color": "#C4162A",
+                          "index": 0
+                        },
+                        "1": {
+                          "text": "UP",
+                          "color": "#37872D",
+                          "index": 1
+                        },
+                        "2": {
+                          "text": "PENDENTE",
+                          "color": "#E0752D",
+                          "index": 2
+                        },
+                        "3": {
+                          "text": "MANUTENÇÃO",
+                          "color": "#1F60C4",
+                          "index": 3
+                        }
+                      }
+                    }
+                  ]
                 },
-                "overrides": []
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "1d"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#C4162A"
+                            },
+                            {
+                              "value": 99,
+                              "color": "#E0752D"
+                            },
+                            {
+                              "value": 99.9,
+                              "color": "#37872D"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": []
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "30d"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#C4162A"
+                            },
+                            {
+                              "value": 99,
+                              "color": "#E0752D"
+                            },
+                            {
+                              "value": 99.9,
+                              "color": "#37872D"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": []
+                      }
+                    ]
+                  }
+                ]
               }
             }
           }
@@ -245,8 +517,8 @@
         "kind": "Panel",
         "spec": {
           "id": 12,
-          "title": "Disponibilidade 30d",
-          "description": "Disponibilidade do grupo inteiro calculada pelo Kuma.",
+          "title": "Serviços Externos",
+          "description": "Grupo Serviços Externos do Uptime Kuma: estado agora e disponibilidade do grupo inteiro em 1 e 30 dias (calculada pelo Kuma).",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -264,14 +536,60 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "100 * monitor_uptime_ratio{job=\"uptime-kuma\",monitor_type=\"group\",window=\"30d\"}",
+                        "expr": "max(monitor_status{job=\"uptime-kuma\",monitor_type=\"group\",monitor_name=\"Serviços Externos\"})",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "{{monitor_name}}",
+                        "legendFormat": "Estado",
                         "range": false
                       }
                     },
                     "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "100 * max(monitor_uptime_ratio{job=\"uptime-kuma\",monitor_type=\"group\",monitor_name=\"Serviços Externos\",window=\"1d\"})",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "1d",
+                        "range": false
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "100 * max(monitor_uptime_ratio{job=\"uptime-kuma\",monitor_type=\"group\",monitor_name=\"Serviços Externos\",window=\"30d\"})",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "30d",
+                        "range": false
+                      }
+                    },
+                    "refId": "C",
                     "hidden": false
                   }
                 }
@@ -286,7 +604,7 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
                 "orientation": "auto",
@@ -300,37 +618,136 @@
                 "showPercentChange": false,
                 "text": {
                   "titleSize": 12,
-                  "valueSize": 18
+                  "valueSize": 20
                 },
                 "textMode": "value_and_name",
-                "wideLayout": true
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
-                  "unit": "percent",
-                  "decimals": 2,
+                  "color": {
+                    "mode": "thresholds"
+                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
                       {
                         "value": null,
-                        "color": "red"
-                      },
-                      {
-                        "value": 99,
-                        "color": "orange"
-                      },
-                      {
-                        "value": 99.9,
-                        "color": "green"
+                        "color": "#2F333A"
                       }
                     ]
                   },
-                  "color": {
-                    "mode": "thresholds"
-                  }
+                  "decimals": 0,
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "0": {
+                          "text": "DOWN",
+                          "color": "#C4162A",
+                          "index": 0
+                        },
+                        "1": {
+                          "text": "UP",
+                          "color": "#37872D",
+                          "index": 1
+                        },
+                        "2": {
+                          "text": "PENDENTE",
+                          "color": "#E0752D",
+                          "index": 2
+                        },
+                        "3": {
+                          "text": "MANUTENÇÃO",
+                          "color": "#1F60C4",
+                          "index": 3
+                        }
+                      }
+                    }
+                  ]
                 },
-                "overrides": []
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "1d"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#C4162A"
+                            },
+                            {
+                              "value": 99,
+                              "color": "#E0752D"
+                            },
+                            {
+                              "value": 99.9,
+                              "color": "#37872D"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": []
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "30d"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#C4162A"
+                            },
+                            {
+                              "value": 99,
+                              "color": "#E0752D"
+                            },
+                            {
+                              "value": 99.9,
+                              "color": "#37872D"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": []
+                      }
+                    ]
+                  }
+                ]
               }
             }
           }
@@ -341,7 +758,7 @@
         "spec": {
           "id": 14,
           "title": "",
-          "description": "Estado de cada serviço no período. Vermelho = DOWN, laranja = PENDENTE, azul = manutenção. Falta de dados de até 5 min (restart do Kuma) é preenchida com o último estado; buraco maior = Kuma sem publicar.",
+          "description": "Disponibilidade de cada serviço por hora, no estilo página de status. Verde = 100% no ar (manutenção conta como no ar), laranja = teve alguma falha, vermelho = abaixo de 95%. Passe o mouse para ver a %. O minuto exato das quedas está em Eventos do Kuma.",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -359,11 +776,12 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max by (monitor_name) (last_over_time(monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"}[5m]))",
+                        "expr": "100 * avg_over_time(clamp_max((max by (monitor_name) (monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"}) == bool 1) + (max by (monitor_name) (monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"}) == bool 3), 1)[$__interval:1m])",
                         "format": "time_series",
                         "instant": false,
                         "legendFormat": "{{monitor_name}}",
-                        "range": true
+                        "range": true,
+                        "interval": "1h"
                       }
                     },
                     "refId": "A",
@@ -372,80 +790,65 @@
                 }
               ],
               "transformations": [],
-              "queryOptions": {}
+              "queryOptions": {
+                "interval": "1h"
+              }
             }
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "state-timeline",
+            "group": "status-history",
             "version": "",
             "spec": {
               "options": {
-                "alignValue": "left",
-                "legend": {
-                  "displayMode": "list",
-                  "placement": "bottom",
-                  "showLegend": true
-                },
-                "mergeValues": true,
-                "rowHeight": 0.8,
                 "showValue": "never",
+                "rowHeight": 0.8,
+                "colWidth": 0.82,
+                "legend": {
+                  "showLegend": false,
+                  "displayMode": "list",
+                  "placement": "bottom"
+                },
                 "tooltip": {
-                  "hideZeros": false,
                   "mode": "single",
-                  "sort": "none"
+                  "sort": "none",
+                  "hideZeros": false
                 }
               },
               "fieldConfig": {
                 "defaults": {
-                  "mappings": [
-                    {
-                      "type": "value",
-                      "options": {
-                        "0": {
-                          "text": "DOWN",
-                          "color": "#F2495C",
-                          "index": 1
-                        },
-                        "1": {
-                          "text": "UP",
-                          "color": "#73BF69",
-                          "index": 0
-                        },
-                        "2": {
-                          "text": "PENDENTE",
-                          "color": "#FF9830",
-                          "index": 2
-                        },
-                        "3": {
-                          "text": "MANUTENÇÃO",
-                          "color": "#5794F2",
-                          "index": 3
-                        }
-                      }
-                    }
-                  ],
+                  "unit": "percent",
+                  "decimals": 2,
+                  "min": 0,
+                  "max": 100,
+                  "color": {
+                    "mode": "thresholds"
+                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
                       {
                         "value": null,
-                        "color": "#6E7480"
+                        "color": "#C4162A"
+                      },
+                      {
+                        "value": 95,
+                        "color": "#E0752D"
+                      },
+                      {
+                        "value": 99.99,
+                        "color": "#37872D"
                       }
                     ]
                   },
-                  "color": {
-                    "mode": "fixed",
-                    "fixedColor": "#6E7480"
-                  },
                   "custom": {
-                    "fillOpacity": 85,
+                    "fillOpacity": 100,
+                    "lineWidth": 0,
                     "hideFrom": {
                       "legend": false,
                       "tooltip": false,
                       "viz": false
-                    },
-                    "lineWidth": 0
+                    }
                   }
                 },
                 "overrides": []
@@ -477,7 +880,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max by (monitor_name, monitor_url, criticidade, exposicao, grupo) (monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"})",
+                        "expr": "max by (monitor_name, monitor_url, criticidade, exposicao, grupo) (monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"})",
                         "format": "table",
                         "instant": true,
                         "range": false
@@ -499,7 +902,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max by (monitor_name, monitor_url, criticidade, exposicao, grupo) (100 * monitor_uptime_ratio{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\",window=\"1d\"})",
+                        "expr": "max by (monitor_name, monitor_url, criticidade, exposicao, grupo) (100 * monitor_uptime_ratio{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\",window=\"1d\"})",
                         "format": "table",
                         "instant": true,
                         "range": false
@@ -521,7 +924,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max by (monitor_name, monitor_url, criticidade, exposicao, grupo) (100 * monitor_uptime_ratio{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\",window=\"30d\"})",
+                        "expr": "max by (monitor_name, monitor_url, criticidade, exposicao, grupo) (100 * monitor_uptime_ratio{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\",window=\"30d\"})",
                         "format": "table",
                         "instant": true,
                         "range": false
@@ -587,7 +990,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max by (monitor_name, monitor_url, criticidade, exposicao, grupo) (monitor_cert_days_remaining{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"})",
+                        "expr": "max by (monitor_name, monitor_url, criticidade, exposicao, grupo) (monitor_cert_days_remaining{job=\"uptime-kuma\",monitor_name!~\"Tiflux|Sispcard\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"})",
                         "format": "table",
                         "instant": true,
                         "range": false
@@ -609,7 +1012,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "sum by (monitor_name) (sum_over_time(((monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 0) > bool (monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} offset 1m == bool 0))[$__range:1m])) + on (monitor_name) group_left (monitor_url, criticidade, exposicao, grupo) (0 * max by (monitor_name, monitor_url, criticidade, exposicao, grupo) (monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"}))",
+                        "expr": "sum by (monitor_name) (sum_over_time(((monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 0) > bool (monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} offset 1m == bool 0))[$__range:1m])) + on (monitor_name) group_left (monitor_url, criticidade, exposicao, grupo) (0 * max by (monitor_name, monitor_url, criticidade, exposicao, grupo) (monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"}))",
                         "format": "table",
                         "instant": true,
                         "range": false
@@ -1143,7 +1546,8 @@
                               "match": "null+nan",
                               "result": {
                                 "index": 0,
-                                "text": "-"
+                                "text": " ",
+                                "color": "transparent"
                               }
                             },
                             "type": "special"
@@ -1932,8 +2336,8 @@
         "kind": "Panel",
         "spec": {
           "id": 3,
-          "title": "Serviços",
-          "description": "Monitores do Uptime Kuma (sem os grupos) que passam pelos filtros. Fora = DOWN ou PENDENTE (falhou e está tentando de novo).",
+          "title": "",
+          "description": "Serviços no ar agora (monitores do Uptime Kuma que passam pelos filtros; sem grupos e heartbeats).",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -1951,60 +2355,14 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "sum(monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 1)",
+                        "expr": "sum(monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 1)",
                         "format": "time_series",
                         "instant": true,
-                        "legendFormat": "no ar",
+                        "legendFormat": "No ar",
                         "range": false
                       }
                     },
                     "refId": "A",
-                    "hidden": false
-                  }
-                },
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "sum(monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 0) + sum(monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 2)",
-                        "format": "time_series",
-                        "instant": true,
-                        "legendFormat": "fora",
-                        "range": false
-                      }
-                    },
-                    "refId": "B",
-                    "hidden": false
-                  }
-                },
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "sum(monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 3)",
-                        "format": "time_series",
-                        "instant": true,
-                        "legendFormat": "manutenção",
-                        "range": false
-                      }
-                    },
-                    "refId": "C",
                     "hidden": false
                   }
                 }
@@ -2019,10 +2377,10 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
-                "orientation": "vertical",
+                "orientation": "auto",
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -2033,91 +2391,32 @@
                 "showPercentChange": false,
                 "text": {
                   "titleSize": 12,
-                  "valueSize": 22
+                  "valueSize": 24
                 },
                 "textMode": "value_and_name",
-                "wideLayout": true
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
-                  "unit": "short",
-                  "decimals": 0,
+                  "color": {
+                    "mode": "thresholds"
+                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
                       {
                         "value": null,
-                        "color": "text"
+                        "color": "#2F333A"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#37872D"
                       }
                     ]
                   },
-                  "color": {
-                    "mode": "thresholds"
-                  }
+                  "decimals": 0
                 },
-                "overrides": [
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "no ar"
-                    },
-                    "properties": [
-                      {
-                        "id": "color",
-                        "value": {
-                          "fixedColor": "#73BF69",
-                          "mode": "fixed"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "fora"
-                    },
-                    "properties": [
-                      {
-                        "id": "thresholds",
-                        "value": {
-                          "mode": "absolute",
-                          "steps": [
-                            {
-                              "color": "#6E7480"
-                            },
-                            {
-                              "color": "red",
-                              "value": 1
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byName",
-                      "options": "manutenção"
-                    },
-                    "properties": [
-                      {
-                        "id": "thresholds",
-                        "value": {
-                          "mode": "absolute",
-                          "steps": [
-                            {
-                              "color": "#6E7480"
-                            },
-                            {
-                              "color": "#5794F2",
-                              "value": 1
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                ]
+                "overrides": []
               }
             }
           }
@@ -2127,7 +2426,7 @@
         "kind": "Panel",
         "spec": {
           "id": 4,
-          "title": "Quedas",
+          "title": "",
           "description": "Quantas vezes algum serviço passou para DOWN no período do dashboard (amostra por minuto: quedas menores que 1 min podem não aparecer).",
           "links": [],
           "data": {
@@ -2146,10 +2445,11 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "sum (sum_over_time(((monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 0) > bool (monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} offset 1m == bool 0))[$__range:1m]))",
+                        "expr": "sum (sum_over_time(((monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 0) > bool (monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} offset 1m == bool 0))[$__range:1m]))",
                         "format": "time_series",
                         "instant": true,
-                        "range": false
+                        "range": false,
+                        "legendFormat": "Quedas no período"
                       }
                     },
                     "refId": "A",
@@ -2167,10 +2467,10 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
-                "orientation": "vertical",
+                "orientation": "auto",
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -2180,33 +2480,31 @@
                 },
                 "showPercentChange": false,
                 "text": {
-                  "titleSize": 11,
-                  "valueSize": 22
+                  "titleSize": 12,
+                  "valueSize": 24
                 },
-                "textMode": "value",
-                "wideLayout": true
+                "textMode": "value_and_name",
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
-                  "displayName": "",
-                  "unit": "none",
-                  "decimals": 0,
+                  "color": {
+                    "mode": "thresholds"
+                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
                       {
                         "value": null,
-                        "color": "green"
+                        "color": "#2F333A"
                       },
                       {
                         "value": 1,
-                        "color": "orange"
+                        "color": "#E0752D"
                       }
                     ]
                   },
-                  "color": {
-                    "mode": "thresholds"
-                  }
+                  "decimals": 0
                 },
                 "overrides": []
               }
@@ -2218,7 +2516,7 @@
         "kind": "Panel",
         "spec": {
           "id": 5,
-          "title": "Erros",
+          "title": "Erros de exportação",
           "description": "Linhas de erro do Kuma ao publicar métricas no período. Diferente de zero: alguma tag foi criada depois do último restart e os monitores com ela sumiram das métricas (não aparecem neste dashboard). Correção: reiniciar o container do Kuma.",
           "links": [],
           "data": {
@@ -2317,7 +2615,7 @@
         "kind": "Panel",
         "spec": {
           "id": 6,
-          "title": "Pior disp. 30d",
+          "title": "",
           "description": "Menor disponibilidade em 30 dias, calculada pelo próprio Kuma (não depende do histórico do Prometheus).",
           "links": [],
           "data": {
@@ -2336,7 +2634,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "bottomk(1, 100 * monitor_uptime_ratio{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\",window=\"30d\"})",
+                        "expr": "bottomk(1, 100 * monitor_uptime_ratio{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\",window=\"30d\"})",
                         "format": "time_series",
                         "instant": true,
                         "legendFormat": "{{monitor_name}}",
@@ -2358,10 +2656,10 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
-                "orientation": "vertical",
+                "orientation": "auto",
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -2371,37 +2669,37 @@
                 },
                 "showPercentChange": false,
                 "text": {
-                  "titleSize": 11,
-                  "valueSize": 22
+                  "titleSize": 12,
+                  "valueSize": 24
                 },
                 "textMode": "value_and_name",
-                "wideLayout": true
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
-                  "displayName": "${__field.labels.monitor_name}",
-                  "unit": "percent",
-                  "decimals": 2,
+                  "color": {
+                    "mode": "thresholds"
+                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
                       {
                         "value": null,
-                        "color": "red"
+                        "color": "#C4162A"
                       },
                       {
                         "value": 99,
-                        "color": "orange"
+                        "color": "#E0752D"
                       },
                       {
                         "value": 99.9,
-                        "color": "green"
+                        "color": "#37872D"
                       }
                     ]
                   },
-                  "color": {
-                    "mode": "thresholds"
-                  }
+                  "decimals": 2,
+                  "unit": "percent",
+                  "displayName": "Pior 30d · ${__field.labels.monitor_name}"
                 },
                 "overrides": []
               }
@@ -2413,8 +2711,8 @@
         "kind": "Panel",
         "spec": {
           "id": 7,
-          "title": "Próx. certificado",
-          "description": "Dias até vencer o certificado TLS que expira primeiro.",
+          "title": "",
+          "description": "Dias até vencer o certificado TLS que expira primeiro. Tiflux e Sispcard ficam de fora: os certificados deles não são gerenciados por nós.",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -2432,7 +2730,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "bottomk(1, monitor_cert_days_remaining{job=\"uptime-kuma\",monitor_type!=\"group\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"})",
+                        "expr": "bottomk(1, monitor_cert_days_remaining{job=\"uptime-kuma\",monitor_name!~\"Tiflux|Sispcard\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"})",
                         "format": "time_series",
                         "instant": true,
                         "legendFormat": "{{monitor_name}}",
@@ -2454,10 +2752,10 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
-                "orientation": "vertical",
+                "orientation": "auto",
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -2467,37 +2765,37 @@
                 },
                 "showPercentChange": false,
                 "text": {
-                  "titleSize": 11,
-                  "valueSize": 22
+                  "titleSize": 12,
+                  "valueSize": 24
                 },
                 "textMode": "value_and_name",
-                "wideLayout": true
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
-                  "displayName": "${__field.labels.monitor_name}",
-                  "unit": "suffix: dias",
-                  "decimals": 0,
+                  "color": {
+                    "mode": "thresholds"
+                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
                       {
                         "value": null,
-                        "color": "red"
+                        "color": "#C4162A"
+                      },
+                      {
+                        "value": 3,
+                        "color": "#E0752D"
                       },
                       {
                         "value": 14,
-                        "color": "orange"
-                      },
-                      {
-                        "value": 30,
-                        "color": "green"
+                        "color": "#37872D"
                       }
                     ]
                   },
-                  "color": {
-                    "mode": "thresholds"
-                  }
+                  "decimals": 0,
+                  "unit": "suffix: dias",
+                  "displayName": "Certificado · ${__field.labels.monitor_name}"
                 },
                 "overrides": []
               }
@@ -2509,8 +2807,8 @@
         "kind": "Panel",
         "spec": {
           "id": 8,
-          "title": "Mais lenta",
-          "description": "Maior tempo de resposta na última verificação, entre os serviços filtrados.",
+          "title": "",
+          "description": "Maior tempo médio de resposta em 1 dia (calculado pelo Kuma), entre os serviços filtrados.",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -2528,7 +2826,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "topk(1, monitor_response_time{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} >= 0)",
+                        "expr": "topk(1, 1000 * monitor_response_time_seconds{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\",window=\"1d\"})",
                         "format": "time_series",
                         "instant": true,
                         "legendFormat": "{{monitor_name}}",
@@ -2550,10 +2848,10 @@
             "version": "",
             "spec": {
               "options": {
-                "colorMode": "value",
+                "colorMode": "background_solid",
                 "graphMode": "none",
                 "justifyMode": "center",
-                "orientation": "vertical",
+                "orientation": "auto",
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -2563,37 +2861,37 @@
                 },
                 "showPercentChange": false,
                 "text": {
-                  "titleSize": 11,
-                  "valueSize": 22
+                  "titleSize": 12,
+                  "valueSize": 24
                 },
                 "textMode": "value_and_name",
-                "wideLayout": true
+                "wideLayout": false
               },
               "fieldConfig": {
                 "defaults": {
-                  "displayName": "${__field.labels.monitor_name}",
-                  "unit": "ms",
-                  "decimals": 0,
+                  "color": {
+                    "mode": "thresholds"
+                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
                       {
                         "value": null,
-                        "color": "text"
-                      },
-                      {
-                        "value": 500,
-                        "color": "orange"
+                        "color": "#37872D"
                       },
                       {
                         "value": 1000,
-                        "color": "red"
+                        "color": "#E0752D"
+                      },
+                      {
+                        "value": 3000,
+                        "color": "#C4162A"
                       }
                     ]
                   },
-                  "color": {
-                    "mode": "thresholds"
-                  }
+                  "decimals": 0,
+                  "unit": "ms",
+                  "displayName": "Mais lenta 1d · ${__field.labels.monitor_name}"
                 },
                 "overrides": []
               }
@@ -2662,6 +2960,186 @@
             }
           }
         }
+      },
+      "panel-30": {
+        "kind": "Panel",
+        "spec": {
+          "id": 30,
+          "title": "",
+          "description": "Serviços DOWN ou PENDENTE (falhou e está tentando de novo).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 0) + sum(monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 2)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "Fora",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 24
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#C4162A"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-31": {
+        "kind": "Panel",
+        "spec": {
+          "id": 31,
+          "title": "",
+          "description": "Serviços em janela de manutenção do Kuma.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\",criticidade=~\"$criticidade\",exposicao=~\"$exposicao\",grupo=~\"$grupo\"} == bool 3)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "Manutenção",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 24
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#1F60C4"
+                      }
+                    ]
+                  },
+                  "decimals": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
       }
     },
     "layout": {
@@ -2682,7 +3160,7 @@
                       "spec": {
                         "x": 0,
                         "y": 0,
-                        "width": 5,
+                        "width": 3,
                         "height": 3,
                         "element": {
                           "kind": "ElementReference",
@@ -2693,26 +3171,39 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 5,
+                        "x": 3,
                         "y": 0,
                         "width": 3,
                         "height": 3,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-4"
+                          "name": "panel-30"
                         }
                       }
                     },
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 8,
+                        "x": 6,
                         "y": 0,
-                        "width": 4,
+                        "width": 3,
                         "height": 3,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-5"
+                          "name": "panel-31"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 9,
+                        "y": 0,
+                        "width": 3,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-4"
                         }
                       }
                     },
@@ -2816,7 +3307,7 @@
           {
             "kind": "RowsLayoutRow",
             "spec": {
-              "title": "Estado ao longo do tempo",
+              "title": "Disponibilidade por hora",
               "collapse": false,
               "layout": {
                 "kind": "GridLayout",
@@ -2985,10 +3476,23 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
+                        "x": 0,
+                        "y": 6,
+                        "width": 4,
+                        "height": 2,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-5"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
                         "x": 4,
                         "y": 0,
                         "width": 10,
-                        "height": 6,
+                        "height": 8,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-25"
@@ -3001,7 +3505,7 @@
                         "x": 14,
                         "y": 0,
                         "width": 10,
-                        "height": 6,
+                        "height": 8,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-26"
@@ -3096,13 +3600,13 @@
               "name": "prometheus"
             },
             "spec": {
-              "query": "label_values(monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\"}, criticidade)",
+              "query": "label_values(monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\"}, criticidade)",
               "refId": "PrometheusVariableQueryEditor-VariableQuery"
             }
           },
           "regex": "",
           "sort": "alphabeticalAsc",
-          "definition": "label_values(monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\"}, criticidade)",
+          "definition": "label_values(monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\"}, criticidade)",
           "options": [],
           "multi": true,
           "includeAll": true,
@@ -3134,13 +3638,13 @@
               "name": "prometheus"
             },
             "spec": {
-              "query": "label_values(monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\"}, exposicao)",
+              "query": "label_values(monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\"}, exposicao)",
               "refId": "PrometheusVariableQueryEditor-VariableQuery"
             }
           },
           "regex": "",
           "sort": "alphabeticalAsc",
-          "definition": "label_values(monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\"}, exposicao)",
+          "definition": "label_values(monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\"}, exposicao)",
           "options": [],
           "multi": true,
           "includeAll": true,
@@ -3172,13 +3676,13 @@
               "name": "prometheus"
             },
             "spec": {
-              "query": "label_values(monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\"}, grupo)",
+              "query": "label_values(monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\"}, grupo)",
               "refId": "PrometheusVariableQueryEditor-VariableQuery"
             }
           },
           "regex": "",
           "sort": "alphabeticalAsc",
-          "definition": "label_values(monitor_status{job=\"uptime-kuma\",monitor_type!=\"group\"}, grupo)",
+          "definition": "label_values(monitor_status{job=\"uptime-kuma\",monitor_type!~\"group|push\"}, grupo)",
           "options": [],
           "multi": true,
           "includeAll": true,

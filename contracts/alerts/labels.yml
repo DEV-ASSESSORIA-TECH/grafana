@@ -1,7 +1,7 @@
 # Contrato dos labels de alerta; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_label_contract
-version: 0.8.0
+version: 0.9.0
 id: alert-labels
 title: Labels obrigatorios e de dependencia das regras de alerta
 status: defined
@@ -59,6 +59,7 @@ labels:
         prometheus_jobs:
           - integrations/hypervisor
           - integrations/hyperv
+          - uptime-kuma
         loki_jobs:
           - hyperv-eventlog
       servicos:

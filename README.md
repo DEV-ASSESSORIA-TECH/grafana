@@ -86,6 +86,7 @@ Não há mais `__inputs`/`__requires` nem `${DS_PROMETHEUS}`/`${DS_LOKI}`: o das
 - O Serviços ignora os monitores `push` (heartbeat dos hosts, que ficam no Hyper-V) e o grupo "Disponibilidade servidores": `monitor_type!~"group|push"`. Resumo e grupos em stat de fundo sólido; disponibilidade por hora em barras (status history).
 - Certificados de terceiros (Tiflux, Sispcard) ficam fora de todos os painéis e dos alertas SVC-201/202/203: `monitor_name!~"Tiflux|Sispcard"`.
 - Toda consulta fixa o `job`. Toda métrica (Prometheus) e label (Loki) usada precisa existir no contrato desse job — o CI falha caso contrário.
+- Painel com `rate`/`irate`/`increase` sobre `$__rate_interval` em job coletado a cada **60s** (ex.: `integrations/windows-desktop`) define **intervalo mínimo de `1m`** (`queryOptions.interval`). Sem isso, a fonte de dados (intervalo de coleta padrão de 15s) gera janela de 60s em períodos curtos, com uma amostra só, e o painel fica vazio.
 - Os dashboards seguem o mesmo layout: **Resumo** (medidores + status) → **CPU / Memória / Disco** → **Rede** (placa principal) → **Logs** → seções de detalhe recolhidas.
 - Bytes em base 1024 (GiB, MiB/s) nos dois dashboards; rede em bits/s.
 - Títulos em português; termos técnicos (Load, Commit, IOPS, Swap, PSI...) ficam em inglês.

@@ -1354,7 +1354,9 @@
                 }
               ],
               "transformations": [],
-              "queryOptions": {}
+              "queryOptions": {
+                "interval": "1m"
+              }
             }
           },
           "vizConfig": {
@@ -2007,7 +2009,9 @@
                 }
               ],
               "transformations": [],
-              "queryOptions": {}
+              "queryOptions": {
+                "interval": "1m"
+              }
             }
           },
           "vizConfig": {
@@ -2868,7 +2872,9 @@
                 }
               ],
               "transformations": [],
-              "queryOptions": {}
+              "queryOptions": {
+                "interval": "1m"
+              }
             }
           },
           "vizConfig": {
@@ -3020,7 +3026,9 @@
                 }
               ],
               "transformations": [],
-              "queryOptions": {}
+              "queryOptions": {
+                "interval": "1m"
+              }
             }
           },
           "vizConfig": {
@@ -3177,7 +3185,9 @@
                 }
               ],
               "transformations": [],
-              "queryOptions": {}
+              "queryOptions": {
+                "interval": "1m"
+              }
             }
           },
           "vizConfig": {
@@ -3620,7 +3630,9 @@
                 }
               ],
               "transformations": [],
-              "queryOptions": {}
+              "queryOptions": {
+                "interval": "1m"
+              }
             }
           },
           "vizConfig": {
@@ -3857,7 +3869,9 @@
                 }
               ],
               "transformations": [],
-              "queryOptions": {}
+              "queryOptions": {
+                "interval": "1m"
+              }
             }
           },
           "vizConfig": {
@@ -3948,7 +3962,9 @@
                 }
               ],
               "transformations": [],
-              "queryOptions": {}
+              "queryOptions": {
+                "interval": "1m"
+              }
             }
           },
           "vizConfig": {
@@ -4236,7 +4252,9 @@
                 }
               ],
               "transformations": [],
-              "queryOptions": {}
+              "queryOptions": {
+                "interval": "1m"
+              }
             }
           },
           "vizConfig": {
@@ -4370,7 +4388,9 @@
                 }
               ],
               "transformations": [],
-              "queryOptions": {}
+              "queryOptions": {
+                "interval": "1m"
+              }
             }
           },
           "vizConfig": {

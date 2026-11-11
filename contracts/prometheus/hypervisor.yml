@@ -1,7 +1,7 @@
 # Contrato observado para consumidores de dashboards; nao provisionar este YAML no Grafana.
 schema_version: 2
 kind: observability_contract
-version: 0.3.0
+version: 0.4.0
 id: hypervisor
 title: Hypervisor / inventario de VMs (formato neutro)
 status: observed_baseline
@@ -9,7 +9,7 @@ observed_at_utc: '2026-11-05T14:39:00Z'
 job: integrations/hypervisor
 source:
   producer: DEV-ASSESSORIA-TECH/scripts monitoring/alloy/windows/hypervisor-inventory.ps1
-  producer_version: f562e97
+  producer_version: 19d8012
   collection: tarefa agendada a cada 1 min (SYSTEM) -> textfile\hypervisor.prom -> prometheus.exporter.windows "hypervisor"
     (textfile) -> scrape 60s
   platforms:
@@ -33,8 +33,8 @@ identity:
   vm_id: GUID da VM em maiusculas (label vm_id em hypervisor_vm_info)
   vm_key: >-
     Chave canonica da VM (minusculas, '-' -> '_'; label vm_key em hypervisor_vm_info), igual a tag vm do Uptime Kuma e
-    ao label dep_vm dos alertas (contracts/alerts/labels.yml). Publicada pelo hypervisor-inventory.ps1 a partir da
-    versao com vm_key; hosts com o script antigo ainda nao a tem.
+    ao label dep_vm dos alertas (contracts/alerts/labels.yml). Publicada pelo hypervisor-inventory.ps1 a partir do
+    commit 19d8012 do repositorio scripts.
   guest_join:
     status: implemented
     label: guest_host (hypervisor_vm_info)

@@ -22,7 +22,7 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  monitor_status{job="uptime-kuma",monitor_type!~"group|push",grupo!="externo",criticidade=~"critico|critica"}
+                  monitor_status{job="uptime-kuma",monitor_type!~"group|push",grupo!="externo",criticidade="critico"}
                 )
                 * on (vm) group_left (hypervisor)
                 max by (vm, hypervisor) (
@@ -32,7 +32,7 @@ groups:
                 )
                 or
                 (
-                  monitor_status{job="uptime-kuma",monitor_type!~"group|push",grupo!="externo",criticidade=~"critico|critica"}
+                  monitor_status{job="uptime-kuma",monitor_type!~"group|push",grupo!="externo",criticidade="critico"}
                 )
                 unless on (vm)
                 max by (vm, hypervisor) (

@@ -1,7 +1,7 @@
 # Contrato de notificacao; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_notification_contract
-version: 0.3.0
+version: 0.4.0
 id: alert-notifications
 title: Divisao de responsabilidade das notificacoes
 status: defined
@@ -15,7 +15,7 @@ managed_in_ui:
   - mute timings usados pelas rotas (ex. mute-info, que silencia a rota de info)
 managed_in_files:
   templates: alerting/notifications/templates.yaml (usaveis nos contact points da UI)
-  muteTimes: alerting/notifications/mute-timings.yaml (hoje so remove o antigo 'sempre')
+  muteTimes: alerting/notifications/mute-timings.yaml
 routing_labels:
   - alert_code
   - severity

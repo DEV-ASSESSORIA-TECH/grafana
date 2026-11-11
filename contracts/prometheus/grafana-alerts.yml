@@ -1,28 +1,19 @@
 # Contrato da metrica de estado dos alertas do Grafana; nao provisionar este YAML no Grafana.
 schema_version: 2
 kind: observability_contract
-version: 0.1.0
+version: 0.2.0
 id: grafana-alerts
 title: Estado dos alertas do Grafana (GRAFANA_ALERTS)
-status: planned
+status: defined
 job: null
 selector_without_job: true
 source:
-  producer: Grafana 13.3.0, historico de estado dos alertas com backend multiple (primary loki, secondaries prometheus)
+  producer: Grafana, historico de estado dos alertas com backend multiple (primary loki, secondaries prometheus)
   collection: >-
-    O Grafana grava cada mudanca de estado no Prometheus por remote write (flag --web.enable-remote-write-receiver,
-    ja ativa). Nao ha scrape nem label job.
-  grafana_env:
-    GF_UNIFIED_ALERTING_STATE_HISTORY_ENABLED: 'true'
-    GF_UNIFIED_ALERTING_STATE_HISTORY_BACKEND: multiple
-    GF_UNIFIED_ALERTING_STATE_HISTORY_PRIMARY: loki
-    GF_UNIFIED_ALERTING_STATE_HISTORY_LOKI_REMOTE_URL: http://loki:3100
-    GF_UNIFIED_ALERTING_STATE_HISTORY_SECONDARIES: prometheus
-    GF_UNIFIED_ALERTING_STATE_HISTORY_PROMETHEUS_TARGET_DATASOURCE_UID: prometheus
+    O Grafana grava cada mudanca de estado no Prometheus por remote write. Nao ha scrape nem label job.
+  configuration: alerting/README.md (variaveis GF_UNIFIED_ALERTING_STATE_HISTORY_* e datasource)
   note: >-
-    Status planned: verificado num Grafana 13.3.0 de teste (labels abaixo). Vira observed_baseline quando as
-    variaveis estiverem no compose de producao. O Loki recebe o mesmo historico no stream {from="state-history"},
-    usado pelas telas de historico do Grafana.
+    O Loki recebe o mesmo historico no stream {from="state-history"}, usado pelas telas de historico do Grafana.
 metric_groups:
   alert_state:
     title: Instancias de alerta pendentes ou disparando

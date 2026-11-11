@@ -1194,10 +1194,10 @@
                                 "index": 1,
                                 "text": "alta"
                               },
-                              "critica": {
+                              "critico": {
                                 "color": "#F2495C",
                                 "index": 0,
-                                "text": "crítica"
+                                "text": "crítico"
                               }
                             },
                             "type": "value"

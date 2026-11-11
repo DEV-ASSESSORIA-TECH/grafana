@@ -1,7 +1,7 @@
 # Contrato observado para consumidores de dashboards; nao provisionar este YAML no Grafana.
 schema_version: 2
 kind: observability_contract
-version: 0.5.0
+version: 0.6.0
 id: uptime-kuma
 title: Uptime Kuma / disponibilidade e certificados
 status: observed_baseline
@@ -32,7 +32,6 @@ identity:
     labels:
       criticidade:
         - alta
-        - critica
         - critico
       exposicao:
         - cloudflare
@@ -52,9 +51,7 @@ identity:
       - Tag sem valor vira label vazio (igual a ausente no Prometheus). Usar sempre nome + valor.
       - Uma tag por monitor; repetir a tag junta os valores num label so.
       - Valores novos aparecem sozinhos nos filtros (label_values); a lista acima e o observado, nao uma restricao.
-      - criticidade tem critica e critico (heartbeat dos hosts) como valores distintos; filtrar por um nao mostra o
-        outro.
-    values_added_at: '2026-11-09'
+      - Valores no masculino (criticidade=critico, nunca critica).
     loki_check: count_over_time({job="docker",compose_project="uptime",compose_service="kuma"} |= "PROMETHEUS" |=
       "ERROR" [1h])
 grafana_variables:

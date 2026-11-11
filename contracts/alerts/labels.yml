@@ -1,7 +1,7 @@
 # Contrato dos labels de alerta; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_label_contract
-version: 0.7.0
+version: 0.8.0
 id: alert-labels
 title: Labels obrigatorios e de dependencia das regras de alerta
 status: defined
@@ -18,8 +18,8 @@ labels:
   alvo:
     required: true
     description: >-
-      O que esta com problema, em texto curto e legivel, para listas, tabelas e notificacoes (ex. srv-apps · shlink,
-      srv-contabil-ass · C:, Outline, SRV-WEB (srv-host01)). Template sobre os labels que a regra ja tem: nao muda
+      O que esta com problema, em texto curto e legivel, para listas, tabelas e notificacoes (ex. srv-exemplo · nginx,
+      srv-exemplo · C:, Wiki, SRV-EXEMPLO (srv-exemplo-hv)). Template sobre os labels que a regra ja tem: nao muda
       quantas instancias o alerta tem. Partes ausentes somem (with), nunca geram erro.
     patterns:
       servidor: '{{ with $$labels.instance }}{{ . }}{{ end }}'
@@ -114,9 +114,9 @@ dependency:
     na convencao). Loki nao faz join com o inventario, e com o host fora nenhum log chega, entao o alerta nem dispara.
     Se o hostname for diferente do nome da VM, a inibicao por VM nao casa (o alerta sai mesmo com a VM fora).
 canonical_key:
-  rule: "minusculas e todo caractere fora de [a-z0-9_] trocado por '_'. Ex. SRV-WEB -> srv_web, srv-host01 -> srv_host01."
+  rule: "minusculas e todo caractere fora de [a-z0-9_] trocado por '_'. Ex. SRV-EXEMPLO -> srv_exemplo, srv-exemplo-hv -> srv_exemplo_hv."
   why: >-
-    O Uptime Kuma remove tudo fora de [a-zA-Z0-9_] dos valores de tag (SRV-WEB viraria SRVWEB), e a inibicao compara
+    O Uptime Kuma remove tudo fora de [a-zA-Z0-9_] dos valores de tag (SRV-EXEMPLO viraria SRVEXEMPLO), e a inibicao compara
     por igualdade exata. A chave canonica e a mesma nas metricas, nos alertas e nas tags do Kuma.
   inventory: >-
     hypervisor_vm_info publica vm_key (chave canonica da VM), alem de vm (nome original). PromQL nao converte
@@ -126,7 +126,7 @@ canonical_key:
     DatasourceNoData nao tem os labels da consulta): '{{ with $$labels.instance }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
 recipes:
   kuma_service: >-
-    Monitor de servico que roda inteiro numa VM recebe so a tag vm:<chave canonica> (ex. vm:srv_web). O hipervisor vem
+    Monitor de servico que roda inteiro numa VM recebe so a tag vm:<chave canonica> (ex. vm:srv_exemplo). O hipervisor vem
     do inventario, entao a dependencia acompanha a VM se ela mudar de host. Tag nova exige reiniciar o Kuma.
     Consulta (servicos com e sem tag): S * on (vm) group_left (hypervisor) H or (S unless on (vm) H), com
     S = monitor_status{job="uptime-kuma",monitor_type!~"group|push",grupo!="externo"} e

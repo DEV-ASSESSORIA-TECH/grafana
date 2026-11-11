@@ -1,7 +1,7 @@
 # Catalogo dos codigos de alerta; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_code_catalog
-version: 0.1.0
+version: 0.2.0
 id: alert-codes
 title: Catalogo de codigos de alerta
 status: defined
@@ -18,7 +18,7 @@ rules:
   - uid e o UID da regra no Grafana (nao muda ao renomear o titulo).
   - title e o titulo sem o codigo; no Grafana o titulo e '[CODIGO] title'.
   - severity e scope devem ser iguais aos labels da regra; a area vem do prefixo (labels.yml).
-  - runbook e a URL do documento do alerta (contracts/alerts/docs.yml): hoje docs/alerts no GitHub, depois o Outline.
+  - runbook e a URL do documento do alerta (contracts/alerts/docs.yml).
 codes:
   HYP-101:
     uid: cg3sb66gvmnlsa

@@ -21,6 +21,7 @@ Dashboards e alertas do Grafana da infraestrutura (Grafana **13.3.0**), e os con
 | `scripts/validate_dashboards.py` | Valida formato V2, compatibilidade com Git Sync, datasources, navegação (tag `infra`, links) e se as consultas usam só métricas/labels dos contratos |
 | `scripts/grafana_check.py` | Sincroniza `dashboards/` num Grafana 13.3.0 real e confere o resultado |
 | `scripts/validate_alerting.py` | Valida `alerting/` contra os contratos (códigos, labels, consultas, policies, inibição) |
+| `scripts/validate_contracts.py` | Neutralidade dos contratos: sem nomes de servidor, estado temporário ou dados de snapshot |
 | `scripts/alert_docs.py` | Gera o cabeçalho dos documentos de alerta e o índice; `--check` no CI |
 | `scripts/alerting_build.py` | Achata `alerting/` na pasta de provisionamento do Grafana |
 | `scripts/alerting_inhibition.py` | Aplica `alerting/inhibition` pela App Platform API |
@@ -120,6 +121,10 @@ python scripts/validate_dashboards.py
 
 ```bash
 python scripts/validate_alerting.py
+```
+
+```bash
+python scripts/validate_contracts.py
 ```
 
 Teste de sincronização num Grafana 13.3.0 real (mesmo motor de leitura do Git Sync, com repositório `local`). Na 13.3.0 o Git Sync não precisa de feature toggle:

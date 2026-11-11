@@ -1,13 +1,13 @@
 # Contrato da documentacao operacional dos alertas; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_doc_contract
-version: 0.1.0
+version: 0.2.0
 id: alert-docs
 title: Documentacao operacional dos alertas
 status: defined
 scope: >-
-  Um documento curto por codigo de alerta, para quem recebe o alerta saber o que e e o que fazer. Comeca em
-  docs/alerts/ e depois e publicado no Outline como documentacao operacional.
+  Um documento curto por codigo de alerta, para quem recebe o alerta saber o que e e o que fazer, em
+  docs/alerts/.
 path: docs/alerts/{code}.md
 index: docs/alerts/README.md
 runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/{code}.md
@@ -39,8 +39,3 @@ rules:
   - Toda regra publica a annotation runbook_url com a URL deste documento (igual ao runbook do catalogo).
   - O repositorio e publico. Nada de senhas, tokens, IPs internos, nomes de pessoas ou dados de clientes.
   - Curto. Se passar de uma tela, o excesso vira um procedimento separado, linkado em Resolver.
-outline:
-  status: planned
-  note: >-
-    Publicacao futura: uma colecao por area, um documento por codigo, mesmo conteudo. Quando existir, runbook_url
-    passa a apontar para o Outline.

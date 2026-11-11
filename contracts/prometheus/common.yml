@@ -1,9 +1,9 @@
 schema_version: 2
 kind: observability_contract_common
-version: 0.3.0
+version: 0.4.0
 status: observed_baseline
 observed_at_utc: '2026-11-04T19:01:53.881Z'
-scope: Contrato de consumo dos dados atualmente observados. Nao e especificacao da configuracao instalada nem obrigacao
+scope: Contrato de consumo dos dados observados. Nao e especificacao da configuracao instalada nem obrigacao
   de ativar coletores.
 evidence:
   metric_schema: Nomes e labels confirmados em /api/v1/series do Prometheus.

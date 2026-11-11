@@ -8,6 +8,7 @@ on:
       - dashboards/**
       - scripts/validate_alerting.py
       - scripts/contracts.py
+      - scripts/validate_contracts.py
       - scripts/alerting_*.py
       - deploy/**
       - docs/**
@@ -22,6 +23,7 @@ on:
       - dashboards/**
       - scripts/validate_alerting.py
       - scripts/contracts.py
+      - scripts/validate_contracts.py
       - scripts/alerting_*.py
       - deploy/**
       - docs/**
@@ -41,6 +43,8 @@ jobs:
       - run: pip install pyyaml
       - name: Catalogo
         run: python scripts/catalogo.py
+      - name: Neutralidade dos contratos
+        run: python scripts/validate_contracts.py
       - run: python scripts/validate_alerting.py
       - name: Documentacao dos alertas
         run: python scripts/alert_docs.py --check

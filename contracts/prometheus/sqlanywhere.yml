@@ -1,10 +1,10 @@
 # Contrato definido pelo produtor (coletor proprio); nao provisionar este YAML no Grafana.
 schema_version: 2
 kind: observability_contract
-version: 0.3.0
+version: 0.4.0
 id: sqlanywhere
 title: SAP SQL Anywhere 17 / servidor e banco
-status: defined
+status: observed_baseline
 job: integrations/sqlanywhere
 source:
   producer: DEV-ASSESSORIA-TECH/scripts monitoring/alloy/windows/sqlanywhere-collector.ps1
@@ -14,8 +14,9 @@ source:
     conectado, uma consulta por escopo
   documentation: SQL Anywhere 17 "List of Database Server Properties" e "List of Database Properties" (help.sap.com,
     SQL Anywhere Database Administration and Security)
-  note: Nomes, descricoes e unidades conferidos na documentacao acima. Promover a observed_baseline apos conferir as
-    series em /api/v1/series.
+  note: Nomes, descricoes e unidades conferidos na documentacao acima e as series conferidas pela API (todas as
+    metricas do contrato publicadas, sem propriedades ausentes). StartTime conferido contra o evento de inicio do
+    servico no Event Log.
 references:
   common: common.yml
 identity:
@@ -154,7 +155,10 @@ metric_groups:
     interpretation: >-
       cache_size e o cache alocado (entre min e max; com min = max o tamanho e fixo). Dentro dele: file = paginas com
       dados dos arquivos do banco (cache em uso), allocated = paginas usadas para outros fins (estruturas do servidor,
-      memoria de consulta), free = paginas sem uso. dirty e pinned sao subconjuntos de file/allocated (nao somar).
+      memoria de consulta), free = paginas sem uso. file + allocated + free fica alguns por cento abaixo de
+      cache_size: a diferenca sao paginas que nenhuma das tres propriedades classifica (a documentacao nao detalha);
+      calcular como cache_size - file - allocated - free. dirty e pinned sao subconjuntos de file/allocated (nao
+      somar).
       Cache livre alto e estavel = cache maior que o necessario. replacements/scavenges = paginas reaproveitadas
       (pressao normal com cache cheio); panics = nao achou pagina para alocar (cache pequeno demais).
       query_memory_failures = requisicao esperou memoria de consulta e nao conseguiu.

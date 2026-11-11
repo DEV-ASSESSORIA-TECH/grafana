@@ -1382,7 +1382,7 @@
         "spec": {
           "id": 15,
           "title": "Mapa do cache",
-          "description": "Como o cache alocado está dividido agora. Em uso: dados = páginas com dados do banco (CacheFile); outros fins = estruturas do servidor e memória de consulta (CacheAllocated); livre = páginas sem uso (CacheFree). Sujo e pico são informativos. Panics = vezes em que o cache não achou página para alocar (cache pequeno demais); a borda fica vermelha quando houve algum no período.",
+          "description": "Como o cache alocado está dividido agora. Em uso: dados = páginas com dados do banco (CacheFile); outros fins = estruturas do servidor e memória de consulta (CacheAllocated); livre = páginas sem uso (CacheFree). Sujo e pico são informativos. As três porcentagens somam um pouco menos de 100%: o restante são páginas não classificadas. Panics = vezes em que o cache não achou página para alocar (cache pequeno demais); a borda fica vermelha quando houve algum no período.",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -2521,7 +2521,7 @@
         "spec": {
           "id": 16,
           "title": "Composição do cache",
-          "description": "Áreas empilhadas: dados + outros fins + livre ≈ cache alocado (linha branca). Máximo e mínimo são os limites configurados (-ch / -cl). Para avaliar redução, observe o menor valor de Livre ao longo de vários dias, inclusive nos picos de uso.",
+          "description": "Áreas empilhadas: dados + outros fins + livre + não classificado = cache alocado (linha branca). Não classificado são páginas que o servidor não atribui a nenhuma das três categorias (alguns por cento do cache). Máximo e mínimo são os limites configurados (-ch / -cl). Para avaliar redução, observe o menor valor de Livre ao longo de vários dias, inclusive nos picos de uso.",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -2608,6 +2608,29 @@
                       },
                       "spec": {
                         "editorMode": "code",
+                        "expr": "sqlanywhere_server_cache_size_bytes{job=\"integrations/sqlanywhere\",instance=\"$server\"} - sqlanywhere_server_cache_file_bytes{job=\"integrations/sqlanywhere\",instance=\"$server\"} - sqlanywhere_server_cache_allocated_bytes{job=\"integrations/sqlanywhere\",instance=\"$server\"} - sqlanywhere_server_cache_free_bytes{job=\"integrations/sqlanywhere\",instance=\"$server\"}",
+                        "format": "time_series",
+                        "instant": false,
+                        "range": true,
+                        "legendFormat": "Não classificado"
+                      }
+                    },
+                    "refId": "D",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
                         "expr": "sqlanywhere_server_cache_size_bytes{job=\"integrations/sqlanywhere\",instance=\"$server\"}",
                         "format": "time_series",
                         "instant": false,
@@ -2615,7 +2638,7 @@
                         "legendFormat": "Alocado"
                       }
                     },
-                    "refId": "D",
+                    "refId": "E",
                     "hidden": false
                   }
                 },
@@ -2638,7 +2661,7 @@
                         "legendFormat": "Máximo"
                       }
                     },
-                    "refId": "E",
+                    "refId": "F",
                     "hidden": false
                   }
                 },
@@ -2661,7 +2684,7 @@
                         "legendFormat": "Mínimo"
                       }
                     },
-                    "refId": "F",
+                    "refId": "G",
                     "hidden": false
                   }
                 }
@@ -2776,6 +2799,21 @@
                         "value": {
                           "mode": "fixed",
                           "fixedColor": "#56A64B"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Não classificado"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#5A5F69"
                         }
                       }
                     ]

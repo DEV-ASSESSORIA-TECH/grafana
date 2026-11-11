@@ -1,0 +1,150 @@
+# Contrato definido pelo produtor (coletor proprio); nao provisionar este YAML no Grafana.
+schema_version: 2
+kind: observability_contract
+version: 0.2.0
+id: sqlanywhere
+title: SAP SQL Anywhere 17 / servidor e banco
+status: defined
+job: integrations/sqlanywhere
+source:
+  producer: DEV-ASSESSORIA-TECH/scripts monitoring/alloy/windows/sqlanywhere-collector.ps1
+  collection: tarefa agendada a cada 30 s (SYSTEM) -> textfile\sqlanywhere\sqlanywhere.prom -> prometheus.exporter.windows
+    "sqlanywhere" (textfile) -> scrape 30s
+  transport: ODBC local (driver SQL Anywhere 17, 64 bits); PROPERTY() para o servidor e DB_PROPERTY() para o banco
+    conectado, uma consulta por escopo
+  note: Nomes e unidades seguem a documentacao do SQL Anywhere 17. Promover a observed_baseline apos conferir as series
+    em /api/v1/series.
+references:
+  common: common.yml
+identity:
+  target_key:
+    - job
+    - instance
+  host_label: host
+  sql_server_label: server
+  database_label: database
+  note: instance e host sao o hostname Windows em minusculas. server (ENG) e database (DBN) identificam o alvo SQL; um
+    par server/database por instance.
+grafana_variables:
+  syntax: Grafana label_values, nao PromQL da API
+  server:
+    query: label_values(up{job="integrations/sqlanywhere"}, instance)
+    multi: false
+metric_groups:
+  collection_health:
+    title: Saude da coleta
+    metrics_observed:
+      - sqlanywhere_up
+      - sqlanywhere_collection_success
+      - sqlanywhere_collection_missing_properties
+      - sqlanywhere_collection_duration_seconds
+      - sqlanywhere_collection_timestamp_seconds
+      - windows_textfile_mtime_seconds
+      - windows_exporter_collector_success
+      - up
+    labels:
+      sqlanywhere_up: []
+      sqlanywhere_collection_success: []
+      sqlanywhere_collection_missing_properties: []
+      sqlanywhere_collection_duration_seconds: []
+      sqlanywhere_collection_timestamp_seconds: []
+      windows_textfile_mtime_seconds:
+        - file
+      windows_exporter_collector_success:
+        - collector
+    interpretation: >-
+      success=0 publica so este grupo (sem metricas do banco). up=0 com success=0 = conexao ODBC falhou; nao implica
+      banco parado. timestamp ou windows_textfile_mtime_seconds antigo = tarefa agendada parada (up do scrape continua
+      1). missing_properties > 0 = propriedades sem valor numerico, cujas series nao sao publicadas.
+  identity:
+    title: Identidade
+    metrics_observed:
+      - sqlanywhere_info
+    labels:
+      sqlanywhere_info:
+        - server
+        - database
+        - version
+    interpretation: Valor sempre 1. version vem de PROPERTY('ProductVersion').
+  server:
+    title: Servidor (PROPERTY)
+    metrics_observed:
+      - sqlanywhere_server_connections
+      - sqlanywhere_server_active_requests
+      - sqlanywhere_server_waiting_requests
+      - sqlanywhere_server_requests_total
+      - sqlanywhere_server_cache_size_bytes
+      - sqlanywhere_server_cache_min_bytes
+      - sqlanywhere_server_cache_max_bytes
+      - sqlanywhere_server_cache_peak_bytes
+      - sqlanywhere_server_cache_replacements_total
+    labels:
+      all:
+        - server
+        - database
+    sources:
+      sqlanywhere_server_connections: ConnCount
+      sqlanywhere_server_active_requests: ActiveReq
+      sqlanywhere_server_waiting_requests: UnschReq
+      sqlanywhere_server_requests_total: RequestsReceived
+      sqlanywhere_server_cache_size_bytes: CurrentCacheSize
+      sqlanywhere_server_cache_min_bytes: MinCacheSize
+      sqlanywhere_server_cache_max_bytes: MaxCacheSize
+      sqlanywhere_server_cache_peak_bytes: PeakCacheSize
+      sqlanywhere_server_cache_replacements_total: CacheReplacements
+    interpretation: Tamanhos de cache em bytes (KB x 1024). *_total sao contadores (zeram ao reiniciar o servidor);
+      usar rate/increase.
+  database:
+    title: Banco conectado (DB_PROPERTY)
+    metrics_observed:
+      - sqlanywhere_database_connections
+      - sqlanywhere_database_cache_reads_total
+      - sqlanywhere_database_cache_hits_total
+      - sqlanywhere_database_disk_reads_total
+      - sqlanywhere_database_disk_writes_total
+      - sqlanywhere_database_commits_total
+      - sqlanywhere_database_rollbacks_total
+      - sqlanywhere_database_checkpoints_total
+    labels:
+      all:
+        - server
+        - database
+    sources:
+      sqlanywhere_database_connections: ConnCount
+      sqlanywhere_database_cache_reads_total: CacheRead
+      sqlanywhere_database_cache_hits_total: CacheHits
+      sqlanywhere_database_disk_reads_total: DiskRead
+      sqlanywhere_database_disk_writes_total: DiskWrite
+      sqlanywhere_database_commits_total: Commit
+      sqlanywhere_database_rollbacks_total: Rlbk
+      sqlanywhere_database_checkpoints_total: Chkpt
+    interpretation: Leituras e gravacoes em paginas, nao bytes. Contadores; usar rate/increase.
+query_recipes:
+  - id: collection_stale
+    title: Coleta parada (arquivo sem atualizacao ha mais de 2 min)
+    promql: time() - sqlanywhere_collection_timestamp_seconds{job="integrations/sqlanywhere",instance="$server"} > 120
+    unit: seconds
+    dependencies:
+      - sqlanywhere_collection_timestamp_seconds
+  - id: cache_hit_ratio
+    title: Fracao das leituras de pagina atendidas pelo cache
+    promql: rate(sqlanywhere_database_cache_hits_total{job="integrations/sqlanywhere",instance="$server"}[5m]) / rate(sqlanywhere_database_cache_reads_total{job="integrations/sqlanywhere",instance="$server"}[5m])
+    unit: ratio
+    dependencies:
+      - sqlanywhere_database_cache_hits_total
+      - sqlanywhere_database_cache_reads_total
+    notes:
+      - Conferir na documentacao se CacheRead inclui os acertos antes de exibir 1 - razao como misses.
+  - id: transactions_rate
+    title: Commits e rollbacks por segundo
+    promql: rate(sqlanywhere_database_commits_total{job="integrations/sqlanywhere",instance="$server"}[5m])
+    unit: per_second
+    dependencies:
+      - sqlanywhere_database_commits_total
+limitations:
+  - Um par server/database por maquina.
+  - Propriedades sem valor numerico nao geram serie; ausencia nao representa zero.
+  - Sem metrica de deadlock (nao ha propriedade de servidor ou banco equivalente na lista lida).
+change_policy:
+  require_new_metrics_before_using_in_dashboard: true
+  preserve_raw_labels: true

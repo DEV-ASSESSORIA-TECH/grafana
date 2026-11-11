@@ -93,3 +93,15 @@ Padrão em [`contracts/alerts/docs.yml`](../../contracts/alerts/docs.yml). Arqui
 |---|---|---|
 | [MON-101](MON-101.md) | Prometheus com configuração inválida | warning |
 | [MON-102](MON-102.md) | Prometheus com falha de compactação | warning |
+
+## Bancos de dados
+
+| Código | Alerta | Severidade |
+|---|---|---|
+| [SQL-101](SQL-101.md) | Banco SQL Anywhere inacessível | critical |
+| [SQL-110](SQL-110.md) | Servidor SQL Anywhere reiniciado | info |
+| [SQL-201](SQL-201.md) | Cache do SQL Anywhere sem página livre | warning |
+| [SQL-202](SQL-202.md) | Memória de consulta negada no SQL Anywhere | warning |
+| [SQL-301](SQL-301.md) | Coleta do SQL Anywhere parada | warning |
+| [SQL-401](SQL-401.md) | Requisições na fila do SQL Anywhere | warning |
+| [SQL-402](SQL-402.md) | Thread deadlock no SQL Anywhere | warning |

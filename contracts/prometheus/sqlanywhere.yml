@@ -1,7 +1,7 @@
 # Contrato definido pelo produtor (coletor proprio); nao provisionar este YAML no Grafana.
 schema_version: 2
 kind: observability_contract
-version: 0.2.0
+version: 0.3.0
 id: sqlanywhere
 title: SAP SQL Anywhere 17 / servidor e banco
 status: defined
@@ -12,8 +12,10 @@ source:
     "sqlanywhere" (textfile) -> scrape 30s
   transport: ODBC local (driver SQL Anywhere 17, 64 bits); PROPERTY() para o servidor e DB_PROPERTY() para o banco
     conectado, uma consulta por escopo
-  note: Nomes e unidades seguem a documentacao do SQL Anywhere 17. Promover a observed_baseline apos conferir as series
-    em /api/v1/series.
+  documentation: SQL Anywhere 17 "List of Database Server Properties" e "List of Database Properties" (help.sap.com,
+    SQL Anywhere Database Administration and Security)
+  note: Nomes, descricoes e unidades conferidos na documentacao acima. Promover a observed_baseline apos conferir as
+    series em /api/v1/series.
 references:
   common: common.yml
 identity:
@@ -28,7 +30,7 @@ identity:
 grafana_variables:
   syntax: Grafana label_values, nao PromQL da API
   server:
-    query: label_values(up{job="integrations/sqlanywhere"}, instance)
+    query: label_values(sqlanywhere_up{job="integrations/sqlanywhere"}, instance)
     multi: false
 metric_groups:
   collection_health:
@@ -55,29 +57,44 @@ metric_groups:
     interpretation: >-
       success=0 publica so este grupo (sem metricas do banco). up=0 com success=0 = conexao ODBC falhou; nao implica
       banco parado. timestamp ou windows_textfile_mtime_seconds antigo = tarefa agendada parada (up do scrape continua
-      1). missing_properties > 0 = propriedades sem valor numerico, cujas series nao sao publicadas.
+      1). missing_properties > 0 = propriedades sem valor numerico, cujas series nao sao publicadas; os nomes ficam no
+      log do coletor.
   identity:
     title: Identidade
     metrics_observed:
       - sqlanywhere_info
+      - sqlanywhere_server_start_time_seconds
+      - sqlanywhere_server_page_size_bytes
+      - sqlanywhere_database_page_size_bytes
     labels:
       sqlanywhere_info:
         - server
         - database
         - version
-    interpretation: Valor sempre 1. version vem de PROPERTY('ProductVersion').
-  server:
-    title: Servidor (PROPERTY)
+      all_others:
+        - server
+        - database
+    sources:
+      sqlanywhere_info: ProductVersion (label version)
+      sqlanywhere_server_start_time_seconds: StartTime
+      sqlanywhere_server_page_size_bytes: PageSize
+      sqlanywhere_database_page_size_bytes: DB PageSize
+    interpretation: >-
+      sqlanywhere_info vale sempre 1. start_time e o inicio do servidor em Unix (texto convertido do horario local do
+      Windows); muda a cada reinicio. PageSize do servidor e a pagina do cache (base das conversoes de cache);
+      PageSize do banco e a base de file/free.
+  server_load:
+    title: Servidor - conexoes, workers e transacoes (PROPERTY)
     metrics_observed:
       - sqlanywhere_server_connections
       - sqlanywhere_server_active_requests
       - sqlanywhere_server_waiting_requests
+      - sqlanywhere_server_multiprogramming_level
       - sqlanywhere_server_requests_total
-      - sqlanywhere_server_cache_size_bytes
-      - sqlanywhere_server_cache_min_bytes
-      - sqlanywhere_server_cache_max_bytes
-      - sqlanywhere_server_cache_peak_bytes
-      - sqlanywhere_server_cache_replacements_total
+      - sqlanywhere_server_commits_total
+      - sqlanywhere_server_rollbacks_total
+      - sqlanywhere_server_thread_deadlocks_total
+      - sqlanywhere_server_cpu_seconds_total
     labels:
       all:
         - server
@@ -86,14 +103,61 @@ metric_groups:
       sqlanywhere_server_connections: ConnCount
       sqlanywhere_server_active_requests: ActiveReq
       sqlanywhere_server_waiting_requests: UnschReq
+      sqlanywhere_server_multiprogramming_level: MultiProgrammingLevel
       sqlanywhere_server_requests_total: RequestsReceived
-      sqlanywhere_server_cache_size_bytes: CurrentCacheSize
-      sqlanywhere_server_cache_min_bytes: MinCacheSize
-      sqlanywhere_server_cache_max_bytes: MaxCacheSize
-      sqlanywhere_server_cache_peak_bytes: PeakCacheSize
+      sqlanywhere_server_commits_total: Commit
+      sqlanywhere_server_rollbacks_total: Rlbk
+      sqlanywhere_server_thread_deadlocks_total: ThreadDeadlocksReported
+      sqlanywhere_server_cpu_seconds_total: ProcessCPU
+    interpretation: >-
+      active_requests = workers atendendo requisicoes; waiting_requests = requisicoes na fila por falta de worker;
+      multiprogramming_level = limite atual de tarefas simultaneas. requests_total conta round trips cliente/servidor.
+      commits/rollbacks sao requisicoes de COMMIT/ROLLBACK atendidas pelo servidor (todos os bancos dele).
+      thread_deadlocks = erros devolvidos aos clientes porque todos os workers estavam bloqueados. cpu em segundos de
+      CPU do processo (rate = nucleos em uso). *_total zeram ao reiniciar o servidor; usar rate/increase.
+  server_cache:
+    title: Servidor - cache (PROPERTY)
+    metrics_observed:
+      - sqlanywhere_server_cache_size_bytes
+      - sqlanywhere_server_cache_min_bytes
+      - sqlanywhere_server_cache_max_bytes
+      - sqlanywhere_server_cache_peak_bytes
+      - sqlanywhere_server_cache_file_bytes
+      - sqlanywhere_server_cache_free_bytes
+      - sqlanywhere_server_cache_allocated_bytes
+      - sqlanywhere_server_cache_dirty_bytes
+      - sqlanywhere_server_cache_pinned_bytes
+      - sqlanywhere_server_cache_replacements_total
+      - sqlanywhere_server_cache_scavenges_total
+      - sqlanywhere_server_cache_panics_total
+      - sqlanywhere_server_query_memory_waits_total
+      - sqlanywhere_server_query_memory_failures_total
+    labels:
+      all:
+        - server
+        - database
+    sources:
+      sqlanywhere_server_cache_size_bytes: CurrentCacheSize (KB x 1024)
+      sqlanywhere_server_cache_min_bytes: MinCacheSize (KB x 1024)
+      sqlanywhere_server_cache_max_bytes: MaxCacheSize (KB x 1024)
+      sqlanywhere_server_cache_peak_bytes: PeakCacheSize (KB x 1024)
+      sqlanywhere_server_cache_file_bytes: CacheFile (paginas x PageSize)
+      sqlanywhere_server_cache_free_bytes: CacheFree (paginas x PageSize)
+      sqlanywhere_server_cache_allocated_bytes: CacheAllocated (paginas x PageSize)
+      sqlanywhere_server_cache_dirty_bytes: CacheFileDirty (paginas x PageSize)
+      sqlanywhere_server_cache_pinned_bytes: CachePinned (paginas x PageSize)
       sqlanywhere_server_cache_replacements_total: CacheReplacements
-    interpretation: Tamanhos de cache em bytes (KB x 1024). *_total sao contadores (zeram ao reiniciar o servidor);
-      usar rate/increase.
+      sqlanywhere_server_cache_scavenges_total: CacheScavenges
+      sqlanywhere_server_cache_panics_total: CachePanics
+      sqlanywhere_server_query_memory_waits_total: QueryMemGrantWaited
+      sqlanywhere_server_query_memory_failures_total: QueryMemGrantFailed
+    interpretation: >-
+      cache_size e o cache alocado (entre min e max; com min = max o tamanho e fixo). Dentro dele: file = paginas com
+      dados dos arquivos do banco (cache em uso), allocated = paginas usadas para outros fins (estruturas do servidor,
+      memoria de consulta), free = paginas sem uso. dirty e pinned sao subconjuntos de file/allocated (nao somar).
+      Cache livre alto e estavel = cache maior que o necessario. replacements/scavenges = paginas reaproveitadas
+      (pressao normal com cache cheio); panics = nao achou pagina para alocar (cache pequeno demais).
+      query_memory_failures = requisicao esperou memoria de consulta e nao conseguiu.
   database:
     title: Banco conectado (DB_PROPERTY)
     metrics_observed:
@@ -102,9 +166,15 @@ metric_groups:
       - sqlanywhere_database_cache_hits_total
       - sqlanywhere_database_disk_reads_total
       - sqlanywhere_database_disk_writes_total
-      - sqlanywhere_database_commits_total
+      - sqlanywhere_database_disk_flushes_total
       - sqlanywhere_database_rollbacks_total
       - sqlanywhere_database_checkpoints_total
+      - sqlanywhere_database_locks
+      - sqlanywhere_database_checkpoint_urgency_percent
+      - sqlanywhere_database_recovery_urgency_percent
+      - sqlanywhere_database_low_memory_strategy_total
+      - sqlanywhere_database_file_bytes
+      - sqlanywhere_database_free_bytes
     labels:
       all:
         - server
@@ -115,10 +185,21 @@ metric_groups:
       sqlanywhere_database_cache_hits_total: CacheHits
       sqlanywhere_database_disk_reads_total: DiskRead
       sqlanywhere_database_disk_writes_total: DiskWrite
-      sqlanywhere_database_commits_total: Commit
+      sqlanywhere_database_disk_flushes_total: Commit
       sqlanywhere_database_rollbacks_total: Rlbk
       sqlanywhere_database_checkpoints_total: Chkpt
-    interpretation: Leituras e gravacoes em paginas, nao bytes. Contadores; usar rate/increase.
+      sqlanywhere_database_locks: LockCount
+      sqlanywhere_database_checkpoint_urgency_percent: CheckpointUrgency
+      sqlanywhere_database_recovery_urgency_percent: RecoveryUrgency
+      sqlanywhere_database_low_memory_strategy_total: QueryLowMemoryStrategy
+      sqlanywhere_database_file_bytes: FileSize (paginas x PageSize do banco)
+      sqlanywhere_database_free_bytes: FreePages (paginas x PageSize do banco)
+    interpretation: >-
+      cache_reads conta todas as paginas procuradas no cache e inclui os acertos (hits <= reads): falhas de cache =
+      reads - hits. Leituras e gravacoes em paginas, nao bytes (x PageSize do banco para bytes). DB_PROPERTY('Commit')
+      nao conta COMMITs: conta flushes forcados do cache de disco do sistema operacional (disk_flushes); COMMITs em
+      sqlanywhere_server_commits_total. low_memory_strategy = planos alterados durante a execucao por falta de memoria.
+      file/free referem-se ao dbspace system (arquivo .db principal). urgencias em % de checkpoint_time/recovery_time.
 query_recipes:
   - id: collection_stale
     title: Coleta parada (arquivo sem atualizacao ha mais de 2 min)
@@ -128,23 +209,36 @@ query_recipes:
       - sqlanywhere_collection_timestamp_seconds
   - id: cache_hit_ratio
     title: Fracao das leituras de pagina atendidas pelo cache
-    promql: rate(sqlanywhere_database_cache_hits_total{job="integrations/sqlanywhere",instance="$server"}[5m]) / rate(sqlanywhere_database_cache_reads_total{job="integrations/sqlanywhere",instance="$server"}[5m])
+    promql: rate(sqlanywhere_database_cache_hits_total{job="integrations/sqlanywhere",instance="$server"}[$__rate_interval]) / rate(sqlanywhere_database_cache_reads_total{job="integrations/sqlanywhere",instance="$server"}[$__rate_interval])
     unit: ratio
     dependencies:
       - sqlanywhere_database_cache_hits_total
       - sqlanywhere_database_cache_reads_total
-    notes:
-      - Conferir na documentacao se CacheRead inclui os acertos antes de exibir 1 - razao como misses.
-  - id: transactions_rate
-    title: Commits e rollbacks por segundo
-    promql: rate(sqlanywhere_database_commits_total{job="integrations/sqlanywhere",instance="$server"}[5m])
+  - id: cache_misses_rate
+    title: Falhas de cache por segundo (paginas procuradas e nao encontradas)
+    promql: rate(sqlanywhere_database_cache_reads_total{job="integrations/sqlanywhere",instance="$server"}[$__rate_interval]) - rate(sqlanywhere_database_cache_hits_total{job="integrations/sqlanywhere",instance="$server"}[$__rate_interval])
     unit: per_second
     dependencies:
-      - sqlanywhere_database_commits_total
+      - sqlanywhere_database_cache_hits_total
+      - sqlanywhere_database_cache_reads_total
+  - id: cache_used_ratio
+    title: Fracao do cache alocado em uso (dados + outros fins)
+    promql: 1 - sqlanywhere_server_cache_free_bytes{job="integrations/sqlanywhere",instance="$server"} / sqlanywhere_server_cache_size_bytes{job="integrations/sqlanywhere",instance="$server"}
+    unit: ratio
+    dependencies:
+      - sqlanywhere_server_cache_free_bytes
+      - sqlanywhere_server_cache_size_bytes
+  - id: transactions_rate
+    title: COMMITs por segundo
+    promql: rate(sqlanywhere_server_commits_total{job="integrations/sqlanywhere",instance="$server"}[$__rate_interval])
+    unit: per_second
+    dependencies:
+      - sqlanywhere_server_commits_total
 limitations:
-  - Um par server/database por maquina.
+  - Um par server/database por maquina; metricas de servidor somam todos os bancos do servidor.
   - Propriedades sem valor numerico nao geram serie; ausencia nao representa zero.
-  - Sem metrica de deadlock (nao ha propriedade de servidor ou banco equivalente na lista lida).
+  - Sem contagem de deadlocks de transacao nem de esperas por lock (ReqCountBlockLock exige -zt no servidor).
+  - file/free cobrem so o dbspace system; dbspaces adicionais e o log de transacoes nao sao medidos.
 change_policy:
   require_new_metrics_before_using_in_dashboard: true
   preserve_raw_labels: true

@@ -1,7 +1,7 @@
 # Catalogo dos codigos de alerta; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_code_catalog
-version: 0.2.0
+version: 0.3.0
 id: alert-codes
 title: Catalogo de codigos de alerta
 status: defined
@@ -447,3 +447,52 @@ codes:
     scope: vm
     status: active
     runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/HYP-401.md
+  SQL-101:
+    uid: sql-101
+    title: Banco SQL Anywhere inacessível
+    severity: critical
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-101.md
+  SQL-110:
+    uid: sql-110
+    title: Servidor SQL Anywhere reiniciado
+    severity: info
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-110.md
+  SQL-201:
+    uid: sql-201
+    title: Cache do SQL Anywhere sem página livre
+    severity: warning
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-201.md
+  SQL-202:
+    uid: sql-202
+    title: Memória de consulta negada no SQL Anywhere
+    severity: warning
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-202.md
+  SQL-301:
+    uid: sql-301
+    title: Coleta do SQL Anywhere parada
+    severity: warning
+    scope: collection
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-301.md
+  SQL-401:
+    uid: sql-401
+    title: Requisições na fila do SQL Anywhere
+    severity: warning
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-401.md
+  SQL-402:
+    uid: sql-402
+    title: Thread deadlock no SQL Anywhere
+    severity: warning
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-402.md

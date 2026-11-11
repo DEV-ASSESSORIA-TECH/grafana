@@ -37,6 +37,7 @@ Dashboards e alertas do Grafana da infraestrutura (Grafana **13.3.0**), e os con
 | Hypervisors | `hypervisors` | `virtualization/hypervisor.json` | Virtualização | `integrations/hypervisor` (inventário) + `integrations/hyperv` (contadores) | `hyperv-eventlog` |
 | Serviços | `servicos` | `services/servicos.json` | Serviços | `uptime-kuma` | `docker` (container do Kuma) |
 | Containers | `containers` | `containers/containers.json` | Containers | `integrations/docker` (cAdvisor) + `integrations/unix` (RAM do servidor) | `docker` |
+| SQL Anywhere | `sqlanywhere` | `databases/sqlanywhere.json` | Bancos de dados | `integrations/sqlanywhere` | — |
 | Visão geral | `overview` | `overview/overview.json` | Visão geral | `GRAFANA_ALERTS` (histórico de alertas) + jobs acima | — |
 
 ## Formato dos arquivos (Schema V2)

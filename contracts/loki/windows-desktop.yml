@@ -1,6 +1,6 @@
 schema_version: 1
 kind: loki_log_contract
-version: 0.1.0
+version: 0.2.0
 status: defined
 defined_date: '2026-11-11'
 source: Alloy Windows perfil estacao / loki.source.windowsevent
@@ -22,6 +22,11 @@ expected_configuration:
   - System
   levels: 1 (critico), 2 (erro) e 3 (aviso); filtro xpath_query no Alloy
   message_format: JSON de eventos, conforme configuracao Alloy
+level_values:
+  level: >-
+    Numero do nivel do Event Log: 1 critico, 2 erro, 3 aviso, 4 informacao, 5 detalhado. Ausente em parte das
+    linhas. Para exibir nomes em contagens, agrupar pelo numero e traduzir as series agregadas com label_replace
+    (nunca label_format linha a linha antes de contar).
 limitations:
 - Eventos informativos nao sao coletados neste job; contagens nao sao comparaveis com windows-eventlog.
 - 'Estacoes sao descartaveis: ausencia de fluxo nao indica falha. Nenhuma regra de alerta consome este job.'

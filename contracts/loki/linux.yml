@@ -1,6 +1,6 @@
 schema_version: 1
 kind: loki_log_contract
-version: 0.2.0
+version: 0.3.0
 status: observed_baseline
 observed_date: '2026-11-04'
 source: Alloy Linux / loki.source.journal
@@ -23,5 +23,9 @@ expected_configuration:
   - syslog_identifier
   - level
   not_included_automatically: Arquivos de access log NGINX em /var/log/nginx/*.json.log
+level_values:
+  level: >-
+    Nome da prioridade do journald (emerg, alert, crit, error, warning, notice, info, debug), nunca numerico.
+    Ausente em parte das linhas. Filtrar e agrupar direto pelo label, sem traducao.
 limitations:
 - Ausencia de fluxos de uma unit na janela nao prova que a coleta esteja desativada.

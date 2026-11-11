@@ -12142,7 +12142,7 @@
                         "name": "loki"
                       },
                       "spec": {
-                        "expr": "sum by (level) (count_over_time({job=\"systemd-journal\", host=\"$server\"} | label_format level=`{{ if eq .level \"0\" }}emerg{{ else if eq .level \"1\" }}alert{{ else if eq .level \"2\" }}crit{{ else if eq .level \"3\" }}err{{ else if eq .level \"4\" }}warning{{ else if eq .level \"5\" }}notice{{ else if eq .level \"6\" }}info{{ else if eq .level \"7\" }}debug{{ else }}{{ .level }}{{ end }}` [$__auto]))",
+                        "expr": "sum by (level) (count_over_time({job=\"systemd-journal\", host=\"$server\"} [$__auto]))",
                         "legendFormat": "{{level}}",
                         "queryType": "range"
                       }
@@ -12278,7 +12278,7 @@
                         "name": "loki"
                       },
                       "spec": {
-                        "expr": "{job=\"systemd-journal\", host=\"$server\"} | label_format level=`{{ if eq .level \"0\" }}emerg{{ else if eq .level \"1\" }}alert{{ else if eq .level \"2\" }}crit{{ else if eq .level \"3\" }}err{{ else if eq .level \"4\" }}warning{{ else if eq .level \"5\" }}notice{{ else if eq .level \"6\" }}info{{ else if eq .level \"7\" }}debug{{ else }}{{ .level }}{{ end }}` | level=~\"$nivel\"",
+                        "expr": "{job=\"systemd-journal\", host=\"$server\"} | level=~\"$nivel\"",
                         "queryType": "range"
                       }
                     },

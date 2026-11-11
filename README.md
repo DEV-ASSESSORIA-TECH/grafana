@@ -33,6 +33,7 @@ Dashboards e alertas do Grafana da infraestrutura (Grafana **13.3.0**), e os con
 |---|---|---|---|---|---|
 | Servidores Linux | `servers-linux` | `servers/linux.json` | Servidores | `integrations/unix` | `systemd-journal` |
 | Servidores Windows | `servers-windows` | `servers/windows.json` | Servidores | `integrations/windows` | `windows-eventlog` |
+| Estações Windows | `desktops-windows` | `desktops/windows.json` | Estações | `integrations/windows-desktop` | `windows-desktop-eventlog` |
 | Hypervisors | `hypervisors` | `virtualization/hypervisor.json` | Virtualização | `integrations/hypervisor` (inventário) + `integrations/hyperv` (contadores) | `hyperv-eventlog` |
 | Serviços | `servicos` | `services/servicos.json` | Serviços | `uptime-kuma` | `docker` (container do Kuma) |
 | Containers | `containers` | `containers/containers.json` | Containers | `integrations/docker` (cAdvisor) + `integrations/unix` (RAM do servidor) | `docker` |

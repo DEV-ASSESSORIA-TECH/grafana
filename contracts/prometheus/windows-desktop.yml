@@ -1,0 +1,256 @@
+# Contrato definido para consumidores de dashboards; nao provisionar este YAML no Grafana.
+schema_version: 2
+kind: observability_contract
+version: 0.1.0
+id: windows-desktop
+title: Estacoes Windows (perfil estacao do Alloy) / Windows Exporter embarcado
+status: defined
+defined_date: '2026-11-11'
+job: integrations/windows-desktop
+references:
+  common: common.yml
+  base: windows.yml
+scope: 'Estacoes Windows descartaveis: podem sumir a qualquer momento. Job separado de integrations/windows para nao entrar
+  em alertas, contagens e dashboards de servidores. Nenhuma regra de alerta consome este job.'
+identity:
+  target_key:
+  - job
+  - instance
+  host_label: host
+  per_cpu_key:
+  - instance
+  - core
+  - mode
+  core_format_observed: grupo,processador; exemplo 0,0
+  volume_key:
+  - instance
+  - volume
+  network_key:
+  - instance
+  - nic
+grafana_variables:
+  instance:
+    all_value: .*
+    multi: true
+    query: label_values(windows_os_info{job="integrations/windows-desktop"}, instance)
+  syntax: Grafana label_values, nao PromQL da API
+  volume:
+    multi: true
+    query: label_values(windows_logical_disk_size_bytes{job="integrations/windows-desktop",instance=~"$instance"}, volume)
+metric_groups:
+  cpu:
+    title: CPU por core e mode
+    metrics_observed:
+    - windows_cpu_clock_interrupts_total
+    - windows_cpu_core_frequency_mhz
+    - windows_cpu_cstate_seconds_total
+    - windows_cpu_dpcs_total
+    - windows_cpu_idle_break_events_total
+    - windows_cpu_interrupts_total
+    - windows_cpu_logical_processor
+    - windows_cpu_parking_status
+    - windows_cpu_processor_mperf_total
+    - windows_cpu_processor_performance_total
+    - windows_cpu_processor_privileged_utility_total
+    - windows_cpu_processor_rtc_total
+    - windows_cpu_processor_utility_total
+    - windows_cpu_time_total
+  memory:
+    title: Memoria do sistema convidado/host Windows
+    metrics_observed:
+    - windows_memory_available_bytes
+    - windows_memory_cache_bytes
+    - windows_memory_cache_bytes_peak
+    - windows_memory_cache_faults_total
+    - windows_memory_commit_limit
+    - windows_memory_committed_bytes
+    - windows_memory_demand_zero_faults_total
+    - windows_memory_free_and_zero_page_list_bytes
+    - windows_memory_free_system_page_table_entries
+    - windows_memory_modified_page_list_bytes
+    - windows_memory_page_faults_total
+    - windows_memory_physical_free_bytes
+    - windows_memory_physical_total_bytes
+    - windows_memory_pool_nonpaged_allocs_total
+    - windows_memory_pool_nonpaged_bytes
+    - windows_memory_pool_paged_allocs_total
+    - windows_memory_pool_paged_bytes
+    - windows_memory_pool_paged_resident_bytes
+    - windows_memory_process_memory_limit_bytes
+    - windows_memory_standby_cache_core_bytes
+    - windows_memory_standby_cache_normal_priority_bytes
+    - windows_memory_standby_cache_reserve_bytes
+    - windows_memory_swap_page_operations_total
+    - windows_memory_swap_page_reads_total
+    - windows_memory_swap_page_writes_total
+    - windows_memory_swap_pages_read_total
+    - windows_memory_swap_pages_written_total
+    - windows_memory_system_cache_resident_bytes
+    - windows_memory_system_code_resident_bytes
+    - windows_memory_system_code_total_bytes
+    - windows_memory_system_driver_resident_bytes
+    - windows_memory_system_driver_total_bytes
+    - windows_memory_transition_faults_total
+    - windows_memory_transition_pages_repurposed_total
+    - windows_memory_write_copies_total
+  logical_disks:
+    title: Capacidade e I/O de volumes logicos
+    metrics_observed:
+    - windows_logical_disk_avg_read_requests_queued
+    - windows_logical_disk_avg_write_requests_queued
+    - windows_logical_disk_free_bytes
+    - windows_logical_disk_idle_seconds_total
+    - windows_logical_disk_info
+    - windows_logical_disk_read_bytes_total
+    - windows_logical_disk_read_latency_seconds_total
+    - windows_logical_disk_read_seconds_total
+    - windows_logical_disk_read_write_latency_seconds_total
+    - windows_logical_disk_reads_total
+    - windows_logical_disk_requests_queued
+    - windows_logical_disk_size_bytes
+    - windows_logical_disk_split_ios_total
+    - windows_logical_disk_write_bytes_total
+    - windows_logical_disk_write_latency_seconds_total
+    - windows_logical_disk_write_seconds_total
+    - windows_logical_disk_writes_total
+    interpretation: volume inclui letras de unidade e HarddiskVolume*. Para o resumo, selecionar volume=~"[A-Z]:"; manter
+      detalhes das demais particoes.
+  physical_disks:
+    title: I/O dos discos fisicos
+    metrics_observed:
+    - windows_physical_disk_idle_seconds_total
+    - windows_physical_disk_read_bytes_total
+    - windows_physical_disk_read_latency_seconds_total
+    - windows_physical_disk_read_seconds_total
+    - windows_physical_disk_read_write_latency_seconds_total
+    - windows_physical_disk_reads_total
+    - windows_physical_disk_requests_queued
+    - windows_physical_disk_split_ios_total
+    - windows_physical_disk_write_bytes_total
+    - windows_physical_disk_write_latency_seconds_total
+    - windows_physical_disk_write_seconds_total
+    - windows_physical_disk_writes_total
+    interpretation: Nao somar camadas physical_disk e logical_disk no mesmo total de I/O.
+  network:
+    title: Rede por nic
+    metrics_observed:
+    - windows_net_bytes_received_total
+    - windows_net_bytes_sent_total
+    - windows_net_bytes_total
+    - windows_net_current_bandwidth_bytes
+    - windows_net_nic_address_info
+    - windows_net_nic_info
+    - windows_net_nic_operation_status
+    - windows_net_output_queue_length_packets
+    - windows_net_packets_outbound_discarded_total
+    - windows_net_packets_outbound_errors_total
+    - windows_net_packets_received_discarded_total
+    - windows_net_packets_received_errors_total
+    - windows_net_packets_received_total
+    - windows_net_packets_received_unknown_total
+    - windows_net_packets_sent_total
+    - windows_net_packets_total
+    interpretation: Um host pode ter mais de uma nic; outras familias de informacao podem usar labels diferentes.
+  system:
+    title: Sistema operacional e uptime
+    metrics_observed:
+    - windows_os_hostname
+    - windows_os_info
+    - windows_system_boot_time_timestamp
+    - windows_system_context_switches_total
+    - windows_system_exception_dispatches_total
+    - windows_system_processes
+    - windows_system_processes_limit
+    - windows_system_processor_queue_length
+    - windows_system_system_calls_total
+    - windows_system_threads
+  collection_health:
+    title: Diagnostico do exporter
+    metrics_observed:
+    - scrape_duration_seconds
+    - scrape_samples_post_metric_relabeling
+    - scrape_samples_scraped
+    - scrape_series_added
+    - up
+    - windows_exporter_build_info
+    - windows_exporter_collector_duration_seconds
+    - windows_exporter_collector_success
+    - windows_exporter_collector_timeout
+    - windows_exporter_scrape_duration_seconds
+query_recipes:
+- dependencies:
+  - windows_cpu_time_total
+  id: cpu_non_idle_pct
+  notes: []
+  promql: 100 * (1 - avg by (instance) (rate(windows_cpu_time_total{job="integrations/windows-desktop",mode="idle"}[5m])))
+  title: CPU nao ociosa por estacao
+  unit: percent_0_100
+  validation: dependencies_in_export; not_executed
+- dependencies:
+  - windows_memory_available_bytes
+  - windows_memory_physical_total_bytes
+  id: memory_used_pct
+  notes: []
+  promql: 100 * (1 - windows_memory_available_bytes{job="integrations/windows-desktop"} / windows_memory_physical_total_bytes{job="integrations/windows-desktop"})
+  title: RAM utilizada no Windows
+  unit: percent_0_100
+  validation: dependencies_in_export; not_executed
+- dependencies:
+  - windows_logical_disk_free_bytes
+  - windows_logical_disk_size_bytes
+  id: logical_disk_used_pct
+  notes: []
+  promql: (100 * (1 - windows_logical_disk_free_bytes{job="integrations/windows-desktop",volume=~"[A-Z]:"} / windows_logical_disk_size_bytes{job="integrations/windows-desktop",volume=~"[A-Z]:"}))
+    and (windows_logical_disk_size_bytes{job="integrations/windows-desktop",volume=~"[A-Z]:"} > 0)
+  title: Ocupacao das unidades com letra
+  unit: percent_0_100
+  validation: dependencies_in_export; not_executed
+- dependencies:
+  - windows_net_bytes_received_total
+  id: network_receive_bps
+  notes: []
+  promql: 8 * rate(windows_net_bytes_received_total{job="integrations/windows-desktop"}[5m])
+  title: Entrada por adaptador
+  unit: bits_per_second
+  validation: dependencies_in_export; not_executed
+- dependencies:
+  - windows_net_bytes_sent_total
+  id: network_transmit_bps
+  notes: []
+  promql: 8 * rate(windows_net_bytes_sent_total{job="integrations/windows-desktop"}[5m])
+  title: Saida por adaptador
+  unit: bits_per_second
+  validation: dependencies_in_export; not_executed
+- dependencies:
+  - windows_exporter_collector_success
+  id: collector_success
+  notes: []
+  promql: windows_exporter_collector_success{job="integrations/windows-desktop"}
+  title: Sucesso dos coletores Windows
+  unit: boolean
+  validation: dependencies_in_export; not_executed
+- dependencies:
+  - windows_os_info
+  id: os_inventory
+  notes: []
+  promql: windows_os_info{job="integrations/windows-desktop"}
+  title: Identificacao do Windows
+  unit: info
+  validation: dependencies_in_export; not_executed
+limitations:
+- Metricas e semantica iguais as de windows.yml, sem o coletor service (windows_service_* nao existe neste job).
+- 'Scrape de 60s: usar janelas de rate de pelo menos 2m ($__rate_interval no Grafana).'
+- Estacoes aparecem e somem sem aviso. Ausencia de serie nao indica falha; nao criar alertas de disponibilidade.
+- 'O mesmo hostname pode existir como servidor e como estacao: a chave e job + instance, nunca so instance.'
+- O exporter nao publica TYPE/HELP de windows_*; confirmar a semantica antes de aplicar rate.
+change_policy:
+  baseline_counts_are_fixed_requirements: false
+  require_new_metrics_before_using_in_dashboard: true
+  preserve_raw_labels: true
+query_policy:
+  numerically_validated: false
+  promql_parser_validation: not_performed
+  static_metric_dependencies_checked: true
+  documentation_sources:
+  - prometheus_functions
+  note: As receitas usam semantica padrao onde conhecida; o exporter nao publica TYPE/HELP de todas as metricas.

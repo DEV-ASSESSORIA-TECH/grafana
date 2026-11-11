@@ -1,0 +1,27 @@
+schema_version: 1
+kind: loki_log_contract
+version: 0.1.0
+status: defined
+defined_date: '2026-11-11'
+source: Alloy Windows perfil estacao / loki.source.windowsevent
+job: windows-desktop-eventlog
+identity:
+  required_labels:
+  - job
+  - host
+  observed_labels:
+  - channel
+  - computer
+  - host
+  - job
+  - level
+  - service_name
+expected_configuration:
+  channels:
+  - Application
+  - System
+  levels: 1 (critico), 2 (erro) e 3 (aviso); filtro xpath_query no Alloy
+  message_format: JSON de eventos, conforme configuracao Alloy
+limitations:
+- Eventos informativos nao sao coletados neste job; contagens nao sao comparaveis com windows-eventlog.
+- 'Estacoes sao descartaveis: ausencia de fluxo nao indica falha. Nenhuma regra de alerta consome este job.'

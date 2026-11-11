@@ -1,0 +1,5135 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "desktops-windows"
+  },
+  "spec": {
+    "annotations": [
+      {
+        "kind": "AnnotationQuery",
+        "spec": {
+          "query": {
+            "kind": "DataQuery",
+            "group": "datasource",
+            "version": "v0",
+            "datasource": {
+              "name": "grafana"
+            },
+            "spec": {}
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "builtIn": true,
+          "legacyOptions": {
+            "type": "dashboard"
+          }
+        }
+      }
+    ],
+    "cursorSync": "Crosshair",
+    "description": "windows_exporter (integrations/windows-desktop): estações descartáveis, sem alertas. Cópia do dashboard Servidores Windows sem serviços e sem Hyper-V.",
+    "editable": true,
+    "elements": {
+      "panel-12": {
+        "kind": "Panel",
+        "spec": {
+          "id": 12,
+          "title": "Threads",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "windows_system_threads{job=\"integrations/windows-desktop\",instance=\"$server\"}",
+                        "legendFormat": "Threads",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "10.3.3",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "max"
+                  ],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "hue",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "smooth",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-14": {
+        "kind": "Panel",
+        "spec": {
+          "id": 14,
+          "title": "Memória e commit",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "windows_memory_physical_total_bytes{job=\"integrations/windows-desktop\",instance=\"$server\"}",
+                        "legendFormat": "RAM total",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "windows_memory_available_bytes{job=\"integrations/windows-desktop\",instance=\"$server\"}",
+                        "legendFormat": "Disponível",
+                        "range": true
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "windows_memory_commit_limit{job=\"integrations/windows-desktop\",instance=\"$server\"}",
+                        "legendFormat": "Commit limit",
+                        "range": true
+                      }
+                    },
+                    "refId": "C",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "windows_memory_committed_bytes{job=\"integrations/windows-desktop\",instance=\"$server\"}",
+                        "legendFormat": "Committed",
+                        "range": true
+                      }
+                    },
+                    "refId": "D",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "10.3.3",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "displayMode": "table",
+                  "placement": "right",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bytes",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 11,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-201": {
+        "kind": "Panel",
+        "spec": {
+          "id": 201,
+          "title": "Saturação",
+          "description": "Não é PSI (não existe no Windows). CPU = fila do processador por núcleo; Disco = maior tempo ocupado entre os volumes; Rede = maior ocupação do link entre as placas.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "exemplar": false,
+                        "expr": "avg_over_time(windows_system_processor_queue_length{job=\"integrations/windows-desktop\",instance=\"$server\"}[5m]) / scalar(count(count by (core) (windows_cpu_time_total{job=\"integrations/windows-desktop\",instance=\"$server\"})))",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "CPU",
+                        "range": false,
+                        "step": 240
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "exemplar": false,
+                        "expr": "clamp_min(1 - min(rate(windows_logical_disk_idle_seconds_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[5m])), 0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "Disco",
+                        "range": false,
+                        "step": 240
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "exemplar": false,
+                        "expr": "max(rate(windows_net_bytes_total{job=\"integrations/windows-desktop\",instance=\"$server\"}[5m]) / (windows_net_current_bandwidth_bytes{job=\"integrations/windows-desktop\",instance=\"$server\"} > 0))",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "Rede",
+                        "range": false,
+                        "step": 240
+                      }
+                    },
+                    "refId": "C",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "bargauge",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "displayMode": "basic",
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": false
+                },
+                "maxVizHeight": 300,
+                "minVizHeight": 10,
+                "minVizWidth": 0,
+                "namePlacement": "left",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "text": {},
+                "valueMode": "color"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percentunit",
+                  "decimals": 1,
+                  "min": 0,
+                  "max": 1,
+                  "thresholds": {
+                    "mode": "percentage",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 70,
+                        "color": "dark-yellow"
+                      },
+                      {
+                        "value": 90,
+                        "color": "dark-red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-202": {
+        "kind": "Panel",
+        "spec": {
+          "id": 202,
+          "title": "CPU",
+          "description": "CPU ocupada, média de todos os núcleos.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "exemplar": false,
+                        "expr": "100 * (1 - avg(rate(windows_cpu_time_total{job=\"integrations/windows-desktop\",instance=\"$server\",mode=\"idle\"}[5m])))",
+                        "instant": true,
+                        "range": false,
+                        "step": 240
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "gauge",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "minVizHeight": 75,
+                "minVizWidth": 75,
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true,
+                "sizing": "auto"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percent",
+                  "decimals": 1,
+                  "min": 0,
+                  "max": 100,
+                  "mappings": [
+                    {
+                      "type": "special",
+                      "options": {
+                        "match": "null",
+                        "result": {
+                          "text": "N/A"
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "dark-green"
+                      },
+                      {
+                        "value": 85,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 95,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-203": {
+        "kind": "Panel",
+        "spec": {
+          "id": 203,
+          "title": "Fila de CPU",
+          "description": "Média de 5 min de threads esperando CPU, por núcleo (Processor Queue Length). Equivalente aproximado ao load do Linux; sustentado acima de 100% indica saturação.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "exemplar": false,
+                        "expr": "100 * scalar(avg_over_time(windows_system_processor_queue_length{job=\"integrations/windows-desktop\",instance=\"$server\"}[5m])) / count(count by (core) (windows_cpu_time_total{job=\"integrations/windows-desktop\",instance=\"$server\"}))",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false,
+                        "step": 240
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "gauge",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "minVizHeight": 75,
+                "minVizWidth": 75,
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true,
+                "sizing": "auto"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percent",
+                  "decimals": 1,
+                  "min": 0,
+                  "max": 100,
+                  "mappings": [
+                    {
+                      "type": "special",
+                      "options": {
+                        "match": "null",
+                        "result": {
+                          "text": "N/A"
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "dark-green"
+                      },
+                      {
+                        "value": 85,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 95,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-204": {
+        "kind": "Panel",
+        "spec": {
+          "id": 204,
+          "title": "RAM",
+          "description": "RAM em uso, sem standby (cache) e páginas livres.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "exemplar": false,
+                        "expr": "100 * (1 - windows_memory_available_bytes{job=\"integrations/windows-desktop\",instance=\"$server\"} / windows_memory_physical_total_bytes{job=\"integrations/windows-desktop\",instance=\"$server\"})",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false,
+                        "step": 240
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "gauge",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "minVizHeight": 75,
+                "minVizWidth": 75,
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true,
+                "sizing": "auto"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percent",
+                  "decimals": 1,
+                  "min": 0,
+                  "max": 100,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "dark-green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 90,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-205": {
+        "kind": "Panel",
+        "spec": {
+          "id": 205,
+          "title": "Commit",
+          "description": "Memória comprometida em relação ao commit limit (RAM + pagefile). Perto de 100% novos processos/alocações falham.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "exemplar": false,
+                        "expr": "100 * windows_memory_committed_bytes{job=\"integrations/windows-desktop\",instance=\"$server\"} / windows_memory_commit_limit{job=\"integrations/windows-desktop\",instance=\"$server\"}",
+                        "instant": true,
+                        "range": false,
+                        "step": 240
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "gauge",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "minVizHeight": 75,
+                "minVizWidth": 75,
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true,
+                "sizing": "auto"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percent",
+                  "decimals": 1,
+                  "min": 0,
+                  "max": 100,
+                  "mappings": [
+                    {
+                      "type": "special",
+                      "options": {
+                        "match": "null",
+                        "result": {
+                          "text": "N/A"
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "dark-green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 90,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-207": {
+        "kind": "Panel",
+        "spec": {
+          "id": 207,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "exemplar": false,
+                        "expr": "count(count by (core) (windows_cpu_time_total{job=\"integrations/windows-desktop\",instance=\"$server\"}))",
+                        "instant": true,
+                        "legendFormat": "__auto",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {
+                "maxDataPoints": 100
+              }
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "horizontal",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 20
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Núcleos",
+                  "unit": "short",
+                  "mappings": [
+                    {
+                      "type": "special",
+                      "options": {
+                        "match": "null",
+                        "result": {
+                          "text": "N/A"
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "#2F333A"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-211": {
+        "kind": "Panel",
+        "spec": {
+          "id": 211,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "exemplar": false,
+                        "expr": "(time() - windows_system_boot_time_timestamp{job=\"integrations/windows-desktop\",instance=\"$server\"}) / 86400",
+                        "instant": true,
+                        "range": false,
+                        "step": 240
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {
+                "maxDataPoints": 100
+              }
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "horizontal",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 20
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Ligado há",
+                  "unit": "suffix: dias",
+                  "decimals": 1,
+                  "mappings": [
+                    {
+                      "type": "special",
+                      "options": {
+                        "match": "null",
+                        "result": {
+                          "text": "N/A"
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "#2F333A"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-214": {
+        "kind": "Panel",
+        "spec": {
+          "id": 214,
+          "title": "Memória",
+          "description": "Em uso = total - disponível. Standby é cache que o Windows libera sob demanda.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "windows_memory_physical_total_bytes{job=\"integrations/windows-desktop\",instance=\"$server\"}",
+                        "format": "time_series",
+                        "legendFormat": "Total",
+                        "range": true,
+                        "step": 240
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "windows_memory_physical_total_bytes{job=\"integrations/windows-desktop\",instance=\"$server\"} - windows_memory_available_bytes{job=\"integrations/windows-desktop\",instance=\"$server\"}",
+                        "format": "time_series",
+                        "legendFormat": "Em uso",
+                        "range": true,
+                        "step": 240
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "windows_memory_standby_cache_core_bytes{job=\"integrations/windows-desktop\",instance=\"$server\"} + windows_memory_standby_cache_normal_priority_bytes{job=\"integrations/windows-desktop\",instance=\"$server\"} + windows_memory_standby_cache_reserve_bytes{job=\"integrations/windows-desktop\",instance=\"$server\"}",
+                        "format": "time_series",
+                        "legendFormat": "Standby (cache)",
+                        "range": true,
+                        "step": 240
+                      }
+                    },
+                    "refId": "C",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "windows_memory_free_and_zero_page_list_bytes{job=\"integrations/windows-desktop\",instance=\"$server\"}",
+                        "format": "time_series",
+                        "legendFormat": "Livre",
+                        "range": true,
+                        "step": 240
+                      }
+                    },
+                    "refId": "D",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "11.6.1",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true,
+                  "width": 350
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bytes",
+                  "min": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 40,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "normal"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Total"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "#E0F9D7",
+                          "mode": "fixed"
+                        }
+                      },
+                      {
+                        "id": "custom.fillOpacity",
+                        "value": 0
+                      },
+                      {
+                        "id": "custom.stacking",
+                        "value": {
+                          "group": false,
+                          "mode": "normal"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Standby (cache)"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "#052B51",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Livre"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "#7EB26D",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-217": {
+        "kind": "Panel",
+        "spec": {
+          "id": 217,
+          "title": "Uso do link",
+          "description": "Tráfego total da placa dividido pela velocidade negociada do link.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "rate(windows_net_bytes_total{job=\"integrations/windows-desktop\",instance=\"$server\"}[$__rate_interval]) / (windows_net_current_bandwidth_bytes{job=\"integrations/windows-desktop\",instance=\"$server\"} > 0)",
+                        "legendFormat": "{{nic}}",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "placement": "right",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percentunit",
+                  "custom": {
+                    "fillOpacity": 10,
+                    "lineWidth": 1,
+                    "showPoints": "never"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-27": {
+        "kind": "Panel",
+        "spec": {
+          "id": 27,
+          "title": "Processos",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "windows_system_processes{job=\"integrations/windows-desktop\",instance=\"$server\"}",
+                        "legendFormat": "Processos",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "10.3.3",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "hue",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "smooth",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-29": {
+        "kind": "Panel",
+        "spec": {
+          "id": 29,
+          "title": "Tráfego por hora",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(increase(windows_net_bytes_received_total{job=\"integrations/windows-desktop\",instance=\"$server\"}[1h])) by (instance)",
+                        "format": "time_series",
+                        "intervalFactor": 1,
+                        "legendFormat": "Rx",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(increase(windows_net_bytes_sent_total{job=\"integrations/windows-desktop\",instance=\"$server\"}[1h])) by (instance)",
+                        "format": "time_series",
+                        "intervalFactor": 1,
+                        "legendFormat": "Tx",
+                        "range": true
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "10.3.3",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "mean",
+                    "max",
+                    "min"
+                  ],
+                  "displayMode": "table",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bytes",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "bars",
+                    "fillOpacity": 100,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "normal"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-364": {
+        "kind": "Panel",
+        "spec": {
+          "id": 364,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "up{job=\"integrations/windows-desktop\",instance=\"$server\"}",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 20
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Coleta",
+                  "unit": "short",
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "0": {
+                          "text": "falha",
+                          "color": "#C4162A",
+                          "index": 1
+                        },
+                        "1": {
+                          "text": "OK",
+                          "color": "#37872D",
+                          "index": 0
+                        }
+                      }
+                    },
+                    {
+                      "type": "special",
+                      "options": {
+                        "match": "null+nan",
+                        "result": {
+                          "text": "sem dados",
+                          "color": "#C4162A",
+                          "index": 0
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-365": {
+        "kind": "Panel",
+        "spec": {
+          "id": 365,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "label_replace(windows_os_info{job=\"integrations/windows-desktop\",instance=\"$server\"}, \"os\", \"$3\", \"product\", \"(Microsoft )?(Windows )?(.+)\")",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "{{os}}",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 14
+                },
+                "textMode": "name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "${__field.labels.os}",
+                  "unit": "short",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "text"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "#2F333A"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-366": {
+        "kind": "Panel",
+        "spec": {
+          "id": 366,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "loki"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(count_over_time({job=\"windows-desktop-eventlog\", host=\"$server\", level=~\"(?i)(1|2|critical|crit|error|err|fatal)\"} [24h])) or vector(0)",
+                        "instant": true,
+                        "queryType": "instant",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 20
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Erros (24h)",
+                  "unit": "short",
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#37872D"
+                      },
+                      {
+                        "value": 1,
+                        "color": "#E0752D"
+                      },
+                      {
+                        "value": 50,
+                        "color": "#C4162A"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "links": [
+                    {
+                      "targetBlank": false,
+                      "title": "Ver erros e críticos (24h)",
+                      "url": "/d/desktops-windows?var-server=${server}&var-nivel=critical%7Cerror&viewPanel=panel-51&from=now-24h&to=now"
+                    }
+                  ]
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-368": {
+        "kind": "Panel",
+        "spec": {
+          "id": 368,
+          "title": "CPU",
+          "description": "CPU em uso, de 0 a 100% da capacidade da estação. Aplicações: programas e serviços rodando o próprio código (user mode). Sistema: kernel e drivers (privileged mode; já inclui interrupções e DPC).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "100 * avg(rate(windows_cpu_time_total{job=\"integrations/windows-desktop\",instance=\"$server\",mode=\"user\"}[$__rate_interval]))",
+                        "format": "time_series",
+                        "instant": false,
+                        "legendFormat": "Aplicações",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "100 * avg(rate(windows_cpu_time_total{job=\"integrations/windows-desktop\",instance=\"$server\",mode=\"privileged\"}[$__rate_interval]))",
+                        "format": "time_series",
+                        "instant": false,
+                        "legendFormat": "Sistema",
+                        "range": true
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percent",
+                  "min": 0,
+                  "max": 100,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "transparent"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "drawStyle": "line",
+                    "fillOpacity": 60,
+                    "gradientMode": "none",
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "normal"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Aplicações"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "#5794F2",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Sistema"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "#FADE2A",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-369": {
+        "kind": "Panel",
+        "spec": {
+          "id": 369,
+          "title": "Armazenamento",
+          "description": "Um volume por linha. A barra mostra o ocupado; o trecho vazio é o livre. Enche em: previsão pela tendência das últimas 24h; estável = não enche em menos de 90 dias.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max by (volume) (windows_logical_disk_size_bytes{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"})",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max by (volume) (windows_logical_disk_free_bytes{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"})",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max by (volume) (windows_logical_disk_size_bytes{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"} - windows_logical_disk_free_bytes{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"})",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "C",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max by (volume) (100 * (1 - windows_logical_disk_free_bytes{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"} / windows_logical_disk_size_bytes{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}))",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "D",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "(max by (volume) ((windows_logical_disk_free_bytes{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"} / (-deriv(windows_logical_disk_free_bytes{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[1d]) > 0)) < 7776000)) / 86400",
+                        "format": "table",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "E",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "merge",
+                  "spec": {
+                    "options": {}
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterFieldsByName",
+                  "spec": {
+                    "options": {
+                      "include": {
+                        "pattern": "^(volume|Value #[A-E])$"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "organize",
+                  "spec": {
+                    "options": {
+                      "indexByName": {
+                        "Value #A": 4,
+                        "Value #B": 3,
+                        "Value #C": 2,
+                        "Value #D": 1,
+                        "Value #E": 5,
+                        "volume": 0
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "footer": {
+                  "fields": "",
+                  "reducer": [
+                    "sum"
+                  ],
+                  "show": false
+                },
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "desc": true,
+                    "displayName": "Ocupado / livre"
+                  }
+                ]
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bytes",
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "text"
+                      }
+                    ]
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "volume"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Volume"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 70
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Value #D"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Ocupado / livre"
+                      },
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "min",
+                        "value": 0
+                      },
+                      {
+                        "id": "max",
+                        "value": 100
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 0
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "mode": "basic",
+                          "type": "gauge",
+                          "valueDisplayMode": "color"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "color": "green"
+                            },
+                            {
+                              "color": "orange",
+                              "value": 80
+                            },
+                            {
+                              "color": "red",
+                              "value": 90
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      },
+                      {
+                        "id": "custom.minWidth",
+                        "value": 130
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Value #C"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Ocupado"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Value #B"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Livre"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Value #A"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Total"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 80
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Value #E"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Enche em"
+                      },
+                      {
+                        "id": "unit",
+                        "value": "suffix: dias"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "options": {
+                              "match": "null+nan",
+                              "result": {
+                                "color": "green",
+                                "index": 0,
+                                "text": "estável"
+                              }
+                            },
+                            "type": "special"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "color": "red"
+                            },
+                            {
+                              "color": "orange",
+                              "value": 14
+                            },
+                            {
+                              "color": "text",
+                              "value": 30
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 90
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-370": {
+        "kind": "Panel",
+        "spec": {
+          "id": 370,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "min(windows_logical_disk_free_bytes{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"})",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 24
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Menor espaço livre",
+                  "unit": "bytes",
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#C4162A"
+                      },
+                      {
+                        "value": 5368709120,
+                        "color": "#E0752D"
+                      },
+                      {
+                        "value": 21474836480,
+                        "color": "#37872D"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-371": {
+        "kind": "Panel",
+        "spec": {
+          "id": 371,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max(clamp_min(1 - rate(windows_logical_disk_idle_seconds_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[5m]), 0))",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 24
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "I/O ocupado (máx.)",
+                  "unit": "percentunit",
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#37872D"
+                      },
+                      {
+                        "value": 0.7,
+                        "color": "#E0752D"
+                      },
+                      {
+                        "value": 0.9,
+                        "color": "#C4162A"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-372": {
+        "kind": "Panel",
+        "spec": {
+          "id": 372,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "((min(max by (volume) ((windows_logical_disk_free_bytes{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"} / (-deriv(windows_logical_disk_free_bytes{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[1d]) > 0)) < 7776000))) / 86400) or on () vector(-1)",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 24
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Enche primeiro em",
+                  "unit": "suffix: dias",
+                  "decimals": 1,
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "-1": {
+                          "text": "estável",
+                          "color": "#37872D",
+                          "index": 0
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#C4162A"
+                      },
+                      {
+                        "value": 14,
+                        "color": "#E0752D"
+                      },
+                      {
+                        "value": 30,
+                        "color": "#37872D"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-373": {
+        "kind": "Panel",
+        "spec": {
+          "id": 373,
+          "title": "Leitura / escrita",
+          "description": "Bytes lidos e escritos por segundo, somando as unidades com letra.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(rate(windows_logical_disk_read_bytes_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[$__rate_interval]))",
+                        "format": "time_series",
+                        "instant": false,
+                        "legendFormat": "Leitura",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(rate(windows_logical_disk_write_bytes_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[$__rate_interval]))",
+                        "format": "time_series",
+                        "instant": false,
+                        "legendFormat": "Escrita",
+                        "range": true
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "binBps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "transparent"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "drawStyle": "line",
+                    "fillOpacity": 15,
+                    "gradientMode": "none",
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Leitura"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "#73BF69",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Escrita"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "#FADE2A",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-374": {
+        "kind": "Panel",
+        "spec": {
+          "id": 374,
+          "title": "Latência de disco",
+          "description": "Tempo médio por operação. Acima de 20 ms (linha tracejada) de forma sustentada indica disco lento ou saturado.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(rate(windows_logical_disk_read_seconds_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[$__rate_interval])) / sum(rate(windows_logical_disk_reads_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[$__rate_interval]))",
+                        "format": "time_series",
+                        "instant": false,
+                        "legendFormat": "Leitura",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(rate(windows_logical_disk_write_seconds_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[$__rate_interval])) / sum(rate(windows_logical_disk_writes_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[$__rate_interval]))",
+                        "format": "time_series",
+                        "instant": false,
+                        "legendFormat": "Escrita",
+                        "range": true
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "s",
+                  "min": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "transparent"
+                      },
+                      {
+                        "value": 0.02,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "dashed"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Leitura"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "#73BF69",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Escrita"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "#FADE2A",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-376": {
+        "kind": "Panel",
+        "spec": {
+          "id": 376,
+          "title": "Tráfego de rede",
+          "description": "Tráfego da placa principal em bits/s; Tx para baixo. Ficam de fora isatap, Teredo, loopback e adaptadores virtuais do sistema.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "rate(windows_net_bytes_received_total{job=\"integrations/windows-desktop\",instance=\"$server\",nic!~\"(?i).*(isatap|teredo|loopback|pseudo|6to4|miniport|kernel debug).*\"}[$__rate_interval]) * 8",
+                        "format": "time_series",
+                        "instant": false,
+                        "legendFormat": "Rx {{nic}}",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "rate(windows_net_bytes_sent_total{job=\"integrations/windows-desktop\",instance=\"$server\",nic!~\"(?i).*(isatap|teredo|loopback|pseudo|6to4|miniport|kernel debug).*\"}[$__rate_interval]) * 8",
+                        "format": "time_series",
+                        "instant": false,
+                        "legendFormat": "Tx {{nic}}",
+                        "range": true
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "transparent"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "drawStyle": "line",
+                    "fillOpacity": 25,
+                    "gradientMode": "none",
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": "/^Tx .*/"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.transform",
+                        "value": "negative-Y"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-377": {
+        "kind": "Panel",
+        "spec": {
+          "id": 377,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "windows_net_current_bandwidth_bytes{job=\"integrations/windows-desktop\",instance=\"$server\",nic!~\"(?i).*(isatap|teredo|loopback|pseudo|6to4|miniport|kernel debug).*\"} > bool 0",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "{{nic}}",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 18
+                },
+                "textMode": "value_and_name",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Link",
+                  "unit": "short",
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "0": {
+                          "text": "down",
+                          "color": "red",
+                          "index": 1
+                        },
+                        "1": {
+                          "text": "up",
+                          "color": "green",
+                          "index": 0
+                        }
+                      }
+                    },
+                    {
+                      "type": "special",
+                      "options": {
+                        "match": "null+nan",
+                        "result": {
+                          "text": "sem dados",
+                          "color": "red",
+                          "index": 0
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "text"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-378": {
+        "kind": "Panel",
+        "spec": {
+          "id": 378,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "ceil(changes((windows_net_current_bandwidth_bytes{job=\"integrations/windows-desktop\",instance=\"$server\",nic!~\"(?i).*(isatap|teredo|loopback|pseudo|6to4|miniport|kernel debug).*\"} > bool 0)[24h:1m]) / 2)",
+                        "format": "time_series",
+                        "instant": true,
+                        "legendFormat": "{{nic}}",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 18
+                },
+                "textMode": "value_and_name",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Quedas (24h)",
+                  "unit": "short",
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 1,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 5,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-379": {
+        "kind": "Panel",
+        "spec": {
+          "id": 379,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "max(windows_net_current_bandwidth_bytes{job=\"integrations/windows-desktop\",instance=\"$server\",nic!~\"(?i).*(isatap|teredo|loopback|pseudo|6to4|miniport|kernel debug).*\"} * 8 > 0) or vector(0)",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 18
+                },
+                "textMode": "value_and_name",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Velocidade",
+                  "unit": "bps",
+                  "decimals": 0,
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "0": {
+                          "text": "n/d",
+                          "index": 0
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "text"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-380": {
+        "kind": "Panel",
+        "spec": {
+          "id": 380,
+          "title": "Erros e descartes",
+          "description": "Pacotes com erro ou descartados por segundo na placa principal. O normal é zero; valores constantes indicam problema de cabo, driver, buffer ou placa saturada.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(rate(windows_net_packets_received_errors_total{job=\"integrations/windows-desktop\",instance=\"$server\",nic!~\"(?i).*(isatap|teredo|loopback|pseudo|6to4|miniport|kernel debug).*\"}[$__rate_interval]) + rate(windows_net_packets_received_discarded_total{job=\"integrations/windows-desktop\",instance=\"$server\",nic!~\"(?i).*(isatap|teredo|loopback|pseudo|6to4|miniport|kernel debug).*\"}[$__rate_interval]))",
+                        "format": "time_series",
+                        "instant": false,
+                        "legendFormat": "Recebidos",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(rate(windows_net_packets_outbound_errors_total{job=\"integrations/windows-desktop\",instance=\"$server\",nic!~\"(?i).*(isatap|teredo|loopback|pseudo|6to4|miniport|kernel debug).*\"}[$__rate_interval]) + rate(windows_net_packets_outbound_discarded_total{job=\"integrations/windows-desktop\",instance=\"$server\",nic!~\"(?i).*(isatap|teredo|loopback|pseudo|6to4|miniport|kernel debug).*\"}[$__rate_interval]))",
+                        "format": "time_series",
+                        "instant": false,
+                        "legendFormat": "Enviados",
+                        "range": true
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "max"
+                  ],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "suffix: pac/s",
+                  "decimals": 2,
+                  "min": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisSoftMax": 1,
+                    "drawStyle": "line",
+                    "fillOpacity": 20,
+                    "lineWidth": 1,
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Recebidos"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "#FF9830",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Enviados"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "#F2495C",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-45": {
+        "kind": "Panel",
+        "spec": {
+          "id": 45,
+          "title": "Fila do processador",
+          "description": "Threads aguardando CPU. Sustentado acima do numero de processadores indica saturacao (equivalente ao load do Linux).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "windows_system_processor_queue_length{job=\"integrations/windows-desktop\",instance=\"$server\"}",
+                        "legendFormat": "fila",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "scalar(count(count by (core) (windows_cpu_time_total{job=\"integrations/windows-desktop\",instance=\"$server\"})))",
+                        "legendFormat": "núcleos",
+                        "range": true
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "placement": "right",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "custom": {
+                    "fillOpacity": 10,
+                    "lineWidth": 1,
+                    "showPoints": "never"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-46": {
+        "kind": "Panel",
+        "spec": {
+          "id": 46,
+          "title": "Paginação",
+          "description": "Paginas lidas/escritas no pagefile. Picos sustentados com memoria alta indicam falta de RAM.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "rate(windows_memory_swap_pages_read_total{job=\"integrations/windows-desktop\",instance=\"$server\"}[$__rate_interval])",
+                        "legendFormat": "páginas lidas/s",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "rate(windows_memory_swap_pages_written_total{job=\"integrations/windows-desktop\",instance=\"$server\"}[$__rate_interval])",
+                        "legendFormat": "páginas escritas/s",
+                        "range": true
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "placement": "right",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "custom": {
+                    "fillOpacity": 10,
+                    "lineWidth": 1,
+                    "showPoints": "never"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-47": {
+        "kind": "Panel",
+        "spec": {
+          "id": 47,
+          "title": "Latência por volume",
+          "description": "Tempo medio por operacao. Acima de ~20 ms sustentado merece atencao.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "rate(windows_logical_disk_read_seconds_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[$__rate_interval]) / rate(windows_logical_disk_reads_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[$__rate_interval])",
+                        "legendFormat": "Leitura {{volume}}",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "rate(windows_logical_disk_write_seconds_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[$__rate_interval]) / rate(windows_logical_disk_writes_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[$__rate_interval])",
+                        "legendFormat": "Escrita {{volume}}",
+                        "range": true
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "mean",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "placement": "right",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "s",
+                  "custom": {
+                    "fillOpacity": 10,
+                    "lineWidth": 1,
+                    "showPoints": "never"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-50": {
+        "kind": "Panel",
+        "spec": {
+          "id": 50,
+          "title": "Volume de eventos por nível",
+          "description": "Linhas de log por minuto, por nível. Vermelho = erro/crítico, laranja = aviso.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "loki"
+                      },
+                      "spec": {
+                        "expr": "sum by (level) (count_over_time({job=\"windows-desktop-eventlog\", host=\"$server\"} | label_format level=`{{ if eq .level \"1\" }}critical{{ else if eq .level \"2\" }}error{{ else if eq .level \"3\" }}warning{{ else if eq .level \"4\" }}info{{ else if eq .level \"5\" }}debug{{ else }}{{ .level }}{{ end }}` [$__auto]))",
+                        "legendFormat": "{{level}}",
+                        "queryType": "range",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {
+                "interval": "1m"
+              }
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "sum"
+                  ],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "custom": {
+                    "drawStyle": "bars",
+                    "fillOpacity": 80,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "normal"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": "/^(info|information|notice|Information|Info|INFO|Notice)$/"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "#73BF69",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": "/^(debug|Debug|DEBUG|Verbose|verbose)$/"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "#5794F2",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": "/^(warn|warning|Warning|WARNING|Warn)$/"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "#FF9830",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": "/^(err|error|crit|critical|alert|emerg|fatal|Error|ERROR|Critical|CRITICAL)$/"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "#F2495C",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-51": {
+        "kind": "Panel",
+        "spec": {
+          "id": 51,
+          "title": "Event Log (Application / System)",
+          "description": "Logs desta estação (só crítico, erro e aviso: a estação não coleta eventos informativos). Aberto pelo link de Erros (24h), mostra só erros e críticos; volte ao dashboard pelo botão de voltar para ver todos os níveis.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "loki"
+                      },
+                      "spec": {
+                        "expr": "{job=\"windows-desktop-eventlog\", host=\"$server\"} | label_format level=`{{ if eq .level \"1\" }}critical{{ else if eq .level \"2\" }}error{{ else if eq .level \"3\" }}warning{{ else if eq .level \"4\" }}info{{ else if eq .level \"5\" }}debug{{ else }}{{ .level }}{{ end }}` | level=~\"$nivel\" | json source=\"source\", event_id=\"event_id\", message=\"message\" | line_format `{{ .source }} [{{ .event_id }}]: {{ .message }}`",
+                        "legendFormat": "",
+                        "queryType": "range",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "",
+            "spec": {
+              "options": {
+                "dedupStrategy": "none",
+                "enableLogDetails": true,
+                "prettifyLogMessage": false,
+                "showCommonLabels": false,
+                "showLabels": false,
+                "showTime": true,
+                "sortOrder": "Descending",
+                "wrapLogMessage": true
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-8": {
+        "kind": "Panel",
+        "spec": {
+          "id": 8,
+          "title": "Leitura / escrita por volume",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "rate(windows_logical_disk_write_bytes_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[$__rate_interval])",
+                        "legendFormat": "Escrita {{volume}}",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "- rate(windows_logical_disk_read_bytes_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[$__rate_interval])",
+                        "legendFormat": "Leitura {{volume}}",
+                        "range": true
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "10.3.3",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "placement": "right",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "binBps",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 20,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-9": {
+        "kind": "Panel",
+        "spec": {
+          "id": 9,
+          "title": "IOPS por volume",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "rate(windows_logical_disk_writes_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[$__rate_interval])",
+                        "legendFormat": "Escrita {{volume}}",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "- rate(windows_logical_disk_reads_total{job=\"integrations/windows-desktop\",instance=\"$server\",volume=~\"[A-Z]:\"}[$__rate_interval])",
+                        "legendFormat": "Leitura {{volume}}",
+                        "range": true
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "10.3.3",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "max"
+                  ],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "iops",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "drawStyle": "line",
+                    "fillOpacity": 10,
+                    "gradientMode": "hue",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "smooth",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "RowsLayout",
+      "spec": {
+        "rows": [
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Resumo",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 4,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-201"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 4,
+                        "y": 0,
+                        "width": 3,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-202"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 7,
+                        "y": 0,
+                        "width": 3,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-203"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 10,
+                        "y": 0,
+                        "width": 3,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-204"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 13,
+                        "y": 0,
+                        "width": 3,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-205"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 16,
+                        "y": 0,
+                        "width": 3,
+                        "height": 2,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-364"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 19,
+                        "y": 0,
+                        "width": 3,
+                        "height": 2,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-365"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 22,
+                        "y": 0,
+                        "width": 2,
+                        "height": 2,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-211"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 16,
+                        "y": 2,
+                        "width": 6,
+                        "height": 2,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-366"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 22,
+                        "y": 2,
+                        "width": 2,
+                        "height": 2,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-207"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "CPU / Memória / Disco",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-368"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 5,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-369"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 5,
+                        "width": 4,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-370"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 16,
+                        "y": 5,
+                        "width": 4,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-371"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 20,
+                        "y": 5,
+                        "width": 4,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-372"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 8,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-214"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 8,
+                        "width": 6,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-373"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 18,
+                        "y": 8,
+                        "width": 6,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-374"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Rede",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 15,
+                        "height": 6,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-376"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 15,
+                        "y": 0,
+                        "width": 6,
+                        "height": 6,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-380"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 21,
+                        "y": 0,
+                        "width": 3,
+                        "height": 2,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-377"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 21,
+                        "y": 2,
+                        "width": 3,
+                        "height": 2,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-378"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 21,
+                        "y": 4,
+                        "width": 3,
+                        "height": 2,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-379"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Logs (Event Log)",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 7,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-50"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 7,
+                        "width": 24,
+                        "height": 12,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-51"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Detalhes: CPU e memória",
+              "collapse": true,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": -9,
+                        "width": 12,
+                        "height": 9,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-45"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": -9,
+                        "width": 12,
+                        "height": 9,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-14"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 9,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-46"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Detalhes: rede",
+              "collapse": true,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": -9,
+                        "width": 12,
+                        "height": 9,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-217"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 9,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-29"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Detalhes: armazenamento por volume",
+              "collapse": true,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 12,
+                        "height": 9,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-8"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 12,
+                        "height": 9,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-9"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 9,
+                        "width": 12,
+                        "height": 9,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-47"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Sistema",
+              "collapse": true,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": -9,
+                        "width": 12,
+                        "height": 9,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-27"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": -9,
+                        "width": 12,
+                        "height": 9,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-12"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "links": [
+      {
+        "title": "Visão geral",
+        "type": "link",
+        "url": "/grafana/d/overview",
+        "icon": "dashboard",
+        "tooltip": "Página inicial: alertas e estado de todas as áreas",
+        "tags": [],
+        "asDropdown": false,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": true
+      },
+      {
+        "title": "Painéis",
+        "type": "dashboards",
+        "icon": "external link",
+        "tooltip": "",
+        "tags": [
+          "infra"
+        ],
+        "asDropdown": true,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": true
+      }
+    ],
+    "liveNow": false,
+    "preload": false,
+    "tags": [
+      "infra",
+      "windows",
+      "desktops"
+    ],
+    "timeSettings": {
+      "timezone": "browser",
+      "from": "now-6h",
+      "to": "now",
+      "autoRefresh": "1m",
+      "autoRefreshIntervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "hideTimepicker": false,
+      "fiscalYearStartMonth": 0
+    },
+    "title": "Estações Windows",
+    "variables": [
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "server",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "label": "Estação",
+          "hide": "dontHide",
+          "refresh": "onDashboardLoad",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "prometheus",
+            "version": "v0",
+            "datasource": {
+              "name": "prometheus"
+            },
+            "spec": {
+              "query": "label_values(windows_os_info{job=\"integrations/windows-desktop\"}, instance)",
+              "refId": "Prometheus-server-Variable-Query"
+            }
+          },
+          "regex": "",
+          "sort": "alphabeticalAsc",
+          "definition": "label_values(windows_os_info{job=\"integrations/windows-desktop\"}, instance)",
+          "options": [],
+          "multi": false,
+          "includeAll": false,
+          "allowCustomValue": true
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "nivel",
+          "current": {
+            "text": ".+",
+            "value": ".+"
+          },
+          "query": ".+",
+          "label": "Nível",
+          "hide": "hideVariable",
+          "skipUrlSync": false,
+          "description": "Regex de nível dos logs. Preenchido pelo link de Erros (24h)."
+        }
+      }
+    ]
+  }
+}

@@ -2892,12 +2892,12 @@
         "kind": "Panel",
         "spec": {
           "id": 6,
-          "title": "Coleta",
-          "description": "Coletores no ar agora sobre o total visto recentemente (laranja quando falta algum), e alertas ativos da área monitoramento. A borda tem a cor do pior alerta. Clique no título para abrir.",
+          "title": "Bancos",
+          "description": "Bancos SQL Anywhere aceitando conexão agora sobre o total visto recentemente (laranja quando falta algum), e alertas ativos da área bancos. A borda tem a cor do pior alerta. Clique no título para abrir.",
           "links": [
             {
-              "title": "Abrir Coleta",
-              "url": "/grafana/alerting/list",
+              "title": "Abrir Bancos de dados",
+              "url": "/grafana/d/sqlanywhere",
               "targetBlank": false
             }
           ],
@@ -2917,7 +2917,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "(count(up{job=\"prometheus\"} == 1) or vector(0)) + (count(up{job=\"uptime-kuma\"} == 1) or vector(0))",
+                        "expr": "(count(sqlanywhere_up{job=\"integrations/sqlanywhere\"} == 1) or vector(0))",
                         "format": "time_series",
                         "instant": true,
                         "legendFormat": "noar",
@@ -2940,7 +2940,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(group by (job) (max_over_time(up{job=\"prometheus\"}[7d]))) + count(group by (job) (max_over_time(up{job=\"uptime-kuma\"}[7d])))",
+                        "expr": "count(group by (instance) (max_over_time(sqlanywhere_up{job=\"integrations/sqlanywhere\"}[7d])))",
                         "format": "time_series",
                         "instant": true,
                         "legendFormat": "total",
@@ -2963,7 +2963,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"monitoramento\",severity=\"critical\"}) or vector(0)",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"bancos\",severity=\"critical\"}) or vector(0)",
                         "format": "time_series",
                         "instant": true,
                         "legendFormat": "crit",
@@ -2986,7 +2986,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"monitoramento\",severity=\"warning\"}) or vector(0)",
+                        "expr": "count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"bancos\",severity=\"warning\"}) or vector(0)",
                         "format": "time_series",
                         "instant": true,
                         "legendFormat": "warn",
@@ -3009,7 +3009,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "(count(group by (job) (max_over_time(up{job=\"prometheus\"}[7d]))) + count(group by (job) (max_over_time(up{job=\"uptime-kuma\"}[7d])))) - ((count(up{job=\"prometheus\"} == 1) or vector(0)) + (count(up{job=\"uptime-kuma\"} == 1) or vector(0)))",
+                        "expr": "(count(group by (instance) (max_over_time(sqlanywhere_up{job=\"integrations/sqlanywhere\"}[7d])))) - (count(sqlanywhere_up{job=\"integrations/sqlanywhere\"} == 1) or vector(0))",
                         "format": "time_series",
                         "instant": true,
                         "legendFormat": "faltando",
@@ -3032,7 +3032,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"monitoramento\",severity=\"critical\"}) or vector(0)) > bool 0) * 2 + ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"monitoramento\",severity=\"warning\"}) or vector(0)) > bool 0) * ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"monitoramento\",severity=\"critical\"}) or vector(0)) == bool 0)",
+                        "expr": "((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"bancos\",severity=\"critical\"}) or vector(0)) > bool 0) * 2 + ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"bancos\",severity=\"warning\"}) or vector(0)) > bool 0) * ((count(GRAFANA_ALERTS{alertstate=\"firing\",area=\"bancos\",severity=\"critical\"}) or vector(0)) == bool 0)",
                         "format": "time_series",
                         "instant": true,
                         "legendFormat": "estado",
@@ -3141,7 +3141,7 @@
                       "config": {
                         "text": {
                           "mode": "fixed",
-                          "fixed": "coletores no ar"
+                          "fixed": "bancos aceitando conexão"
                         },
                         "size": 11,
                         "color": {

@@ -1,7 +1,7 @@
 # Contrato observado para consumidores de dashboards; nao provisionar este YAML no Grafana.
 schema_version: 2
 kind: observability_contract
-version: 0.4.0
+version: 0.4.1
 id: hypervisor
 title: Hypervisor / inventario de VMs (formato neutro)
 status: observed_baseline
@@ -10,8 +10,8 @@ job: integrations/hypervisor
 source:
   producer: DEV-ASSESSORIA-TECH/scripts monitoring/alloy/windows/hypervisor-inventory.ps1
   producer_version: 19d8012
-  collection: tarefa agendada a cada 1 min (SYSTEM) -> textfile\hypervisor.prom -> prometheus.exporter.windows "hypervisor"
-    (textfile) -> scrape 60s
+  collection: tarefa agendada a cada 1 min (SYSTEM) -> textfile\hypervisor\hypervisor.prom -> prometheus.exporter.windows
+    "hypervisor" (textfile, so o subdiretorio hypervisor) -> scrape 60s
   platforms:
     hyperv: implementado
   note: Formato neutro (hypervisor_*). Outras plataformas devem publicar os mesmos nomes e labels, com platform

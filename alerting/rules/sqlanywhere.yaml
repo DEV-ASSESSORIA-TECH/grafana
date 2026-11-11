@@ -1,0 +1,627 @@
+# Regras de alerta do SAP SQL Anywhere (job integrations/sqlanywhere). Codigos em contracts/alerts/codes.yml.
+# Labels: escrever $$labels (o provisionamento interpola variaveis de ambiente nos labels).
+# Annotations e consultas nao sao interpoladas: nelas, $labels.
+# VM e hipervisor vem do inventario (receita guest_join): com a VM ou o host fora, estes alertas ficam inibidos.
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: sqlanywhere-1m
+    folder: INFRA
+    interval: 1m
+    rules:
+      - uid: sql-101
+        title: '[SQL-101] Banco SQL Anywhere inacessível'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  group by (instance) (sqlanywhere_up{job="integrations/sqlanywhere"} == 0)
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  group by (instance) (sqlanywhere_up{job="integrations/sqlanywhere"} == 0)
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-101.md
+          __dashboardUid__: sqlanywhere
+          __panelId__: "1"
+          summary: 'Banco SQL Anywhere inacessível em {{ $labels.instance }}'
+          description: |-
+            O coletor de {{ $labels.instance }} não consegue conectar ao banco SQL Anywhere configurado há mais de 2 minutos.
+
+            Possíveis causas: serviço do SQL Anywhere parado, banco não iniciado, usuário de monitoramento bloqueado ou com senha trocada.
+            O servidor Windows continua enviando métricas; se ele inteiro estiver fora, quem avisa é o alerta de servidor sem métricas.
+        labels:
+          alert_code: SQL-101
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.database }} · {{ . }}{{ end }}'
+          severity: critical
+          area: bancos
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: sql-110
+        title: '[SQL-110] Servidor SQL Anywhere reiniciado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  changes(sqlanywhere_server_start_time_seconds{job="integrations/sqlanywhere"}[10m]) > 0
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  changes(sqlanywhere_server_start_time_seconds{job="integrations/sqlanywhere"}[10m]) > 0
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-110.md
+          __dashboardUid__: sqlanywhere
+          __panelId__: "11"
+          summary: 'Servidor SQL Anywhere {{ $labels.server }} reiniciado em {{ $labels.instance }}'
+          description: |-
+            O servidor de banco {{ $labels.server }} em {{ $labels.instance }} foi reiniciado nos últimos 10 minutos.
+
+            Informativo: confirme se foi planejado. Os contadores do servidor (cache, requisições, transações) voltam a zero.
+        labels:
+          alert_code: SQL-110
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.database }} · {{ . }}{{ end }}'
+          severity: info
+          area: bancos
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: sql-201
+        title: '[SQL-201] Cache do SQL Anywhere sem página livre'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  increase(sqlanywhere_server_cache_panics_total{job="integrations/sqlanywhere"}[15m]) > 0
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  increase(sqlanywhere_server_cache_panics_total{job="integrations/sqlanywhere"}[15m]) > 0
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-201.md
+          __dashboardUid__: sqlanywhere
+          __panelId__: "15"
+          summary: 'Cache do SQL Anywhere sem página livre em {{ $labels.instance }}'
+          description: |-
+            O cache do servidor {{ $labels.server }} em {{ $labels.instance }} não encontrou página para alocar (CachePanics) nos últimos 15 minutos.
+
+            Indica cache pequeno demais para a carga. Se o cache foi reduzido recentemente, volte ao tamanho anterior.
+        labels:
+          alert_code: SQL-201
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.database }} · {{ . }}{{ end }}'
+          severity: warning
+          area: bancos
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: sql-202
+        title: '[SQL-202] Memória de consulta negada no SQL Anywhere'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  increase(sqlanywhere_server_query_memory_failures_total{job="integrations/sqlanywhere"}[15m]) > 0
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  increase(sqlanywhere_server_query_memory_failures_total{job="integrations/sqlanywhere"}[15m]) > 0
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-202.md
+          __dashboardUid__: sqlanywhere
+          __panelId__: "26"
+          summary: 'Memória de consulta negada no SQL Anywhere em {{ $labels.instance }}'
+          description: |-
+            Requisições do servidor {{ $labels.server }} em {{ $labels.instance }} esperaram memória de consulta e não conseguiram nos últimos 15 minutos.
+
+            Consultas ficam lentas ou falham. A memória de consulta sai do cache: cache pequeno ou consultas pesadas simultâneas.
+        labels:
+          alert_code: SQL-202
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.database }} · {{ . }}{{ end }}'
+          severity: warning
+          area: bancos
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: sql-301
+        title: '[SQL-301] Coleta do SQL Anywhere parada'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  (
+                    group by (instance) (max_over_time(sqlanywhere_collection_timestamp_seconds{job="integrations/sqlanywhere"}[7d]))
+                    unless
+                    group by (instance) (
+                      (time() - sqlanywhere_collection_timestamp_seconds{job="integrations/sqlanywhere"} < 180)
+                      and
+                      (sqlanywhere_collection_success{job="integrations/sqlanywhere"} == 1 or sqlanywhere_up{job="integrations/sqlanywhere"} == 0)
+                    )
+                  )
+                  and on (instance)
+                  group by (instance) (up{job="integrations/windows"} == 1)
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  (
+                    group by (instance) (max_over_time(sqlanywhere_collection_timestamp_seconds{job="integrations/sqlanywhere"}[7d]))
+                    unless
+                    group by (instance) (
+                      (time() - sqlanywhere_collection_timestamp_seconds{job="integrations/sqlanywhere"} < 180)
+                      and
+                      (sqlanywhere_collection_success{job="integrations/sqlanywhere"} == 1 or sqlanywhere_up{job="integrations/sqlanywhere"} == 0)
+                    )
+                  )
+                  and on (instance)
+                  group by (instance) (up{job="integrations/windows"} == 1)
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-301.md
+          __dashboardUid__: sqlanywhere
+          __panelId__: "2"
+          summary: 'Coleta do SQL Anywhere parada em {{ $labels.instance }}'
+          description: |-
+            O servidor {{ $labels.instance }} envia métricas do Windows, mas a coleta do SQL Anywhere está parada ou falhando há mais de 5 minutos.
+
+            Possíveis causas: tarefa agendada "\GrafanaLabs\Alloy SQL Anywhere" desativada ou travada, erro no coletor (ver logs\sqlanywhere-collector-*.log), módulo desativado no Alloy.
+            Falha de conexão ao banco não entra aqui (é o SQL-101). Módulo desativado de propósito some deste alerta depois de 7 dias (ou silencie).
+        labels:
+          alert_code: SQL-301
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.database }} · {{ . }}{{ end }}'
+          severity: warning
+          area: bancos
+          scope: collection
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: sql-401
+        title: '[SQL-401] Requisições na fila do SQL Anywhere'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  min_over_time(sqlanywhere_server_waiting_requests{job="integrations/sqlanywhere"}[5m]) > 0
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  min_over_time(sqlanywhere_server_waiting_requests{job="integrations/sqlanywhere"}[5m]) > 0
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-401.md
+          __dashboardUid__: sqlanywhere
+          __panelId__: "29"
+          summary: 'Requisições na fila do SQL Anywhere em {{ $labels.instance }}'
+          description: |-
+            O servidor {{ $labels.server }} em {{ $labels.instance }} tem requisições esperando worker livre sem parar há mais de 10 minutos.
+
+            Usuários sentem lentidão. Causas: workers todos ocupados (carga alta ou limite -gn baixo) ou requisições presas em lock.
+        labels:
+          alert_code: SQL-401
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.database }} · {{ . }}{{ end }}'
+          severity: warning
+          area: bancos
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: sql-402
+        title: '[SQL-402] Thread deadlock no SQL Anywhere'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  increase(sqlanywhere_server_thread_deadlocks_total{job="integrations/sqlanywhere"}[10m]) > 0
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  increase(sqlanywhere_server_thread_deadlocks_total{job="integrations/sqlanywhere"}[10m]) > 0
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-402.md
+          __dashboardUid__: sqlanywhere
+          __panelId__: "36"
+          summary: 'Thread deadlock no SQL Anywhere em {{ $labels.instance }}'
+          description: |-
+            O servidor {{ $labels.server }} em {{ $labels.instance }} devolveu erro de thread deadlock aos clientes nos últimos 10 minutos.
+
+            Todos os workers ficaram bloqueados esperando uns aos outros e as requisições receberam erro.
+        labels:
+          alert_code: SQL-402
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.database }} · {{ . }}{{ end }}'
+          severity: warning
+          area: bancos
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false

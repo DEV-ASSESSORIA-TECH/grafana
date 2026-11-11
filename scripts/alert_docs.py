@@ -26,7 +26,7 @@ SCOPE_PT = {"hypervisor": "hosts", "vm": "VMs", "guest": "sistemas convidados", 
             "external": "serviços externos", "collection": "coleta"}
 EQUAL_PT = {"dep_hypervisor": "do mesmo host", "dep_vm": "da mesma VM"}
 AREA_PT = {"hypervisor": "Hipervisor", "windows": "Windows", "linux": "Linux", "containers": "Containers",
-           "servicos": "Serviços", "monitoramento": "Monitoramento"}
+           "servicos": "Serviços", "monitoramento": "Monitoramento", "bancos": "Bancos de dados"}
 
 
 def sev_text(value):

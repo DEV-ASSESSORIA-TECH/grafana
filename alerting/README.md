@@ -28,6 +28,7 @@ Todas as regras ficam na pasta INFRA do Grafana, um grupo por arquivo. O catálo
 | `containers.yaml` | `containers-1m` | Containers Docker: sumiu, unhealthy, loop de reinício, OOM, coleta parada |
 | `servicos.yaml` | `servicos-1m` | Uptime Kuma: serviços por criticidade, externos (15 min de tolerância), certificados (sem Tiflux e Sispcard, de terceiros), Kuma sem métricas |
 | `monitoramento.yaml` | `monitoramento-5m` | Prometheus: configuração inválida, falha de compactação |
+| `sqlanywhere.yaml` | `sqlanywhere-1m` | SQL Anywhere: banco inacessível, reinício, cache sem página livre, memória de consulta negada, coleta parada, fila de requisições, thread deadlock |
 
 **Decisões que estão nas consultas** (mude aqui quando mudar a operação):
 

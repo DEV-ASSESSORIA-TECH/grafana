@@ -2087,7 +2087,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max by (instance, name) (\n  2 * (increase(container_oom_events_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[$__interval]) > 0)\n  or (changes(container_start_time_seconds{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[$__interval]) > 0) * 0 + 1\n)",
+                        "expr": "max by (instance, name) (\n  2 * (increase(container_oom_events_total{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[$__rate_interval]) > 0)\n  or (changes(container_start_time_seconds{job=\"integrations/docker\",name!~\"|grafana-alerting-temp|warpgate\",instance=~\"$servidor\",container_label_com_docker_compose_project=~\"$projeto\",name=~\"$container\"}[$__rate_interval]) > 0) * 0 + 1\n)",
                         "legendFormat": "{{name}} · {{instance}}",
                         "format": "time_series",
                         "instant": false,

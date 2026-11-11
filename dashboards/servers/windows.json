@@ -4235,7 +4235,7 @@
                         "name": "loki"
                       },
                       "spec": {
-                        "expr": "sum by (level) (count_over_time({job=\"windows-eventlog\", host=\"$server\"} | label_format level=`{{ if eq .level \"1\" }}critical{{ else if eq .level \"2\" }}error{{ else if eq .level \"3\" }}warning{{ else if eq .level \"4\" }}info{{ else if eq .level \"5\" }}debug{{ else }}{{ .level }}{{ end }}` [$__auto]))",
+                        "expr": "label_replace(label_replace(label_replace(label_replace(label_replace(sum by (level) (count_over_time({job=\"windows-eventlog\", host=\"$server\"} [$__auto])), \"level\", \"critical\", \"level\", \"1\"), \"level\", \"error\", \"level\", \"2\"), \"level\", \"warning\", \"level\", \"3\"), \"level\", \"info\", \"level\", \"4\"), \"level\", \"debug\", \"level\", \"5\")",
                         "legendFormat": "{{level}}",
                         "queryType": "range",
                         "range": true

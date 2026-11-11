@@ -1,6 +1,6 @@
 schema_version: 1
 kind: loki_log_contract
-version: 0.2.0
+version: 0.3.0
 status: observed_baseline
 observed_date: '2026-11-04'
 source: Alloy Windows / loki.source.windowsevent
@@ -21,5 +21,10 @@ expected_configuration:
   - Application
   - System
   message_format: JSON de eventos, conforme configuracao Alloy
+level_values:
+  level: >-
+    Numero do nivel do Event Log: 1 critico, 2 erro, 3 aviso, 4 informacao, 5 detalhado. Ausente em parte das
+    linhas. Para exibir nomes em contagens, agrupar pelo numero e traduzir as series agregadas com label_replace
+    (nunca label_format linha a linha antes de contar).
 limitations:
 - A presenca dos canais nao garante todos os eventos ou severidades.

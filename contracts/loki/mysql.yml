@@ -1,0 +1,51 @@
+schema_version: 1
+kind: loki_log_contract
+version: 0.1.0
+status: defined
+defined_date: '2026-11-12'
+source: Alloy Windows modulo MySQL / loki.source.file (error log e slow query log do MySQL)
+job: mysql
+identity:
+  required_labels:
+  - job
+  - host
+  - log_type
+  observed_labels:
+  - host
+  - job
+  - level
+  - log_type
+  - service_name
+expected_configuration:
+  files: Caminhos lidos do proprio servidor na ativacao (@@log_error, @@slow_query_log_file); slow log so com
+    slow_query_log ligado e log_output com FILE.
+  log_type: error (error log) ou slow (slow query log)
+  start: primeira leitura do fim do arquivo; o historico anterior a ativacao nao e enviado
+  timestamp: horario da leitura pelo Alloy (segundos depois da gravacao), nao o horario escrito na linha
+level_values:
+  level: >-
+    So em log_type="error": error ([ERROR], erros e assercoes do InnoDB, got exception), warning ([Warning] e
+    deadlocks) ou note (o resto, incluindo [Note]). Atribuido pelo Alloy a partir do texto; vale para os formatos do
+    5.5 (AAMMDD HH:MM:SS [Nivel]) e do 5.7+ (ISO 8601 ... [Nivel] [MY-...]).
+message_format:
+  error: >-
+    Texto original. Uma entrada por linha com data; linhas seguintes sem data (detalhes de deadlock, mensagens do
+    InnoDB) ficam na mesma entrada. Deadlock (innodb_print_all_deadlocks=1) gera uma entrada "InnoDB: transactions
+    deadlock detected, dumping detailed information." seguida de outra com o detalhe ("*** (1) TRANSACTION:" ...
+    "*** WE ROLL BACK TRANSACTION (n)").
+  slow: >-
+    Texto original de uma consulta, de "# User@Host:" ate o SQL: linha "# Query_time: s Lock_time: s Rows_sent: n
+    Rows_examined: n", "use banco;" opcional (so quando o banco muda), "SET timestamp=unix;" e o SQL (pode ter varias
+    linhas). Extrair com | regexp "Query_time: (?P<query_time>[0-9.]+)\\s+Lock_time: (?P<lock_time>[0-9.]+)\\s+Rows_sent:
+    (?P<rows_sent>\\d+)\\s+Rows_examined: (?P<rows_examined>\\d+)". As linhas "# Time:" e o cabecalho escrito a cada
+    inicio do servidor sao descartados.
+consumer_rules:
+- Fixar job="mysql" e log_type; level so existe em log_type="error".
+- Contar deadlocks com |= "deadlock detected" (uma entrada por deadlock).
+- Campos do slow log (query_time, rows_examined) vem do regexp sobre a linha; o Alloy nao grava structured metadata.
+- service_name e colocado pelo Loki a partir do job (vale mysql); nao usar como identidade.
+- detected_level (structured metadata do Loki) nao reflete o nivel do MySQL; usar o label level.
+limitations:
+- Sem error log, slow log desligado ou log_output=TABLE nao ha fluxo; a ausencia de linhas nao indica falha de coleta.
+- O slow log so traz o banco (use ...) quando ele muda na conexao; nao ha label de banco.
+- Linhas muito longas de uma mesma entrada sao cortadas em 500 linhas (error) ou 200 linhas (slow).

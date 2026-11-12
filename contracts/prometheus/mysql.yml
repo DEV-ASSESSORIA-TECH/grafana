@@ -1,0 +1,311 @@
+# Contrato definido pelo produtor (exportador embutido do Alloy); nao provisionar este YAML no Grafana.
+schema_version: 2
+kind: observability_contract
+version: 0.1.0
+id: mysql
+title: MySQL / servidor (SHOW GLOBAL STATUS e VARIABLES)
+status: defined
+defined_date: '2026-11-12'
+job: integrations/mysql
+source:
+  producer: DEV-ASSESSORIA-TECH/scripts monitoring/alloy/windows/mysql.alloy
+  collection: prometheus.exporter.mysql (mysqld_exporter embutido no Alloy) -> scrape 30s -> prometheus.relabel (so
+    mysql_*) -> remote write
+  transport: TCP em 127.0.0.1 com usuario de monitoramento (privilegio PROCESS); coletores global_status,
+    global_variables e info_schema.processlist (set_collectors)
+  documentation: MySQL 5.5 Reference Manual, "Server Status Variables" e "Server System Variables"; mysqld_exporter
+    (prometheus/mysqld_exporter) para o mapeamento de nomes
+  note: Nomes e labels conferidos no endpoint do componente do Alloy v1.11 contra MySQL 5.5. O exportador publica as
+    variaveis de status e de sistema numericas como mysql_global_status_<nome> e mysql_global_variables_<nome> (nome
+    em minusculas); algumas viram uma metrica com label (Com_* em commands_total, Handler_* em handlers_total,
+    Innodb_rows_* em innodb_row_ops_total, Innodb_buffer_pool_pages_* em buffer_pool_pages). O contrato lista so o
+    que os consumidores usam; as demais series continuam disponiveis e entram aqui antes de serem usadas.
+references:
+  common: common.yml
+identity:
+  target_key:
+    - job
+    - instance
+  host_label: host
+  note: instance e host sao o hostname Windows em minusculas. Uma instancia MySQL por instance; nao ha label de banco
+    (as metricas sao do servidor inteiro).
+grafana_variables:
+  syntax: Grafana label_values, nao PromQL da API
+  server:
+    query: label_values(mysql_up{job="integrations/mysql"}, instance)
+    multi: false
+metric_types:
+  note: >-
+    O exportador publica as variaveis de status como untyped. Sao contadores (crescem desde o inicio do servidor e
+    zeram ao reiniciar; usar rate/increase): aborted_*, bytes_*, connections, created_tmp_*, commands_total,
+    handlers_total, innodb_buffer_pool_read_requests, innodb_buffer_pool_reads, innodb_buffer_pool_wait_free,
+    innodb_data_*, innodb_log_waits, innodb_os_log_written, innodb_row_lock_time, innodb_row_lock_waits,
+    innodb_row_ops_total, buffer_pool_page_changes_total, key_read_requests, key_reads, opened_*, qcache_hits,
+    qcache_inserts, qcache_lowmem_prunes, qcache_not_cached, queries, questions, select_*, slow_queries, sort_*,
+    table_locks_*, threads_created. As demais (threads_*, open_*, max_used_connections, buffer_pool_pages,
+    buffer_pool_dirty_pages, innodb_row_lock_current_waits, innodb_row_lock_time_max, key_blocks_*,
+    qcache_free_memory, uptime) e todas as mysql_global_variables_* sao gauges.
+metric_groups:
+  collection_health:
+    title: Saude da coleta
+    metrics_observed:
+      - up
+      - mysql_up
+      - mysql_exporter_collector_success
+      - mysql_exporter_collector_duration_seconds
+    labels:
+      up: []
+      mysql_up: []
+      mysql_exporter_collector_success:
+        - collector
+      mysql_exporter_collector_duration_seconds:
+        - collector
+    interpretation: >-
+      up = scrape do exportador pelo Alloy (1 mesmo com o MySQL fora). mysql_up = conexao do exportador ao MySQL na
+      ultima coleta; 0 = servico parado, senha trocada ou usuario sem acesso, e nesse caso as demais metricas mysql_*
+      deixam de ser publicadas. collector_success por coletor (collect.global_status, collect.global_variables,
+      collect.info_schema.processlist); duration inclui collector="connection" (abrir a conexao).
+  identity:
+    title: Identidade e inicio
+    metrics_observed:
+      - mysql_version_info
+      - mysql_global_status_uptime
+    labels:
+      mysql_version_info:
+        - version
+        - innodb_version
+        - version_comment
+      mysql_global_status_uptime: []
+    interpretation: >-
+      mysql_version_info vale sempre 1 (versao em labels). uptime em segundos desde o inicio do servidor; queda =
+      reinicio (todos os contadores zeram junto).
+  connections:
+    title: Conexoes e threads
+    metrics_observed:
+      - mysql_global_status_threads_connected
+      - mysql_global_status_threads_running
+      - mysql_global_status_threads_cached
+      - mysql_global_status_threads_created
+      - mysql_global_status_max_used_connections
+      - mysql_global_status_connections
+      - mysql_global_status_aborted_clients
+      - mysql_global_status_aborted_connects
+      - mysql_global_variables_max_connections
+      - mysql_global_variables_thread_cache_size
+      - mysql_info_schema_processlist_threads
+      - mysql_info_schema_processlist_seconds
+    labels:
+      mysql_info_schema_processlist_threads:
+        - command
+        - state
+      mysql_info_schema_processlist_seconds:
+        - command
+        - state
+      all_others: []
+    sources:
+      mysql_global_status_threads_connected: Threads_connected
+      mysql_global_status_threads_running: Threads_running
+      mysql_global_status_threads_cached: Threads_cached
+      mysql_global_status_threads_created: Threads_created
+      mysql_global_status_max_used_connections: Max_used_connections
+      mysql_global_status_connections: Connections
+      mysql_global_status_aborted_clients: Aborted_clients
+      mysql_global_status_aborted_connects: Aborted_connects
+      mysql_global_variables_max_connections: max_connections
+      mysql_global_variables_thread_cache_size: thread_cache_size
+      mysql_info_schema_processlist_threads: information_schema.PROCESSLIST (contagem por command e state)
+      mysql_info_schema_processlist_seconds: information_schema.PROCESSLIST (soma de TIME por command e state)
+    interpretation: >-
+      threads_connected = conexoes abertas agora; threads_running = conexoes executando algo agora (a carga real).
+      max_used_connections = pico desde o inicio; comparar com max_connections (acima disso o cliente recebe "Too
+      many connections"). connections conta tentativas de conexao (com sucesso ou nao); aborted_connects = tentativas
+      que falharam (senha errada, sem privilegio, timeout); aborted_clients = conexoes encerradas sem fechar (cliente
+      caiu, wait_timeout). threads_created alto em relacao a connections = thread_cache_size pequeno.
+      processlist so lista threads fora de Sleep; command e state em minusculas com _ (ex.: query / sending_data,
+      query / locked, query / waiting_for_table_level_lock); seconds soma o tempo no estado.
+  throughput:
+    title: Consultas e comandos
+    metrics_observed:
+      - mysql_global_status_queries
+      - mysql_global_status_questions
+      - mysql_global_status_commands_total
+      - mysql_global_status_handlers_total
+      - mysql_global_status_slow_queries
+      - mysql_global_status_bytes_received
+      - mysql_global_status_bytes_sent
+      - mysql_global_variables_long_query_time
+      - mysql_global_variables_slow_query_log
+    labels:
+      mysql_global_status_commands_total:
+        - command
+      mysql_global_status_handlers_total:
+        - handler
+      all_others: []
+    sources:
+      mysql_global_status_queries: Queries
+      mysql_global_status_questions: Questions
+      mysql_global_status_commands_total: Com_* (command = sufixo, por exemplo select, insert, update, delete, commit, rollback)
+      mysql_global_status_handlers_total: Handler_* (handler = sufixo, por exemplo read_rnd_next, read_key, write)
+      mysql_global_status_slow_queries: Slow_queries
+      mysql_global_status_bytes_received: Bytes_received
+      mysql_global_status_bytes_sent: Bytes_sent
+      mysql_global_variables_long_query_time: long_query_time (segundos)
+      mysql_global_variables_slow_query_log: slow_query_log (1 = ligado)
+    interpretation: >-
+      queries inclui o que roda dentro de procedures; questions so o que o cliente enviou (inclui as consultas do
+      proprio monitoramento, poucas por coleta). slow_queries conta consultas acima de long_query_time mesmo com o slow
+      log desligado. handlers read_rnd_next alto = leituras sequenciais (varredura sem indice); read_key = leituras
+      por indice. commands_total commit/rollback sao COMMIT/ROLLBACK explicitos (autocommit nao conta).
+  query_efficiency:
+    title: Eficiencia das consultas
+    metrics_observed:
+      - mysql_global_status_select_full_join
+      - mysql_global_status_select_full_range_join
+      - mysql_global_status_select_range
+      - mysql_global_status_select_range_check
+      - mysql_global_status_select_scan
+      - mysql_global_status_sort_merge_passes
+      - mysql_global_status_sort_rows
+      - mysql_global_status_sort_scan
+      - mysql_global_status_sort_range
+      - mysql_global_status_created_tmp_tables
+      - mysql_global_status_created_tmp_disk_tables
+      - mysql_global_status_created_tmp_files
+      - mysql_global_variables_tmp_table_size
+      - mysql_global_variables_max_heap_table_size
+      - mysql_global_variables_sort_buffer_size
+    labels:
+      all: []
+    interpretation: >-
+      select_full_join = joins sem indice na tabela de juncao (deveria ser zero); select_scan = varreduras completas
+      da primeira tabela. created_tmp_disk_tables / created_tmp_tables = fracao das tabelas temporarias que foram
+      para disco (o limite em memoria e o menor entre tmp_table_size e max_heap_table_size; colunas TEXT/BLOB vao
+      sempre para disco). sort_merge_passes alto = sort_buffer_size pequeno para as ordenacoes.
+  innodb:
+    title: InnoDB
+    metrics_observed:
+      - mysql_global_status_buffer_pool_pages
+      - mysql_global_status_buffer_pool_dirty_pages
+      - mysql_global_status_buffer_pool_page_changes_total
+      - mysql_global_status_innodb_page_size
+      - mysql_global_status_innodb_buffer_pool_read_requests
+      - mysql_global_status_innodb_buffer_pool_reads
+      - mysql_global_status_innodb_buffer_pool_wait_free
+      - mysql_global_status_innodb_data_read
+      - mysql_global_status_innodb_data_written
+      - mysql_global_status_innodb_data_fsyncs
+      - mysql_global_status_innodb_os_log_written
+      - mysql_global_status_innodb_log_waits
+      - mysql_global_status_innodb_row_ops_total
+      - mysql_global_status_innodb_row_lock_current_waits
+      - mysql_global_status_innodb_row_lock_waits
+      - mysql_global_status_innodb_row_lock_time
+      - mysql_global_status_innodb_row_lock_time_max
+      - mysql_global_variables_innodb_buffer_pool_size
+      - mysql_global_variables_innodb_log_file_size
+      - mysql_global_variables_innodb_log_files_in_group
+      - mysql_global_variables_innodb_flush_log_at_trx_commit
+      - mysql_global_variables_innodb_lock_wait_timeout
+    labels:
+      mysql_global_status_buffer_pool_pages:
+        - state
+      mysql_global_status_buffer_pool_page_changes_total:
+        - operation
+      mysql_global_status_innodb_row_ops_total:
+        - operation
+      all_others: []
+    sources:
+      mysql_global_status_buffer_pool_pages: Innodb_buffer_pool_pages_data|free|misc (state)
+      mysql_global_status_buffer_pool_dirty_pages: Innodb_buffer_pool_pages_dirty
+      mysql_global_status_buffer_pool_page_changes_total: Innodb_buffer_pool_pages_flushed (operation=flushed)
+      mysql_global_status_innodb_row_ops_total: Innodb_rows_read|inserted|updated|deleted (operation)
+      mysql_global_status_innodb_row_lock_time: Innodb_row_lock_time (milissegundos)
+      mysql_global_status_innodb_row_lock_time_max: Innodb_row_lock_time_max (milissegundos)
+    interpretation: >-
+      buffer_pool_pages em paginas (x innodb_page_size para bytes): data + free + misc = buffer pool inteiro; dirty e
+      subconjunto de data (nao somar). Hit do buffer pool = 1 - reads / read_requests (reads = leituras que foram ao
+      disco). wait_free > 0 = consulta esperou pagina livre (buffer pool pequeno ou gravacao lenta). log_waits > 0 =
+      buffer do log cheio. row_lock_waits/row_lock_time = esperas por lock de linha (o tempo em ms; dividir por 1000
+      para segundos); current_waits = esperas agora. Esperas acima de innodb_lock_wait_timeout viram erro 1205 no
+      cliente. Deadlocks nao tem contador no 5.5: aparecem no error log com innodb_print_all_deadlocks (contrato Loki
+      mysql).
+  myisam_and_cache:
+    title: MyISAM, tabelas, arquivos e query cache
+    metrics_observed:
+      - mysql_global_status_key_read_requests
+      - mysql_global_status_key_reads
+      - mysql_global_status_key_blocks_unused
+      - mysql_global_status_key_blocks_used
+      - mysql_global_variables_key_buffer_size
+      - mysql_global_variables_key_cache_block_size
+      - mysql_global_status_table_locks_immediate
+      - mysql_global_status_table_locks_waited
+      - mysql_global_status_open_tables
+      - mysql_global_status_opened_tables
+      - mysql_global_status_open_files
+      - mysql_global_variables_table_open_cache
+      - mysql_global_variables_open_files_limit
+      - mysql_global_status_qcache_hits
+      - mysql_global_status_qcache_inserts
+      - mysql_global_status_qcache_not_cached
+      - mysql_global_status_qcache_lowmem_prunes
+      - mysql_global_status_qcache_free_memory
+      - mysql_global_variables_query_cache_size
+      - mysql_global_variables_query_cache_type
+    labels:
+      all: []
+    interpretation: >-
+      key_* = cache de indices MyISAM (key_reads / key_read_requests = falhas do cache). table_locks_waited = esperas
+      por lock de tabela (MyISAM, LOCK TABLES); fracao = waited / (waited + immediate). opened_tables crescendo
+      rapido = table_open_cache pequeno. open_files perto de open_files_limit = erro "Too many open files". Query
+      cache so vale com query_cache_type > 0 e query_cache_size > 0; lowmem_prunes = consultas expulsas por falta de
+      memoria do cache.
+query_recipes:
+  - id: buffer_pool_hit_ratio
+    title: Fracao das leituras do InnoDB atendidas pelo buffer pool
+    promql: 1 - rate(mysql_global_status_innodb_buffer_pool_reads{job="integrations/mysql",instance="$server"}[$__rate_interval]) / rate(mysql_global_status_innodb_buffer_pool_read_requests{job="integrations/mysql",instance="$server"}[$__rate_interval])
+    unit: ratio
+    dependencies:
+      - mysql_global_status_innodb_buffer_pool_reads
+      - mysql_global_status_innodb_buffer_pool_read_requests
+  - id: connections_used_ratio
+    title: Conexoes abertas em relacao ao limite
+    promql: mysql_global_status_threads_connected{job="integrations/mysql",instance="$server"} / mysql_global_variables_max_connections{job="integrations/mysql",instance="$server"}
+    unit: ratio
+    dependencies:
+      - mysql_global_status_threads_connected
+      - mysql_global_variables_max_connections
+  - id: qps
+    title: Consultas por segundo
+    promql: rate(mysql_global_status_queries{job="integrations/mysql",instance="$server"}[$__rate_interval])
+    unit: per_second
+    dependencies:
+      - mysql_global_status_queries
+  - id: tmp_disk_ratio
+    title: Fracao das tabelas temporarias criadas em disco
+    promql: rate(mysql_global_status_created_tmp_disk_tables{job="integrations/mysql",instance="$server"}[$__rate_interval]) / rate(mysql_global_status_created_tmp_tables{job="integrations/mysql",instance="$server"}[$__rate_interval])
+    unit: ratio
+    dependencies:
+      - mysql_global_status_created_tmp_disk_tables
+      - mysql_global_status_created_tmp_tables
+  - id: row_lock_wait_seconds
+    title: Tempo esperando lock de linha, por segundo de relogio
+    promql: rate(mysql_global_status_innodb_row_lock_time{job="integrations/mysql",instance="$server"}[$__rate_interval]) / 1000
+    unit: seconds_per_second
+    dependencies:
+      - mysql_global_status_innodb_row_lock_time
+  - id: restarted
+    title: Reinicio recente (uptime menor que 10 min)
+    promql: mysql_global_status_uptime{job="integrations/mysql",instance="$server"} < 600
+    unit: seconds
+    dependencies:
+      - mysql_global_status_uptime
+limitations:
+  - Uma instancia MySQL por maquina, sempre em 127.0.0.1; metricas sao do servidor inteiro (sem divisao por banco).
+  - Sem replicacao (slave_status desligado), sem performance_schema (consultas por digest) e sem tamanho de tabelas
+    (information_schema.TABLES e caro no 5.5 com innodb_stats_on_metadata).
+  - Sem contador de deadlocks no 5.5; deadlocks so pelo error log.
+  - Com mysql_up = 0 so as metricas de saude existem; ausencia das demais nao representa zero.
+change_policy:
+  require_new_metrics_before_using_in_dashboard: true
+  preserve_raw_labels: true

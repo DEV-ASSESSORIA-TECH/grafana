@@ -129,13 +129,15 @@ metric_groups:
         optional:
           - target
           - destination
+          - site
     interpretation: >-
       degraded = 1 quando a tentativa publicou um backup utilizavel porem incompleto (ex. fallback); nesse caso
       last_attempt_success = 0 e last_success_* nao mudam. expected_interval e a cadencia declarada pelo produtor e
       permite uma regra generica de atraso; ausente, so regras individuais avaliam o atraso. backup_info vale 1 e
       carrega descricao estavel e de baixa cardinalidade: kind (database, files, vm, config...), producer (software que
       gera o arquivo), producer_version, target (host ou instancia dos dados, quando diferente de instance) e
-      destination (tipo de destino, ex. s3, nas, local). Labels extras so em backup_info, nunca nas demais metricas.
+      destination (tipo de destino, ex. s3, nas, local) e site (cliente ou local, quando o produtor tem esse nome). Labels
+      extras so em backup_info, nunca nas demais metricas.
   reader_health:
     title: Saude da leitura (Alloy)
     metrics_observed:

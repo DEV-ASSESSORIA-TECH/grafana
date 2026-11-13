@@ -1,0 +1,217 @@
+# Contrato definido (convencao para produtores externos); nao provisionar este YAML no Grafana.
+schema_version: 2
+kind: observability_contract
+version: 0.1.0
+id: backup
+title: Backups / convencao generica de estado (textfile)
+status: defined
+defined_date: '2026-11-13'
+job: integrations/backup
+source:
+  producer: >-
+    Qualquer processo que conheca o resultado de um backup: o proprio software de backup ou um observador que consulta
+    outro sistema (NAS, appliance, servico em nuvem). Nao existe coletor proprio do Alloy para backup; cada produtor
+    gera o seu arquivo seguindo este contrato.
+  reader: >-
+    DEV-ASSESSORIA-TECH/scripts monitoring/alloy (windows|linux)/backup.alloy, instalado em todo servidor, sem modulo
+    opcional. Pasta vazia nao publica nenhuma serie backup_*.
+  collection:
+    windows: C:\ProgramData\GrafanaLabs\Alloy\textfile\backup\*.prom -> prometheus.exporter.windows "backup" (textfile)
+      -> scrape 60s
+    linux: /var/lib/alloy-textfile/backup/*.prom -> prometheus.exporter.unix "backup" (textfile) -> scrape 60s
+  write_access: >-
+    Grupo local "Alloy Backup Writers" (Windows) / grupo alloy-backup (Linux) com escrita na pasta, alem de SYSTEM/root
+    e Administradores. A conta que executa o produtor entra no grupo. Quem escreve na pasta so consegue publicar no job
+    integrations/backup.
+references:
+  common: common.yml
+identity:
+  target_key:
+    - job
+    - instance
+  host_label: host
+  backup_key:
+    - instance
+    - service
+    - backup_id
+  label_owners:
+    alloy: [job, instance, host]
+    producer: [service, backup_id]
+  instance_means: >-
+    Host onde o produtor roda (quem reporta), nao necessariamente o host dos dados. Backup feito por X a partir de Y
+    publica em X; Y vai em backup_info (label target).
+  label_rules:
+    - service e backup_id seguem '^[a-z0-9]+([-_][a-z0-9]+)*$' (minusculas, ASCII, sem '__').
+    - service identifica o sistema protegido (ex. seven, erp, wiki), nao o software de backup nem o banco.
+    - backup_id identifica um conjunto de dados dentro do servico (ex. database, fiscal, files), unico por
+      instance/service.
+    - Identidade e estavel e nunca reaproveitada para outro conjunto de dados.
+    - O produtor nunca escreve job, instance nem host; o scrape renomearia para exported_* e quebraria a chave.
+    - Nada variavel em label (id de execucao, nome de arquivo, datas, mensagens de erro).
+file_convention:
+  name: <service>__<backup_id>.prom (um arquivo por backup; o produtor so escreve o proprio arquivo)
+  format:
+    - Formato texto do Prometheus, UTF-8 sem BOM, LF, quebra de linha no final, sem timestamp nas amostras.
+    - HELP e TYPE exatamente como em metric_help abaixo. Texto divergente da mesma metrica em outro arquivo e descartado
+      sem erro (node_exporter) ou invalida a leitura; o mesmo vale para a mesma serie em dois arquivos.
+    - Escrita atomica: gravar <nome>.prom.tmp na mesma pasta e renomear sobre o .prom (o coletor ignora .tmp).
+    - Linux - arquivo legivel por todos (0644); o Alloy pode rodar como usuario alloy.
+    - Arquivo com erro de sintaxe e ignorado inteiro (textfile_scrape_error = 1); os demais arquivos seguem lidos.
+  lifecycle:
+    - O arquivo e reescrito ao fim de cada tentativa (produtor direto) ou de cada observacao (observador).
+    - Aposentar um backup = apagar o arquivo. Arquivo esquecido continua publicando os ultimos valores.
+    - Atraso se mede pelos timestamps do conteudo, nunca pela existencia da serie ou pelo up do scrape.
+metric_help:
+  backup_last_success_timestamp_seconds: Ponto de recuperacao do ultimo backup concluido e validado (Unix; 0 = nunca).
+  backup_last_success_size_bytes: Tamanho do ultimo backup concluido e validado.
+  backup_last_attempt_timestamp_seconds: Fim da ultima tentativa de backup (Unix).
+  backup_last_attempt_success: Resultado da ultima tentativa de backup (1 = sucesso, 0 = falha).
+  backup_last_attempt_duration_seconds: Duracao da ultima tentativa de backup.
+  backup_collection_timestamp_seconds: Momento em que o produtor gerou este arquivo (Unix).
+  backup_collection_success: Produtor conseguiu observar o estado do backup (1 = sim, 0 = nao).
+  backup_last_attempt_degraded: Ultima tentativa publicou um backup degradado (1 = sim, 0 = nao).
+  backup_expected_interval_seconds: Intervalo esperado entre backups bem-sucedidos.
+  backup_info: Descricao do backup (valor sempre 1).
+metric_type: gauge (todas)
+metric_groups:
+  state:
+    title: Estado do backup (obrigatorio)
+    metrics_observed:
+      - backup_last_success_timestamp_seconds
+      - backup_last_success_size_bytes
+      - backup_last_attempt_timestamp_seconds
+      - backup_last_attempt_success
+      - backup_last_attempt_duration_seconds
+    labels:
+      all:
+        - service
+        - backup_id
+    interpretation: >-
+      Sucesso = backup concluido, validado e no destino final (copia remota confirmada, quando houver). Copia so local
+      a espera de envio e falha da tentativa. last_success_timestamp e o ponto de recuperacao (inicio do dump ou
+      snapshot), nao a hora do envio; um reenvio posterior que conclui o backup usa o ponto de recuperacao original.
+      last_success_timestamp = 0 e size ausente = nunca houve sucesso conhecido. last_attempt_* ficam ausentes ate a
+      primeira tentativa. Tentativa recusada porque outra execucao esta ativa nao e tentativa: o arquivo nao muda.
+  collection:
+    title: Saude do produtor (obrigatorio)
+    metrics_observed:
+      - backup_collection_timestamp_seconds
+      - backup_collection_success
+    labels:
+      all:
+        - service
+        - backup_id
+    interpretation: >-
+      collection_timestamp e a geracao do arquivo. Em produtor direto coincide com o fim da tentativa; em observador e a
+      ultima consulta ao sistema de backup. collection_success = 0: o produtor nao conseguiu ler o estado; as series de
+      state podem estar ausentes ou desatualizadas e nao devem ser usadas sozinhas.
+  optional:
+    title: Complementos (opcional por produtor)
+    metrics_observed:
+      - backup_last_attempt_degraded
+      - backup_expected_interval_seconds
+      - backup_info
+    labels:
+      backup_last_attempt_degraded:
+        - service
+        - backup_id
+      backup_expected_interval_seconds:
+        - service
+        - backup_id
+      backup_info:
+        required:
+          - service
+          - backup_id
+        recommended:
+          - kind
+          - producer
+          - producer_version
+        optional:
+          - target
+          - destination
+          - site
+    interpretation: >-
+      degraded = 1 quando a tentativa publicou um backup utilizavel porem incompleto (ex. fallback); nesse caso
+      last_attempt_success = 0 e last_success_* nao mudam. expected_interval e a cadencia declarada pelo produtor e
+      permite uma regra generica de atraso; ausente, so regras individuais avaliam o atraso. backup_info vale 1 e
+      carrega descricao estavel e de baixa cardinalidade: kind (database, files, vm, config...), producer (software que
+      gera o arquivo), producer_version, target (host ou instancia dos dados, quando diferente de instance) e
+      destination (tipo de destino, ex. s3, nas, local) e site (cliente ou local, quando o produtor tem esse nome). Labels
+      extras so em backup_info, nunca nas demais metricas.
+  reader_health:
+    title: Saude da leitura (Alloy)
+    metrics_observed:
+      - up
+      - windows_textfile_mtime_seconds
+      - windows_textfile_scrape_error
+      - windows_exporter_collector_success
+      - node_textfile_mtime_seconds
+      - node_textfile_scrape_error
+      - node_scrape_collector_success
+    labels:
+      windows_textfile_mtime_seconds:
+        - file
+      node_textfile_mtime_seconds:
+        - file
+      windows_exporter_collector_success:
+        - collector
+      node_scrape_collector_success:
+        - collector
+    interpretation: >-
+      windows_* em hosts Windows, node_* em hosts Linux. up = 1 indica so que o leitor esta ativo, nunca que o host tem
+      backup. textfile_scrape_error = 1: algum arquivo invalido (ignorado) ou pasta inexistente. mtime por arquivo
+      (label file com o caminho completo). Serie duplicada ou HELP divergente pode ser descartada sem erro: conferir que
+      cada backup esperado tem series.
+query_recipes:
+  - id: success_overdue
+    title: Ultimo sucesso mais antigo que 1,5x o intervalo esperado
+    promql: (time() - backup_last_success_timestamp_seconds{job="integrations/backup"}) > 1.5 * backup_expected_interval_seconds{job="integrations/backup"}
+    unit: seconds
+    dependencies:
+      - backup_last_success_timestamp_seconds
+      - backup_expected_interval_seconds
+  - id: attempt_overdue
+    title: Nenhuma tentativa dentro de 1,5x o intervalo esperado (tarefa parada)
+    promql: (time() - backup_last_attempt_timestamp_seconds{job="integrations/backup"}) > 1.5 * backup_expected_interval_seconds{job="integrations/backup"}
+    unit: seconds
+    dependencies:
+      - backup_last_attempt_timestamp_seconds
+      - backup_expected_interval_seconds
+  - id: last_attempt_failed
+    title: Ultima tentativa falhou (exclui degradado)
+    promql: backup_last_attempt_success{job="integrations/backup"} == 0 unless backup_last_attempt_degraded{job="integrations/backup"} == 1
+    dependencies:
+      - backup_last_attempt_success
+      - backup_last_attempt_degraded
+  - id: last_attempt_degraded
+    title: Ultima tentativa publicou backup degradado
+    promql: backup_last_attempt_degraded{job="integrations/backup"} == 1
+    dependencies:
+      - backup_last_attempt_degraded
+  - id: collection_failed
+    title: Produtor nao conseguiu observar o estado
+    promql: backup_collection_success{job="integrations/backup"} == 0
+    dependencies:
+      - backup_collection_success
+  - id: backup_vanished
+    title: Backup publicado nos ultimos 7 dias que deixou de ter serie
+    promql: max_over_time(backup_collection_timestamp_seconds{job="integrations/backup"}[7d]) unless backup_collection_timestamp_seconds{job="integrations/backup"}
+    dependencies:
+      - backup_collection_timestamp_seconds
+  - id: textfile_error
+    title: Arquivo invalido ou pasta ausente no leitor
+    promql: max by (instance) (windows_textfile_scrape_error{job="integrations/backup"} or node_textfile_scrape_error{job="integrations/backup"}) == 1
+    dependencies:
+      - windows_textfile_scrape_error
+      - node_textfile_scrape_error
+limitations:
+  - Pasta vazia nao gera serie; backup que deveria existir e nunca foi configurado so e detectado cruzando com uma
+    lista de backups esperados.
+  - expected_interval e declarado pelo produtor; ausente, a regra generica de atraso nao avalia o backup.
+  - Valores sao os do ultimo arquivo gravado; produtor parado mantem os ultimos valores (usar os timestamps).
+change_policy:
+  require_new_metrics_before_using_in_dashboard: true
+  preserve_raw_labels: true
+  new_metrics: >-
+    Metrica nova entra primeiro neste contrato (nome backup_*, HELP fixo, gauge) e so depois nos produtores. Nao criar
+    metricas especificas de um software neste job; detalhes vao em backup_info.

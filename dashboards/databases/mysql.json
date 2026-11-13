@@ -667,7 +667,7 @@
         "spec": {
           "id": 7,
           "title": "",
-          "description": "Leituras de página do InnoDB atendidas pelo buffer pool no período (sem ir ao disco). Abaixo de 99% de forma constante = buffer pool pequeno para o volume de dados lido.",
+          "description": "Leituras atendidas pelo cache de dados no período, sem ir ao disco: buffer pool (InnoDB) ou key cache (MyISAM, só índices), conforme o motor com mais leituras. Abaixo de 99% de forma constante = cache pequeno para o volume lido.",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -685,7 +685,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "1 - sum(increase(mysql_global_status_innodb_buffer_pool_reads{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) / sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range]))",
+                        "expr": "(1 - sum(increase(mysql_global_status_innodb_buffer_pool_reads{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) / sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) and on() ((sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) >= (sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)))) or (1 - sum(increase(mysql_global_status_key_reads{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) / sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) and on() ((sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) > (sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0))))",
                         "format": "time_series",
                         "instant": true,
                         "range": false
@@ -727,7 +727,7 @@
               },
               "fieldConfig": {
                 "defaults": {
-                  "displayName": "Hit do buffer pool",
+                  "displayName": "Hit do cache ($motor)",
                   "unit": "percentunit",
                   "thresholds": {
                     "mode": "absolute",
@@ -967,7 +967,7 @@
         "spec": {
           "id": 10,
           "title": "",
-          "description": "Tamanho do buffer pool do InnoDB (innodb_buffer_pool_size): o cache de dados e índices InnoDB.",
+          "description": "Tamanho do cache de dados do motor com mais leituras: innodb_buffer_pool_size (InnoDB, dados e índices) ou key_buffer_size (MyISAM, só índices).",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -985,7 +985,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "mysql_global_variables_innodb_buffer_pool_size{job=\"integrations/mysql\",instance=\"$server\"}",
+                        "expr": "(sum(mysql_global_variables_innodb_buffer_pool_size{job=\"integrations/mysql\",instance=\"$server\"}) and on() ((sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) >= (sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)))) or (sum(mysql_global_variables_key_buffer_size{job=\"integrations/mysql\",instance=\"$server\"}) and on() ((sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) > (sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0))))",
                         "format": "time_series",
                         "instant": true,
                         "range": false
@@ -1027,7 +1027,7 @@
               },
               "fieldConfig": {
                 "defaults": {
-                  "displayName": "Buffer pool",
+                  "displayName": "Cache ($motor)",
                   "unit": "bytes",
                   "thresholds": {
                     "mode": "absolute",
@@ -8208,6 +8208,716 @@
             }
           }
         }
+      },
+      "panel-57": {
+        "kind": "Panel",
+        "spec": {
+          "id": 57,
+          "title": "",
+          "description": "Leituras de bloco de índice MyISAM atendidas pelo key cache no período, sem ir ao disco (1 - key_reads / key_read_requests). Abaixo de 99% de forma constante = key_buffer_size pequeno.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "1 - sum(increase(mysql_global_status_key_reads{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) / sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range]))",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 20
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Hit do key cache",
+                  "unit": "percentunit",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#C4162A"
+                      },
+                      {
+                        "value": 0.95,
+                        "color": "#E0752D"
+                      },
+                      {
+                        "value": 0.99,
+                        "color": "#37872D"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "decimals": 2,
+                  "mappings": [
+                    {
+                      "type": "special",
+                      "options": {
+                        "match": "null+nan",
+                        "result": {
+                          "text": "sem leituras",
+                          "color": "#2F333A",
+                          "index": 0
+                        }
+                      }
+                    }
+                  ]
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-58": {
+        "kind": "Panel",
+        "spec": {
+          "id": 58,
+          "title": "",
+          "description": "Tamanho do cache de índices MyISAM (key_buffer_size). Os dados das tabelas MyISAM não passam por ele: ficam no cache de arquivos do sistema operacional.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "mysql_global_variables_key_buffer_size{job=\"integrations/mysql\",instance=\"$server\"}",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 20
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Key cache",
+                  "unit": "bytes",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "#2F333A"
+                  },
+                  "decimals": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-59": {
+        "kind": "Panel",
+        "spec": {
+          "id": 59,
+          "title": "",
+          "description": "Blocos do key cache em uso (key_blocks_used / (key_blocks_used + key_blocks_unused)). Cache cheio é o normal de um servidor em uso; só indica cache pequeno junto com hit abaixo de 99%.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(mysql_global_status_key_blocks_used{job=\"integrations/mysql\",instance=\"$server\"}) / (sum(mysql_global_status_key_blocks_used{job=\"integrations/mysql\",instance=\"$server\"}) + sum(mysql_global_status_key_blocks_unused{job=\"integrations/mysql\",instance=\"$server\"}))",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 20
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Uso do key cache",
+                  "unit": "percentunit",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "#2F333A"
+                  },
+                  "decimals": 1
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-60": {
+        "kind": "Panel",
+        "spec": {
+          "id": 60,
+          "title": "",
+          "description": "Espaço livre no key cache (key_blocks_unused x key_cache_block_size).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(mysql_global_status_key_blocks_unused{job=\"integrations/mysql\",instance=\"$server\"}) * sum(mysql_global_variables_key_cache_block_size{job=\"integrations/mysql\",instance=\"$server\"})",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 20
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Livre",
+                  "unit": "bytes",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "#2F333A"
+                  },
+                  "decimals": 1
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-61": {
+        "kind": "Panel",
+        "spec": {
+          "id": 61,
+          "title": "",
+          "description": "Leituras de bloco de índice MyISAM que foram ao disco por segundo, nos últimos 5 min.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(rate(mysql_global_status_key_reads{job=\"integrations/mysql\",instance=\"$server\"}[5m]))",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 20
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Leituras de disco/s",
+                  "unit": "short",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "#2F333A"
+                  },
+                  "decimals": 1
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-62": {
+        "kind": "Panel",
+        "spec": {
+          "id": 62,
+          "title": "",
+          "description": "Leituras de bloco de índice MyISAM pedidas ao key cache por segundo, nos últimos 5 min.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(rate(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[5m]))",
+                        "format": "time_series",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 20
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "displayName": "Leituras lógicas/s",
+                  "unit": "short",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "#2F333A"
+                  },
+                  "decimals": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-63": {
+        "kind": "Panel",
+        "spec": {
+          "id": 63,
+          "title": "Ocupação do key cache",
+          "description": "Bytes do key cache ocupados por blocos de índice e tamanho configurado (key_buffer_size). Parte do key_buffer_size fica com as estruturas internas do cache, então 'em uso' não chega ao tamanho.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(mysql_global_status_key_blocks_used{job=\"integrations/mysql\",instance=\"$server\"}) * sum(mysql_global_variables_key_cache_block_size{job=\"integrations/mysql\",instance=\"$server\"})",
+                        "format": "time_series",
+                        "instant": false,
+                        "range": true,
+                        "legendFormat": "em uso"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "sum(mysql_global_variables_key_buffer_size{job=\"integrations/mysql\",instance=\"$server\"})",
+                        "format": "time_series",
+                        "instant": false,
+                        "range": true,
+                        "legendFormat": "tamanho"
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "max"
+                  ],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bytes",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "transparent"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "drawStyle": "line",
+                    "lineInterpolation": "smooth",
+                    "lineWidth": 1,
+                    "fillOpacity": 10,
+                    "gradientMode": "none",
+                    "showPoints": "never",
+                    "spanNulls": false,
+                    "insertNulls": false,
+                    "pointSize": 5,
+                    "axisPlacement": "auto",
+                    "axisLabel": "",
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    },
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    }
+                  },
+                  "min": 0,
+                  "decimals": 1
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "tamanho"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#C4162A"
+                        }
+                      },
+                      {
+                        "id": "custom.lineStyle",
+                        "value": {
+                          "fill": "dash",
+                          "dash": [
+                            10,
+                            10
+                          ]
+                        }
+                      },
+                      {
+                        "id": "custom.fillOpacity",
+                        "value": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
       }
     },
     "layout": {
@@ -8520,6 +9230,158 @@
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-22"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "conditionalRendering": {
+                "kind": "ConditionalRenderingGroup",
+                "spec": {
+                  "visibility": "hide",
+                  "condition": "and",
+                  "items": [
+                    {
+                      "kind": "ConditionalRenderingVariable",
+                      "spec": {
+                        "variable": "motor",
+                        "operator": "equals",
+                        "value": "myisam"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Key cache MyISAM",
+              "collapse": false,
+              "conditionalRendering": {
+                "kind": "ConditionalRenderingGroup",
+                "spec": {
+                  "visibility": "hide",
+                  "condition": "and",
+                  "items": [
+                    {
+                      "kind": "ConditionalRenderingVariable",
+                      "spec": {
+                        "variable": "motor",
+                        "operator": "equals",
+                        "value": "innodb"
+                      }
+                    }
+                  ]
+                }
+              },
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 4,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-57"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 4,
+                        "y": 0,
+                        "width": 4,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-58"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 8,
+                        "y": 0,
+                        "width": 4,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-59"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 4,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-60"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 16,
+                        "y": 0,
+                        "width": 4,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-61"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 20,
+                        "y": 0,
+                        "width": 4,
+                        "height": 3,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-62"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 3,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-47"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 3,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-63"
                         }
                       }
                     }
@@ -8924,20 +9786,7 @@
                       "spec": {
                         "x": 0,
                         "y": 8,
-                        "width": 12,
-                        "height": 8,
-                        "element": {
-                          "kind": "ElementReference",
-                          "name": "panel-47"
-                        }
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 12,
-                        "y": 8,
-                        "width": 12,
+                        "width": 24,
                         "height": 8,
                         "element": {
                           "kind": "ElementReference",
@@ -9009,6 +9858,23 @@
                           "kind": "ElementReference",
                           "name": "panel-52"
                         }
+                      }
+                    }
+                  ]
+                }
+              },
+              "conditionalRendering": {
+                "kind": "ConditionalRenderingGroup",
+                "spec": {
+                  "visibility": "hide",
+                  "condition": "and",
+                  "items": [
+                    {
+                      "kind": "ConditionalRenderingVariable",
+                      "spec": {
+                        "variable": "motor",
+                        "operator": "equals",
+                        "value": "myisam"
                       }
                     }
                   ]
@@ -9172,6 +10038,40 @@
           "multi": false,
           "includeAll": false,
           "allowCustomValue": true
+        }
+      },
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "motor",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "label": "Motor",
+          "description": "Motor de armazenamento detectado pelas leituras de cache no período: innodb (buffer pool), myisam (key cache) ou ambos (o menor com 10% ou mais das leituras). Sem leituras, innodb. Decide quais seções de cache aparecem.",
+          "hide": "dontHide",
+          "refresh": "onTimeRangeChanged",
+          "skipUrlSync": true,
+          "query": {
+            "kind": "DataQuery",
+            "group": "prometheus",
+            "version": "v0",
+            "datasource": {
+              "name": "prometheus"
+            },
+            "spec": {
+              "query": "query_result(label_replace((sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) <= 0.1 * ((sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) + (sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0))), \"motor\", \"innodb\", \"\", \"\") or label_replace((sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) < 0.1 * ((sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) + (sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0))), \"motor\", \"myisam\", \"\", \"\") or label_replace(((sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) > 0.1 * ((sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) + (sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)))) and ((sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) >= 0.1 * ((sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) + (sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)))), \"motor\", \"ambos\", \"\", \"\"))",
+              "refId": "Prometheus-motor-Variable-Query"
+            }
+          },
+          "regex": "/motor=\"(\\w+)\"/",
+          "sort": "disabled",
+          "definition": "query_result(label_replace((sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) <= 0.1 * ((sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) + (sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0))), \"motor\", \"innodb\", \"\", \"\") or label_replace((sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) < 0.1 * ((sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) + (sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0))), \"motor\", \"myisam\", \"\", \"\") or label_replace(((sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) > 0.1 * ((sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) + (sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)))) and ((sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) >= 0.1 * ((sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)) + (sum(increase(mysql_global_status_key_read_requests{job=\"integrations/mysql\",instance=\"$server\"}[$__range])) or vector(0)))), \"motor\", \"ambos\", \"\", \"\"))",
+          "options": [],
+          "multi": false,
+          "includeAll": false,
+          "allowCustomValue": false
         }
       },
       {

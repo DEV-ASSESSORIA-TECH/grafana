@@ -268,6 +268,24 @@ query_recipes:
     dependencies:
       - mysql_global_status_innodb_buffer_pool_reads
       - mysql_global_status_innodb_buffer_pool_read_requests
+  - id: key_cache_hit_ratio
+    title: Fracao das leituras de indice MyISAM atendidas pelo key cache
+    promql: 1 - rate(mysql_global_status_key_reads{job="integrations/mysql",instance="$server"}[$__rate_interval]) / rate(mysql_global_status_key_read_requests{job="integrations/mysql",instance="$server"}[$__rate_interval])
+    unit: ratio
+    dependencies:
+      - mysql_global_status_key_reads
+      - mysql_global_status_key_read_requests
+  - id: storage_engine
+    title: Motor de armazenamento em uso (innodb, myisam ou ambos) pelas leituras de cache no periodo
+    promql: label_replace(K <= 0.1 * (I + K), "motor", "innodb", "", "") or label_replace(I < 0.1 * (I + K), "motor", "myisam", "", "") or label_replace((K > 0.1 * (I + K)) and (I >= 0.1 * (I + K)), "motor", "ambos", "", ""), com I = (sum(increase(mysql_global_status_innodb_buffer_pool_read_requests{job="integrations/mysql",instance="$server"}[$__range])) or vector(0)) e K = (sum(increase(mysql_global_status_key_read_requests{job="integrations/mysql",instance="$server"}[$__range])) or vector(0))
+    unit: label
+    note: >-
+      Os contadores dos dois motores existem em qualquer servidor; um motor sem tabelas em uso fica com os
+      contadores parados, e paineis dele mostram zero ou divisao 0/0. O menor motor conta quando tem 10% ou mais das
+      leituras. Sem leituras no periodo, innodb (padrao a partir do MySQL 5.5).
+    dependencies:
+      - mysql_global_status_innodb_buffer_pool_read_requests
+      - mysql_global_status_key_read_requests
   - id: connections_used_ratio
     title: Conexoes abertas em relacao ao limite
     promql: mysql_global_status_threads_connected{job="integrations/mysql",instance="$server"} / mysql_global_variables_max_connections{job="integrations/mysql",instance="$server"}

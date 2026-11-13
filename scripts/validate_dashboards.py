@@ -12,7 +12,10 @@
    ${DS_*}); toda consulta aponta para um datasource provisionado por UID.
 5. Contratos: toda metrica usada em consulta Prometheus existe no contrato do
    job fixado na consulta; toda consulta Loki usa job e labels observados.
-6. Navegacao: tag infra, menu Paineis (dropdown por tag) e link para a Visao geral.
+6. Navegacao: todo dashboard comeca pelo mesmo menu (NAV), no botao de controles do
+   dashboard (placement inControlsMenu): Visao geral, categorias com mais de um
+   dashboard em dropdown por tag e as demais em link direto. Links proprios do
+   dashboard vem depois e ficam na barra.
 
 Os alertas sao validados por validate_alerting.py.
 """
@@ -34,8 +37,31 @@ FOLDER_FILE = "_folder.json"
 BUILTIN_DATASOURCES = {("grafana", "-- Grafana --"), ("datasource", "grafana")}
 UID_RE = re.compile(r"^[a-zA-Z0-9_-]{1,40}$")
 LEGACY_KEYS = ("__inputs", "__requires", "__elements")
-NAV_TAG = "infra"      # dashboards com esta tag aparecem no menu Paineis
 HOME_UID = "overview"  # Visao geral: pagina inicial
+
+
+def nav_link(title, url=None, tag=None, tooltip=""):
+    link = {"title": title, "type": "dashboards" if tag else "link", "icon": "dashboard", "tooltip": tooltip,
+            "tags": [tag] if tag else [], "asDropdown": bool(tag), "targetBlank": False, "includeVars": False,
+            "keepTime": True, "placement": "inControlsMenu"}
+    if url:
+        link["url"] = url
+    return link
+
+
+# Menu de navegacao, igual e na mesma ordem em todos os dashboards. Categoria com mais
+# de um dashboard = dropdown pela tag (dashboard novo com a tag entra sozinho); com um
+# so = link direto. O Grafana tira da lista o dashboard aberto.
+NAV = [
+    nav_link("Visão geral", f"/grafana/d/{HOME_UID}", tooltip="Página inicial: alertas e estado de todas as áreas"),
+    nav_link("Windows", tag="windows"),
+    nav_link("Linux", "/grafana/d/servers-linux"),
+    nav_link("Bancos de dados", tag="databases"),
+    nav_link("Hypervisors", "/grafana/d/hypervisors"),
+    nav_link("Containers", "/grafana/d/containers"),
+    nav_link("Serviços", "/grafana/d/servicos"),
+]
+NAV_TAGS = {link["tags"][0] for link in NAV if link["tags"]}
 
 contracts = ct.Contracts(errors)
 
@@ -132,15 +158,22 @@ def check_metadata(rel, res, allowed_api, kind):
 
 
 def check_navigation(rel, name, spec):
-    """Navegacao comum: tag infra (menu Paineis) e link para a Visao geral nos demais dashboards."""
-    if NAV_TAG not in (spec.get("tags") or []):
-        errors.append(f"{rel}: falta a tag '{NAV_TAG}' (menu Paineis dos dashboards)")
+    """Menu NAV no inicio dos links, identico; links extras do dashboard so fora do menu."""
     links = spec.get("links") or []
-    if not any(link.get("type") == "dashboards" and link.get("asDropdown") and NAV_TAG in (link.get("tags") or [])
-               for link in links):
-        errors.append(f"{rel}: falta o link 'Paineis' (type dashboards, tag {NAV_TAG}, asDropdown)")
-    if name != HOME_UID and not any(link.get("url") == f"/grafana/d/{HOME_UID}" for link in links):
-        errors.append(f"{rel}: falta o link para a Visao geral (/grafana/d/{HOME_UID})")
+    head = links[:len(NAV)]
+    for i, expected in enumerate(NAV):
+        got = head[i] if i < len(head) else None
+        if got != expected:
+            errors.append(f"{rel}: menu de navegacao difere do padrao na posicao {i + 1} "
+                          f"(esperado {expected['title']!r}, encontrado {(got or {}).get('title')!r}); "
+                          "copie spec.links de um dashboard existente")
+            break
+    for link in links[len(NAV):]:
+        if link.get("placement") == "inControlsMenu":
+            errors.append(f"{rel}: link extra '{link.get('title')}' no menu de controles; o menu e so a navegacao")
+    tags = set(spec.get("tags") or [])
+    if len(tags & NAV_TAGS) > 1:
+        errors.append(f"{rel}: em mais de uma categoria do menu ({', '.join(sorted(tags & NAV_TAGS))})")
 
 
 def check_dashboard(rel, res):

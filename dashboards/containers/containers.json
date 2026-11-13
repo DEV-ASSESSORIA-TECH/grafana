@@ -2852,27 +2852,95 @@
       {
         "title": "Visão geral",
         "type": "link",
-        "url": "/grafana/d/overview",
         "icon": "dashboard",
         "tooltip": "Página inicial: alertas e estado de todas as áreas",
         "tags": [],
         "asDropdown": false,
         "targetBlank": false,
         "includeVars": false,
-        "keepTime": true
+        "keepTime": true,
+        "url": "/grafana/d/overview",
+        "placement": "inControlsMenu"
       },
       {
-        "title": "Painéis",
+        "title": "Windows",
         "type": "dashboards",
-        "icon": "external link",
+        "icon": "dashboard",
         "tooltip": "",
         "tags": [
-          "infra"
+          "windows"
         ],
         "asDropdown": true,
         "targetBlank": false,
         "includeVars": false,
-        "keepTime": true
+        "keepTime": true,
+        "placement": "inControlsMenu"
+      },
+      {
+        "title": "Linux",
+        "type": "link",
+        "icon": "dashboard",
+        "tooltip": "",
+        "tags": [],
+        "asDropdown": false,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": true,
+        "url": "/grafana/d/servers-linux",
+        "placement": "inControlsMenu"
+      },
+      {
+        "title": "Bancos de dados",
+        "type": "dashboards",
+        "icon": "dashboard",
+        "tooltip": "",
+        "tags": [
+          "databases"
+        ],
+        "asDropdown": true,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": true,
+        "placement": "inControlsMenu"
+      },
+      {
+        "title": "Hypervisors",
+        "type": "link",
+        "icon": "dashboard",
+        "tooltip": "",
+        "tags": [],
+        "asDropdown": false,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": true,
+        "url": "/grafana/d/hypervisors",
+        "placement": "inControlsMenu"
+      },
+      {
+        "title": "Containers",
+        "type": "link",
+        "icon": "dashboard",
+        "tooltip": "",
+        "tags": [],
+        "asDropdown": false,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": true,
+        "url": "/grafana/d/containers",
+        "placement": "inControlsMenu"
+      },
+      {
+        "title": "Serviços",
+        "type": "link",
+        "icon": "dashboard",
+        "tooltip": "",
+        "tags": [],
+        "asDropdown": false,
+        "targetBlank": false,
+        "includeVars": false,
+        "keepTime": true,
+        "url": "/grafana/d/servicos",
+        "placement": "inControlsMenu"
       }
     ],
     "liveNow": false,

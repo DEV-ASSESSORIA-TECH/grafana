@@ -18,7 +18,7 @@ Dashboards e alertas do Grafana da infraestrutura (Grafana **13.3.0**), e os con
 | `catalogo.yml` | Catálogo de monitoramento: classe de hosts, VMs, servidores e containers (ver `alerting/README.md`) |
 | `deploy/` | `setup.sh` e `grafana-alerting.py`: deploy manual do alerting no servidor (ver `alerting/README.md`) |
 | `scripts/contracts.py` | Leitura dos contratos e verificação de consultas PromQL/LogQL (usado pelos dois validadores) |
-| `scripts/validate_dashboards.py` | Valida formato V2, compatibilidade com Git Sync, datasources, navegação (tag `infra`, links) e se as consultas usam só métricas/labels dos contratos |
+| `scripts/validate_dashboards.py` | Valida formato V2, compatibilidade com Git Sync, datasources, navegação (menu padrão) e se as consultas usam só métricas/labels dos contratos |
 | `scripts/grafana_check.py` | Sincroniza `dashboards/` num Grafana 13.3.0 real e confere o resultado |
 | `scripts/validate_alerting.py` | Valida `alerting/` contra os contratos (códigos, labels, consultas, policies, inibição) |
 | `scripts/validate_contracts.py` | Neutralidade dos contratos: sem nomes de servidor, estado temporário ou dados de snapshot |
@@ -78,7 +78,14 @@ Não há mais `__inputs`/`__requires` nem `${DS_PROMETHEUS}`/`${DS_LOKI}`: o das
 
 ## Convenções
 
-- **Navegação:** todo dashboard tem a tag `infra`, o link **Visão geral** e o menu **Painéis** (link do tipo `dashboards`, tag `infra`, em dropdown). Dashboard novo com a tag entra sozinho no menu dos outros. O CI cobra os três.
+- **Navegação:** todo dashboard tem o mesmo menu, no botão de controles da barra (ícone de controles com `+ N`; o Grafana 13 não permite trocar esse rótulo). Os links usam `placement: inControlsMenu`, nesta ordem:
+  - **Visão geral**
+  - **Windows ▾**: dropdown pela tag `windows` (Estações e Servidores)
+  - **Linux**
+  - **Bancos de dados ▾**: dropdown pela tag `databases` (MySQL, SQL Anywhere)
+  - **Hypervisors**, **Containers**, **Serviços**
+
+  Categoria com mais de um dashboard vira dropdown por tag: dashboard novo com a tag `windows` ou `databases` entra sozinho na lista, e o Grafana tira da lista o dashboard aberto. Categoria com um dashboard só é link direto. O CI (`NAV` em `scripts/validate_dashboards.py`) cobra o menu idêntico em todos. Links próprios de um dashboard (ex.: Regras de alerta na Visão geral) vêm depois e ficam na barra.
 - **Página inicial:** a Visão geral (`overview`). Configure uma vez em *Administração → Geral → Preferências padrão → Painel inicial* (ou o botão Home e o logo levam para a tela padrão do Grafana).
 - **Blocos de número:** status em stat de **fundo sólido**, nome em cima e valor embaixo (verde `#37872D`, laranja `#E0752D`, vermelho `#C4162A`). Informativos (sistema, ligado há, núcleos) em cinza neutro `#2F333A`. Blocos de área do Visão geral em **Canvas** nativo: valor/total, chips de críticos e avisos, borda na cor do pior alerta.
 - Uma variável de seleção: **Server** nos servidores, **Host** nos hypervisors (`instance`). Job e datasource ficam fixos no JSON.
@@ -114,7 +121,7 @@ Fluxo de alteração:
 2. Se o JSON foi exportado manualmente da UI, exporte no formato de recurso V2 (não o classic/v1, nem "para outra instância", que reintroduz `__inputs`) e mantenha só `apiVersion`, `kind`, `metadata.name` e `spec`.
 3. Rode as validações abaixo e abra o PR para `main`. Após o merge o Git Sync aplica a mudança.
 
-Dashboard novo: crie o arquivo no diretório da pasta certa com um UID novo (até 40 caracteres, `[a-zA-Z0-9_-]`); diretório novo exige `_folder.json`. Inclua a tag `infra` e os links **Visão geral** e **Painéis** (copie de um dashboard existente).
+Dashboard novo: crie o arquivo no diretório da pasta certa com um UID novo (até 40 caracteres, `[a-zA-Z0-9_-]`); diretório novo exige `_folder.json`. Copie o `spec.links` de um dashboard existente (menu de navegação). Se o dashboard entrar numa categoria com dropdown, use a tag dela (`windows`, `databases`); categoria nova ou que passa a ter mais de um dashboard: atualize `NAV` no validador e o menu de todos os dashboards.
 
 ## Validar
 

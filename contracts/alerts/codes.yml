@@ -1,7 +1,7 @@
 # Catalogo dos codigos de alerta; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_code_catalog
-version: 0.3.0
+version: 0.4.0
 id: alert-codes
 title: Catalogo de codigos de alerta
 status: defined
@@ -496,3 +496,66 @@ codes:
     scope: service
     status: active
     runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-402.md
+  BKP-101:
+    uid: bkp-101
+    title: Backup muito atrasado
+    severity: critical
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-101.md
+  BKP-102:
+    uid: bkp-102
+    title: Backup atrasado
+    severity: warning
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-102.md
+  BKP-110:
+    uid: bkp-110
+    title: Backup falhou
+    severity: warning
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-110.md
+  BKP-111:
+    uid: bkp-111
+    title: Backup degradado
+    severity: warning
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-111.md
+  BKP-120:
+    uid: bkp-120
+    title: Tamanho do backup caiu
+    severity: warning
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-120.md
+  BKP-301:
+    uid: bkp-301
+    title: Estado do backup não lido
+    severity: warning
+    scope: collection
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-301.md
+  BKP-302:
+    uid: bkp-302
+    title: Backup deixou de ser reportado
+    severity: warning
+    scope: collection
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-302.md
+  BKP-303:
+    uid: bkp-303
+    title: Leitor de backups com erro
+    severity: warning
+    scope: collection
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-303.md
+  BKP-401:
+    uid: bkp-401
+    title: Backup lento
+    severity: info
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-401.md

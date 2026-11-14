@@ -105,3 +105,17 @@ Padrão em [`contracts/alerts/docs.yml`](../../contracts/alerts/docs.yml). Arqui
 | [SQL-301](SQL-301.md) | Coleta do SQL Anywhere parada | warning |
 | [SQL-401](SQL-401.md) | Requisições na fila do SQL Anywhere | warning |
 | [SQL-402](SQL-402.md) | Thread deadlock no SQL Anywhere | warning |
+
+## Backups
+
+| Código | Alerta | Severidade |
+|---|---|---|
+| [BKP-101](BKP-101.md) | Backup muito atrasado | critical |
+| [BKP-102](BKP-102.md) | Backup atrasado | warning |
+| [BKP-110](BKP-110.md) | Backup falhou | warning |
+| [BKP-111](BKP-111.md) | Backup degradado | warning |
+| [BKP-120](BKP-120.md) | Tamanho do backup caiu | warning |
+| [BKP-301](BKP-301.md) | Estado do backup não lido | warning |
+| [BKP-302](BKP-302.md) | Backup deixou de ser reportado | warning |
+| [BKP-303](BKP-303.md) | Leitor de backups com erro | warning |
+| [BKP-401](BKP-401.md) | Backup lento | info |

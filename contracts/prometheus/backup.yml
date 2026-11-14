@@ -1,7 +1,7 @@
 # Contrato definido (convencao para produtores externos); nao provisionar este YAML no Grafana.
 schema_version: 2
 kind: observability_contract
-version: 0.1.0
+version: 0.2.0
 id: backup
 title: Backups / convencao generica de estado (textfile)
 status: defined
@@ -133,7 +133,8 @@ metric_groups:
     interpretation: >-
       degraded = 1 quando a tentativa publicou um backup utilizavel porem incompleto (ex. fallback); nesse caso
       last_attempt_success = 0 e last_success_* nao mudam. expected_interval e a cadencia declarada pelo produtor e
-      permite uma regra generica de atraso; ausente, so regras individuais avaliam o atraso. backup_info vale 1 e
+      o que habilita o alerta de atraso: as regras comparam cada backup com o intervalo que ele mesmo publica (serie a
+      serie, por instance/service/backup_id). Ausente, o backup nao tem alerta de atraso. backup_info vale 1 e
       carrega descricao estavel e de baixa cardinalidade: kind (database, files, vm, config...), producer (software que
       gera o arquivo), producer_version, target (host ou instancia dos dados, quando diferente de instance) e
       destination (tipo de destino, ex. s3, nas, local) e site (cliente ou local, quando o produtor tem esse nome). Labels
@@ -143,7 +144,6 @@ metric_groups:
     metrics_observed:
       - up
       - windows_textfile_mtime_seconds
-      - windows_textfile_scrape_error
       - windows_exporter_collector_success
       - node_textfile_mtime_seconds
       - node_textfile_scrape_error
@@ -159,27 +159,35 @@ metric_groups:
         - collector
     interpretation: >-
       windows_* em hosts Windows, node_* em hosts Linux. up = 1 indica so que o leitor esta ativo, nunca que o host tem
-      backup. textfile_scrape_error = 1: algum arquivo invalido (ignorado) ou pasta inexistente. mtime por arquivo
-      (label file com o caminho completo). Serie duplicada ou HELP divergente pode ser descartada sem erro: conferir que
-      cada backup esperado tem series.
+      backup. Erro de leitura (arquivo invalido, ignorado, ou pasta inexistente): no Linux node_textfile_scrape_error = 1;
+      no Windows o exporter nao publica scrape_error e o erro aparece como
+      windows_exporter_collector_success{collector="textfile"} = 0. mtime por arquivo: label file com o nome do arquivo
+      no Windows e com o caminho completo no Linux. Serie duplicada ou HELP divergente pode ser descartada sem erro:
+      conferir que cada backup esperado tem series.
 query_recipes:
   - id: success_overdue
-    title: Ultimo sucesso mais antigo que 1,5x o intervalo esperado
-    promql: (time() - backup_last_success_timestamp_seconds{job="integrations/backup"}) > 1.5 * backup_expected_interval_seconds{job="integrations/backup"}
+    title: Ultimo sucesso mais antigo que o intervalo esperado + 10% + 30 min (uma execucao perdida)
+    promql: (time() - backup_last_success_timestamp_seconds{job="integrations/backup"}) > on (instance, service, backup_id) (backup_expected_interval_seconds{job="integrations/backup"} * 1.1 + 1800)
     unit: seconds
     dependencies:
       - backup_last_success_timestamp_seconds
       - backup_expected_interval_seconds
-  - id: attempt_overdue
-    title: Nenhuma tentativa dentro de 1,5x o intervalo esperado (tarefa parada)
-    promql: (time() - backup_last_attempt_timestamp_seconds{job="integrations/backup"}) > 1.5 * backup_expected_interval_seconds{job="integrations/backup"}
+  - id: success_overdue_critical
+    title: Ultimo sucesso mais antigo que o dobro do intervalo esperado (varias execucoes perdidas)
+    promql: (time() - backup_last_success_timestamp_seconds{job="integrations/backup"}) > on (instance, service, backup_id) 2 * backup_expected_interval_seconds{job="integrations/backup"}
+    unit: seconds
+    dependencies:
+      - backup_last_success_timestamp_seconds
+      - backup_expected_interval_seconds
+  - id: attempt_age
+    title: Tempo desde a ultima tentativa (comparar com o do ultimo sucesso para saber se a tarefa roda)
+    promql: time() - backup_last_attempt_timestamp_seconds{job="integrations/backup"}
     unit: seconds
     dependencies:
       - backup_last_attempt_timestamp_seconds
-      - backup_expected_interval_seconds
   - id: last_attempt_failed
     title: Ultima tentativa falhou (exclui degradado)
-    promql: backup_last_attempt_success{job="integrations/backup"} == 0 unless backup_last_attempt_degraded{job="integrations/backup"} == 1
+    promql: backup_last_attempt_success{job="integrations/backup"} == 0 unless on (instance, service, backup_id) backup_last_attempt_degraded{job="integrations/backup"} == 1
     dependencies:
       - backup_last_attempt_success
       - backup_last_attempt_degraded
@@ -188,26 +196,41 @@ query_recipes:
     promql: backup_last_attempt_degraded{job="integrations/backup"} == 1
     dependencies:
       - backup_last_attempt_degraded
+  - id: size_drop
+    title: Ultimo sucesso com menos da metade do maior tamanho dos ultimos 7 dias
+    promql: backup_last_success_size_bytes{job="integrations/backup"} < on (instance, service, backup_id) 0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
+    unit: bytes
+    dependencies:
+      - backup_last_success_size_bytes
   - id: collection_failed
     title: Produtor nao conseguiu observar o estado
     promql: backup_collection_success{job="integrations/backup"} == 0
     dependencies:
       - backup_collection_success
   - id: backup_vanished
-    title: Backup publicado nos ultimos 7 dias que deixou de ter serie
-    promql: max_over_time(backup_collection_timestamp_seconds{job="integrations/backup"}[7d]) unless backup_collection_timestamp_seconds{job="integrations/backup"}
+    title: Backup publicado nos ultimos 7 dias que deixou de ter serie, com o leitor ativo
+    promql: (group by (instance, service, backup_id) (max_over_time(backup_collection_timestamp_seconds{job="integrations/backup"}[7d])) unless on (instance, service, backup_id) backup_collection_timestamp_seconds{job="integrations/backup"}) and on (instance) group by (instance) (up{job="integrations/backup"} == 1)
     dependencies:
       - backup_collection_timestamp_seconds
+      - up
   - id: textfile_error
     title: Arquivo invalido ou pasta ausente no leitor
-    promql: max by (instance) (windows_textfile_scrape_error{job="integrations/backup"} or node_textfile_scrape_error{job="integrations/backup"}) == 1
+    promql: group by (instance) (windows_exporter_collector_success{job="integrations/backup",collector="textfile"} == 0) or group by (instance) (node_textfile_scrape_error{job="integrations/backup"} == 1)
     dependencies:
-      - windows_textfile_scrape_error
+      - windows_exporter_collector_success
       - node_textfile_scrape_error
+  - id: slow_attempt
+    title: Ultima tentativa com mais que o dobro da duracao media de 7 dias
+    promql: backup_last_attempt_duration_seconds{job="integrations/backup"} > on (instance, service, backup_id) 2 * avg_over_time(backup_last_attempt_duration_seconds{job="integrations/backup"}[7d])
+    unit: seconds
+    dependencies:
+      - backup_last_attempt_duration_seconds
 limitations:
   - Pasta vazia nao gera serie; backup que deveria existir e nunca foi configurado so e detectado cruzando com uma
     lista de backups esperados.
   - expected_interval e declarado pelo produtor; ausente, a regra generica de atraso nao avalia o backup.
+  - expected_interval e o maior intervalo entre execucoes; em agenda irregular (ex. sem fim de semana) o atraso nos
+    dias normais so e percebido depois desse maior intervalo.
   - Valores sao os do ultimo arquivo gravado; produtor parado mantem os ultimos valores (usar os timestamps).
 change_policy:
   require_new_metrics_before_using_in_dashboard: true

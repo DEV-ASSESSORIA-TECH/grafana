@@ -29,6 +29,7 @@ Todas as regras ficam na pasta INFRA do Grafana, um grupo por arquivo. O catálo
 | `servicos.yaml` | `servicos-1m` | Uptime Kuma: serviços por criticidade, externos (15 min de tolerância), certificados (sem Tiflux e Sispcard, de terceiros), Kuma sem métricas |
 | `monitoramento.yaml` | `monitoramento-5m` | Prometheus: configuração inválida, falha de compactação |
 | `sqlanywhere.yaml` | `sqlanywhere-1m` | SQL Anywhere: banco inacessível, reinício, cache sem página livre, memória de consulta negada, coleta parada, fila de requisições, thread deadlock |
+| `backups.yaml` | `backups-1m` | Backups (`integrations/backup`, qualquer produtor): atrasado e muito atrasado, falha, degradado, tamanho caiu, estado não lido, backup que sumiu, leitor com erro, lentidão |
 
 **Decisões que estão nas consultas** (mude aqui quando mudar a operação):
 
@@ -38,6 +39,7 @@ Todas as regras ficam na pasta INFRA do Grafana, um grupo por arquivo. O catálo
 - **Estações Windows (sem alertas):** máquinas descartáveis publicam em `integrations/windows-desktop` e `windows-desktop-eventlog` (perfil estação do Alloy). Nenhuma regra usa esses jobs, e como toda consulta fixa o job, elas nunca entram nos alertas de servidor. Não crie regras para eles. Ao converter um servidor em estação, marque-o como `ignorar` em `servidores:` no catálogo até passarem os 7 dias do WIN-102.
 - **Excluídos de propósito:** unidades `fwupd*` (LIN-110), o container `grafana-alerting-temp` do deploy (CTR) e a memória total dos hosts Hyper-V (em host, use HYP-205).
 - **Deixados de fora de propósito:** erros do armazenamento virtual do Hyper-V (o contador sobe em todos os discos, é ruído de base) e saúde do Loki (se ele cair, as regras de log entram em erro e o Grafana gera `DatasourceError` com os labels da regra).
+- **Backups são genéricos:** nenhuma regra cita servidor, sistema ou horário. Cada backup publica o próprio intervalo esperado (`backup_expected_interval_seconds`) e as regras comparam série a série (`instance`, `service`, `backup_id`): atrasado (BKP-102) acima de intervalo × 1,1 + 30 min, muito atrasado (BKP-101) acima de 2 × intervalo. Backup sem intervalo publicado não tem alerta de atraso. Backup novo não exige mudança aqui.
 - **"Sem métricas" e "container sumiu"** comparam com o que existia nos últimos 7 dias e 24 horas: servidor ou container desativado de propósito para de alertar depois desse prazo (ou silencie antes).
 
 ## Padrão das regras

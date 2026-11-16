@@ -1,0 +1,823 @@
+# Regras de alerta de backups (job integrations/backup). Codigos em contracts/alerts/codes.yml.
+# Genericas: cada backup publica o proprio intervalo esperado (backup_expected_interval_seconds) e as
+# regras comparam serie a serie (instance, service, backup_id). Nenhum horario ou backup aparece aqui.
+# Contrato dos dados: contracts/prometheus/backup.yml.
+# Labels: escrever $$labels (o provisionamento interpola variaveis de ambiente nos labels).
+# Annotations e consultas nao sao interpoladas: nelas, $labels.
+# VM e hipervisor vem do inventario (receita guest_join): com a VM ou o host fora, estes alertas ficam inibidos.
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: backups-1m
+    folder: INFRA
+    interval: 1m
+    rules:
+      - uid: bkp-101
+        title: '[BKP-101] Backup muito atrasado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
+                    > on (instance, service, backup_id)
+                  2 * backup_expected_interval_seconds{job="integrations/backup"}
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
+                    > on (instance, service, backup_id)
+                  2 * backup_expected_interval_seconds{job="integrations/backup"}
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-101.md
+          summary: 'Backup {{ $labels.service }}/{{ $labels.backup_id }} sem sucesso há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }} em {{ $labels.instance }}'
+          description: |-
+            O backup {{ $labels.service }}/{{ $labels.backup_id }} de {{ $labels.instance }} está sem sucesso há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }}, mais que o dobro do intervalo esperado que ele mesmo publica. Várias execuções seguidas falharam ou não rodaram.
+
+            Compare o horário da última tentativa com o do último sucesso: tentativas recentes com falha indicam erro no backup; tentativas também antigas indicam que a tarefa agendada não está rodando.
+            Backup que nunca teve sucesso (último sucesso 0) entra aqui na primeira avaliação.
+        labels:
+          alert_code: BKP-101
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'
+          severity: critical
+          area: backups
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: bkp-102
+        title: '[BKP-102] Backup atrasado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  (
+                    (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
+                      > on (instance, service, backup_id)
+                    (backup_expected_interval_seconds{job="integrations/backup"} * 1.1 + 1800)
+                  )
+                    <= on (instance, service, backup_id)
+                  2 * backup_expected_interval_seconds{job="integrations/backup"}
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  (
+                    (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
+                      > on (instance, service, backup_id)
+                    (backup_expected_interval_seconds{job="integrations/backup"} * 1.1 + 1800)
+                  )
+                    <= on (instance, service, backup_id)
+                  2 * backup_expected_interval_seconds{job="integrations/backup"}
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-102.md
+          summary: 'Backup {{ $labels.service }}/{{ $labels.backup_id }} sem sucesso há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }} em {{ $labels.instance }}'
+          description: |-
+            O backup {{ $labels.service }}/{{ $labels.backup_id }} de {{ $labels.instance }} passou do intervalo esperado (publicado pelo próprio backup, mais 10% e 30 minutos) sem um novo sucesso: pelo menos uma execução falhou ou não rodou.
+
+            Compare o horário da última tentativa com o do último sucesso para saber se a tarefa está rodando. Se passar do dobro do intervalo, vira BKP-101.
+        labels:
+          alert_code: BKP-102
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'
+          severity: warning
+          area: backups
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: bkp-110
+        title: '[BKP-110] Backup falhou'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  group by (instance, service, backup_id) (
+                    (backup_last_attempt_success{job="integrations/backup"} == 0)
+                    unless on (instance, service, backup_id)
+                    (backup_last_attempt_degraded{job="integrations/backup"} == 1)
+                  )
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  group by (instance, service, backup_id) (
+                    (backup_last_attempt_success{job="integrations/backup"} == 0)
+                    unless on (instance, service, backup_id)
+                    (backup_last_attempt_degraded{job="integrations/backup"} == 1)
+                  )
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-110.md
+          summary: 'Backup {{ $labels.service }}/{{ $labels.backup_id }} falhou em {{ $labels.instance }}'
+          description: |-
+            A última tentativa do backup {{ $labels.service }}/{{ $labels.backup_id }} em {{ $labels.instance }} falhou. O alerta resolve sozinho no próximo sucesso.
+
+            Veja o log da execução no servidor (para o BackupSeven, a pasta Logs e a etapa entre colchetes). Se as falhas continuarem, o atraso vira BKP-102 e BKP-101.
+        labels:
+          alert_code: BKP-110
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'
+          severity: warning
+          area: backups
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: bkp-111
+        title: '[BKP-111] Backup degradado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  group by (instance, service, backup_id) (
+                    backup_last_attempt_degraded{job="integrations/backup"} == 1
+                  )
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  group by (instance, service, backup_id) (
+                    backup_last_attempt_degraded{job="integrations/backup"} == 1
+                  )
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-111.md
+          summary: 'Backup {{ $labels.service }}/{{ $labels.backup_id }} publicado como degradado em {{ $labels.instance }}'
+          description: |-
+            A última tentativa do backup {{ $labels.service }}/{{ $labels.backup_id }} em {{ $labels.instance }} publicou um backup utilizável, porém incompleto (fallback). Não conta como sucesso.
+
+            No BackupSeven: o dump normal do banco falhou e foram publicados os archives _DEGRADED e _GRANULAR_DEGRADED (exit code 5). O manifest.json e os _FAILED.txt dizem quais objetos falharam.
+        labels:
+          alert_code: BKP-111
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'
+          severity: warning
+          area: backups
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: bkp-120
+        title: '[BKP-120] Tamanho do backup caiu'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  backup_last_success_size_bytes{job="integrations/backup"}
+                    < on (instance, service, backup_id)
+                  0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  backup_last_success_size_bytes{job="integrations/backup"}
+                    < on (instance, service, backup_id)
+                  0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-120.md
+          summary: 'Backup {{ $labels.service }}/{{ $labels.backup_id }} com menos da metade do tamanho usual em {{ $labels.instance }}'
+          description: |-
+            O último backup bem-sucedido de {{ $labels.service }}/{{ $labels.backup_id }} em {{ $labels.instance }} tem {{ with $values.A }}{{ humanize1024 .Value }}B{{ end }}, menos da metade do maior tamanho dos últimos 7 dias.
+
+            Pode ser um dump ou uma pasta de origem truncados ou vazios, mesmo com a execução marcada como sucesso. Se a redução for esperada (limpeza de dados), o alerta para quando a janela de 7 dias passar.
+        labels:
+          alert_code: BKP-120
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'
+          severity: warning
+          area: backups
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: bkp-301
+        title: '[BKP-301] Estado do backup não lido'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  group by (instance, service, backup_id) (
+                    backup_collection_success{job="integrations/backup"} == 0
+                  )
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  group by (instance, service, backup_id) (
+                    backup_collection_success{job="integrations/backup"} == 0
+                  )
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-301.md
+          summary: 'Produtor do backup {{ $labels.service }}/{{ $labels.backup_id }} não leu o estado em {{ $labels.instance }}'
+          description: |-
+            O produtor do backup {{ $labels.service }}/{{ $labels.backup_id }} em {{ $labels.instance }} informa que não conseguiu ler o estado do backup. Os valores de último sucesso e tentativa podem estar ausentes ou desatualizados.
+
+            No BackupSeven: falha ao ler a pasta Completed ou o arquivo anterior; o log mostra WARN na etapa <tipo>/Monitoring.
+        labels:
+          alert_code: BKP-301
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'
+          severity: warning
+          area: backups
+          scope: collection
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: bkp-302
+        title: '[BKP-302] Backup deixou de ser reportado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  (
+                    group by (instance, service, backup_id) (max_over_time(backup_collection_timestamp_seconds{job="integrations/backup"}[7d]))
+                    unless on (instance, service, backup_id)
+                    backup_collection_timestamp_seconds{job="integrations/backup"}
+                  )
+                  and on (instance)
+                  group by (instance) (up{job="integrations/backup"} == 1)
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  (
+                    group by (instance, service, backup_id) (max_over_time(backup_collection_timestamp_seconds{job="integrations/backup"}[7d]))
+                    unless on (instance, service, backup_id)
+                    backup_collection_timestamp_seconds{job="integrations/backup"}
+                  )
+                  and on (instance)
+                  group by (instance) (up{job="integrations/backup"} == 1)
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-302.md
+          summary: 'Backup {{ $labels.service }}/{{ $labels.backup_id }} deixou de ser reportado em {{ $labels.instance }}'
+          description: |-
+            O backup {{ $labels.service }}/{{ $labels.backup_id }} de {{ $labels.instance }} era reportado nos últimos 7 dias e sumiu, embora o Alloy continue lendo a pasta de backups.
+
+            Possíveis causas: arquivo .prom apagado ou inválido, monitoramento desligado na configuração do produtor, backup desinstalado. Backup retirado de propósito some deste alerta depois de 7 dias (ou silencie).
+        labels:
+          alert_code: BKP-302
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'
+          severity: warning
+          area: backups
+          scope: collection
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: bkp-303
+        title: '[BKP-303] Leitor de backups com erro'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  group by (instance) (windows_exporter_collector_success{job="integrations/backup",collector="textfile"} == 0)
+                  or
+                  group by (instance) (node_textfile_scrape_error{job="integrations/backup"} == 1)
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  group by (instance) (windows_exporter_collector_success{job="integrations/backup",collector="textfile"} == 0)
+                  or
+                  group by (instance) (node_textfile_scrape_error{job="integrations/backup"} == 1)
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-303.md
+          summary: 'Alloy não consegue ler a pasta de backups em {{ $labels.instance }}'
+          description: |-
+            O Alloy de {{ $labels.instance }} falhou ao ler a pasta de backups (textfile\backup no Windows, /var/lib/alloy-textfile/backup no Linux): pasta ausente ou arquivo .prom inválido.
+
+            Arquivo inválido é ignorado inteiro; os demais seguem sendo lidos. Rode alloyctl, [6] Ver diagnóstico, seção BACKUPS.
+        labels:
+          alert_code: BKP-303
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
+          severity: warning
+          area: backups
+          scope: collection
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: bkp-401
+        title: '[BKP-401] Backup lento'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  (
+                    backup_last_attempt_duration_seconds{job="integrations/backup"}
+                      > on (instance, service, backup_id)
+                    2 * avg_over_time(backup_last_attempt_duration_seconds{job="integrations/backup"}[7d])
+                  )
+                  > 600
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  (
+                    backup_last_attempt_duration_seconds{job="integrations/backup"}
+                      > on (instance, service, backup_id)
+                    2 * avg_over_time(backup_last_attempt_duration_seconds{job="integrations/backup"}[7d])
+                  )
+                  > 600
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-401.md
+          summary: 'Backup {{ $labels.service }}/{{ $labels.backup_id }} levou {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }} em {{ $labels.instance }}'
+          description: |-
+            A última tentativa do backup {{ $labels.service }}/{{ $labels.backup_id }} em {{ $labels.instance }} levou mais que o dobro da média dos últimos 7 dias (e mais de 10 minutos).
+
+            Informativo: indica crescimento dos dados, disputa de disco ou rede lenta para o destino. Se continuar, pode encostar na próxima execução agendada.
+        labels:
+          alert_code: BKP-401
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'
+          severity: info
+          area: backups
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false

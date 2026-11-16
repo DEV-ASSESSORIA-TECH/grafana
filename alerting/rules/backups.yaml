@@ -1,6 +1,8 @@
 # Regras de alerta de backups (job integrations/backup). Codigos em contracts/alerts/codes.yml.
-# Genericas: cada backup publica o proprio intervalo esperado (backup_expected_interval_seconds) e as
-# regras comparam serie a serie (instance, service, backup_id). Nenhum horario ou backup aparece aqui.
+# Genericas: nenhum horario ou backup aparece aqui. O atraso usa o que cada backup publica: o prazo do proximo
+# sucesso (backup_success_due_timestamp_seconds) ou, sem prazo, o intervalo esperado
+# (backup_expected_interval_seconds); as consultas comparam serie a serie (instance, service, backup_id).
+# Severidade: backup com criticality=baixa (backup_info) desce um nivel. Esperados: secao backups do catalogo.yml.
 # Contrato dos dados: contracts/prometheus/backup.yml.
 # Labels: escrever $$labels (o provisionamento interpola variaveis de ambiente nos labels).
 # Annotations e consultas nao sao interpoladas: nelas, $labels.
@@ -25,9 +27,45 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
-                    > on (instance, service, backup_id)
-                  2 * backup_expected_interval_seconds{job="integrations/backup"}
+                  (
+                    (
+                      (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
+                      and on (instance, service, backup_id)
+                      (
+                        (time() - backup_success_due_timestamp_seconds{job="integrations/backup"})
+                          > on (instance, service, backup_id)
+                        ((backup_last_attempt_duration_seconds{job="integrations/backup"} * 1.5 + 1800 or backup_success_due_timestamp_seconds{job="integrations/backup"} * 0 + 1800) + backup_expected_interval_seconds{job="integrations/backup"})
+                      )
+                    )
+                    or
+                    (
+                      ((time() - backup_last_success_timestamp_seconds{job="integrations/backup"}) > on (instance, service, backup_id) 2 * backup_expected_interval_seconds{job="integrations/backup"})
+                      unless on (instance, service, backup_id)
+                      backup_success_due_timestamp_seconds{job="integrations/backup"}
+                    )
+                  )
+                  * on (instance, service, backup_id) group_left (criticality)
+                  group by (instance, service, backup_id, criticality) (backup_info{job="integrations/backup"})
+                  or
+                  (
+                    (
+                      (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
+                      and on (instance, service, backup_id)
+                      (
+                        (time() - backup_success_due_timestamp_seconds{job="integrations/backup"})
+                          > on (instance, service, backup_id)
+                        ((backup_last_attempt_duration_seconds{job="integrations/backup"} * 1.5 + 1800 or backup_success_due_timestamp_seconds{job="integrations/backup"} * 0 + 1800) + backup_expected_interval_seconds{job="integrations/backup"})
+                      )
+                    )
+                    or
+                    (
+                      ((time() - backup_last_success_timestamp_seconds{job="integrations/backup"}) > on (instance, service, backup_id) 2 * backup_expected_interval_seconds{job="integrations/backup"})
+                      unless on (instance, service, backup_id)
+                      backup_success_due_timestamp_seconds{job="integrations/backup"}
+                    )
+                  )
+                  unless on (instance, service, backup_id)
+                  group by (instance, service, backup_id) (backup_info{job="integrations/backup"})
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -37,9 +75,45 @@ groups:
                 )
                 or
                 (
-                  (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
-                    > on (instance, service, backup_id)
-                  2 * backup_expected_interval_seconds{job="integrations/backup"}
+                  (
+                    (
+                      (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
+                      and on (instance, service, backup_id)
+                      (
+                        (time() - backup_success_due_timestamp_seconds{job="integrations/backup"})
+                          > on (instance, service, backup_id)
+                        ((backup_last_attempt_duration_seconds{job="integrations/backup"} * 1.5 + 1800 or backup_success_due_timestamp_seconds{job="integrations/backup"} * 0 + 1800) + backup_expected_interval_seconds{job="integrations/backup"})
+                      )
+                    )
+                    or
+                    (
+                      ((time() - backup_last_success_timestamp_seconds{job="integrations/backup"}) > on (instance, service, backup_id) 2 * backup_expected_interval_seconds{job="integrations/backup"})
+                      unless on (instance, service, backup_id)
+                      backup_success_due_timestamp_seconds{job="integrations/backup"}
+                    )
+                  )
+                  * on (instance, service, backup_id) group_left (criticality)
+                  group by (instance, service, backup_id, criticality) (backup_info{job="integrations/backup"})
+                  or
+                  (
+                    (
+                      (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
+                      and on (instance, service, backup_id)
+                      (
+                        (time() - backup_success_due_timestamp_seconds{job="integrations/backup"})
+                          > on (instance, service, backup_id)
+                        ((backup_last_attempt_duration_seconds{job="integrations/backup"} * 1.5 + 1800 or backup_success_due_timestamp_seconds{job="integrations/backup"} * 0 + 1800) + backup_expected_interval_seconds{job="integrations/backup"})
+                      )
+                    )
+                    or
+                    (
+                      ((time() - backup_last_success_timestamp_seconds{job="integrations/backup"}) > on (instance, service, backup_id) 2 * backup_expected_interval_seconds{job="integrations/backup"})
+                      unless on (instance, service, backup_id)
+                      backup_success_due_timestamp_seconds{job="integrations/backup"}
+                    )
+                  )
+                  unless on (instance, service, backup_id)
+                  group by (instance, service, backup_id) (backup_info{job="integrations/backup"})
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (
@@ -84,16 +158,17 @@ groups:
         for: 10m
         annotations:
           runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-101.md
-          summary: 'Backup {{ $labels.service }}/{{ $labels.backup_id }} sem sucesso há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }} em {{ $labels.instance }}'
+          summary: 'Backup {{ $labels.service }}/{{ $labels.backup_id }} muito atrasado em {{ $labels.instance }}'
           description: |-
-            O backup {{ $labels.service }}/{{ $labels.backup_id }} de {{ $labels.instance }} está sem sucesso há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }}, mais que o dobro do intervalo esperado que ele mesmo publica. Várias execuções seguidas falharam ou não rodaram.
+            O backup {{ $labels.service }}/{{ $labels.backup_id }} de {{ $labels.instance }} perdeu mais de uma execução: o último sucesso foi há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }} (valores de décadas = nunca houve sucesso).
 
-            Compare o horário da última tentativa com o do último sucesso: tentativas recentes com falha indicam erro no backup; tentativas também antigas indicam que a tarefa agendada não está rodando.
-            Backup que nunca teve sucesso (último sucesso 0) entra aqui na primeira avaliação.
+            Com prazo publicado pelo backup: passou do prazo do próximo sucesso, mais a margem, mais um intervalo. Sem prazo: mais que o dobro do intervalo esperado.
+            Compare a última tentativa com o último sucesso: tentativas recentes com falha indicam erro no backup; tentativas também antigas indicam que a tarefa agendada não está rodando.
+            Backup que publica criticality=baixa entra um nivel abaixo.
         labels:
           alert_code: BKP-101
           alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'
-          severity: critical
+          severity: '{{ if eq $$labels.criticality "baixa" }}warning{{ else }}critical{{ end }}'
           area: backups
           scope: service
           dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
@@ -114,12 +189,64 @@ groups:
               expr: |-
                 (
                   (
-                    (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
-                      > on (instance, service, backup_id)
-                    (backup_expected_interval_seconds{job="integrations/backup"} * 1.1 + 1800)
+                    (
+                      (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
+                      and on (instance, service, backup_id)
+                      (
+                        (time() - backup_success_due_timestamp_seconds{job="integrations/backup"})
+                          > on (instance, service, backup_id)
+                        (backup_last_attempt_duration_seconds{job="integrations/backup"} * 1.5 + 1800 or backup_success_due_timestamp_seconds{job="integrations/backup"} * 0 + 1800)
+                      )
+                      unless on (instance, service, backup_id)
+                      (
+                        (time() - backup_success_due_timestamp_seconds{job="integrations/backup"})
+                          > on (instance, service, backup_id)
+                        ((backup_last_attempt_duration_seconds{job="integrations/backup"} * 1.5 + 1800 or backup_success_due_timestamp_seconds{job="integrations/backup"} * 0 + 1800) + backup_expected_interval_seconds{job="integrations/backup"})
+                      )
+                    )
+                    or
+                    (
+                      (
+                        ((time() - backup_last_success_timestamp_seconds{job="integrations/backup"}) > on (instance, service, backup_id) (backup_expected_interval_seconds{job="integrations/backup"} * 1.1 + 1800))
+                        <= on (instance, service, backup_id)
+                        2 * backup_expected_interval_seconds{job="integrations/backup"}
+                      )
+                      unless on (instance, service, backup_id)
+                      backup_success_due_timestamp_seconds{job="integrations/backup"}
+                    )
                   )
-                    <= on (instance, service, backup_id)
-                  2 * backup_expected_interval_seconds{job="integrations/backup"}
+                  * on (instance, service, backup_id) group_left (criticality)
+                  group by (instance, service, backup_id, criticality) (backup_info{job="integrations/backup"})
+                  or
+                  (
+                    (
+                      (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
+                      and on (instance, service, backup_id)
+                      (
+                        (time() - backup_success_due_timestamp_seconds{job="integrations/backup"})
+                          > on (instance, service, backup_id)
+                        (backup_last_attempt_duration_seconds{job="integrations/backup"} * 1.5 + 1800 or backup_success_due_timestamp_seconds{job="integrations/backup"} * 0 + 1800)
+                      )
+                      unless on (instance, service, backup_id)
+                      (
+                        (time() - backup_success_due_timestamp_seconds{job="integrations/backup"})
+                          > on (instance, service, backup_id)
+                        ((backup_last_attempt_duration_seconds{job="integrations/backup"} * 1.5 + 1800 or backup_success_due_timestamp_seconds{job="integrations/backup"} * 0 + 1800) + backup_expected_interval_seconds{job="integrations/backup"})
+                      )
+                    )
+                    or
+                    (
+                      (
+                        ((time() - backup_last_success_timestamp_seconds{job="integrations/backup"}) > on (instance, service, backup_id) (backup_expected_interval_seconds{job="integrations/backup"} * 1.1 + 1800))
+                        <= on (instance, service, backup_id)
+                        2 * backup_expected_interval_seconds{job="integrations/backup"}
+                      )
+                      unless on (instance, service, backup_id)
+                      backup_success_due_timestamp_seconds{job="integrations/backup"}
+                    )
+                  )
+                  unless on (instance, service, backup_id)
+                  group by (instance, service, backup_id) (backup_info{job="integrations/backup"})
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -130,12 +257,64 @@ groups:
                 or
                 (
                   (
-                    (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
-                      > on (instance, service, backup_id)
-                    (backup_expected_interval_seconds{job="integrations/backup"} * 1.1 + 1800)
+                    (
+                      (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
+                      and on (instance, service, backup_id)
+                      (
+                        (time() - backup_success_due_timestamp_seconds{job="integrations/backup"})
+                          > on (instance, service, backup_id)
+                        (backup_last_attempt_duration_seconds{job="integrations/backup"} * 1.5 + 1800 or backup_success_due_timestamp_seconds{job="integrations/backup"} * 0 + 1800)
+                      )
+                      unless on (instance, service, backup_id)
+                      (
+                        (time() - backup_success_due_timestamp_seconds{job="integrations/backup"})
+                          > on (instance, service, backup_id)
+                        ((backup_last_attempt_duration_seconds{job="integrations/backup"} * 1.5 + 1800 or backup_success_due_timestamp_seconds{job="integrations/backup"} * 0 + 1800) + backup_expected_interval_seconds{job="integrations/backup"})
+                      )
+                    )
+                    or
+                    (
+                      (
+                        ((time() - backup_last_success_timestamp_seconds{job="integrations/backup"}) > on (instance, service, backup_id) (backup_expected_interval_seconds{job="integrations/backup"} * 1.1 + 1800))
+                        <= on (instance, service, backup_id)
+                        2 * backup_expected_interval_seconds{job="integrations/backup"}
+                      )
+                      unless on (instance, service, backup_id)
+                      backup_success_due_timestamp_seconds{job="integrations/backup"}
+                    )
                   )
-                    <= on (instance, service, backup_id)
-                  2 * backup_expected_interval_seconds{job="integrations/backup"}
+                  * on (instance, service, backup_id) group_left (criticality)
+                  group by (instance, service, backup_id, criticality) (backup_info{job="integrations/backup"})
+                  or
+                  (
+                    (
+                      (time() - backup_last_success_timestamp_seconds{job="integrations/backup"})
+                      and on (instance, service, backup_id)
+                      (
+                        (time() - backup_success_due_timestamp_seconds{job="integrations/backup"})
+                          > on (instance, service, backup_id)
+                        (backup_last_attempt_duration_seconds{job="integrations/backup"} * 1.5 + 1800 or backup_success_due_timestamp_seconds{job="integrations/backup"} * 0 + 1800)
+                      )
+                      unless on (instance, service, backup_id)
+                      (
+                        (time() - backup_success_due_timestamp_seconds{job="integrations/backup"})
+                          > on (instance, service, backup_id)
+                        ((backup_last_attempt_duration_seconds{job="integrations/backup"} * 1.5 + 1800 or backup_success_due_timestamp_seconds{job="integrations/backup"} * 0 + 1800) + backup_expected_interval_seconds{job="integrations/backup"})
+                      )
+                    )
+                    or
+                    (
+                      (
+                        ((time() - backup_last_success_timestamp_seconds{job="integrations/backup"}) > on (instance, service, backup_id) (backup_expected_interval_seconds{job="integrations/backup"} * 1.1 + 1800))
+                        <= on (instance, service, backup_id)
+                        2 * backup_expected_interval_seconds{job="integrations/backup"}
+                      )
+                      unless on (instance, service, backup_id)
+                      backup_success_due_timestamp_seconds{job="integrations/backup"}
+                    )
+                  )
+                  unless on (instance, service, backup_id)
+                  group by (instance, service, backup_id) (backup_info{job="integrations/backup"})
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (
@@ -180,15 +359,16 @@ groups:
         for: 10m
         annotations:
           runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-102.md
-          summary: 'Backup {{ $labels.service }}/{{ $labels.backup_id }} sem sucesso há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }} em {{ $labels.instance }}'
+          summary: 'Backup {{ $labels.service }}/{{ $labels.backup_id }} atrasado em {{ $labels.instance }}'
           description: |-
-            O backup {{ $labels.service }}/{{ $labels.backup_id }} de {{ $labels.instance }} passou do intervalo esperado (publicado pelo próprio backup, mais 10% e 30 minutos) sem um novo sucesso: pelo menos uma execução falhou ou não rodou.
+            O backup {{ $labels.service }}/{{ $labels.backup_id }} de {{ $labels.instance }} não teve o sucesso esperado: pelo menos uma execução falhou ou não rodou. Último sucesso há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }}.
 
-            Compare o horário da última tentativa com o do último sucesso para saber se a tarefa está rodando. Se passar do dobro do intervalo, vira BKP-101.
+            Com prazo publicado pelo backup: passou do prazo do próximo sucesso mais 30 minutos e 1,5x a duração da última tentativa. Sem prazo: passou do intervalo esperado mais 10% e 30 minutos.
+            Se continuar, vira BKP-101. Backup que publica criticality=baixa entra um nivel abaixo.
         labels:
           alert_code: BKP-102
           alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'
-          severity: warning
+          severity: '{{ if eq $$labels.criticality "baixa" }}info{{ else }}warning{{ end }}'
           area: backups
           scope: service
           dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
@@ -208,11 +388,25 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  group by (instance, service, backup_id) (
-                    (backup_last_attempt_success{job="integrations/backup"} == 0)
-                    unless on (instance, service, backup_id)
-                    (backup_last_attempt_degraded{job="integrations/backup"} == 1)
+                  (
+                    group by (instance, service, backup_id) (
+                      (backup_last_attempt_success{job="integrations/backup"} == 0)
+                      unless on (instance, service, backup_id)
+                      (backup_last_attempt_degraded{job="integrations/backup"} == 1)
+                    )
                   )
+                  * on (instance, service, backup_id) group_left (criticality)
+                  group by (instance, service, backup_id, criticality) (backup_info{job="integrations/backup"})
+                  or
+                  (
+                    group by (instance, service, backup_id) (
+                      (backup_last_attempt_success{job="integrations/backup"} == 0)
+                      unless on (instance, service, backup_id)
+                      (backup_last_attempt_degraded{job="integrations/backup"} == 1)
+                    )
+                  )
+                  unless on (instance, service, backup_id)
+                  group by (instance, service, backup_id) (backup_info{job="integrations/backup"})
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -222,11 +416,25 @@ groups:
                 )
                 or
                 (
-                  group by (instance, service, backup_id) (
-                    (backup_last_attempt_success{job="integrations/backup"} == 0)
-                    unless on (instance, service, backup_id)
-                    (backup_last_attempt_degraded{job="integrations/backup"} == 1)
+                  (
+                    group by (instance, service, backup_id) (
+                      (backup_last_attempt_success{job="integrations/backup"} == 0)
+                      unless on (instance, service, backup_id)
+                      (backup_last_attempt_degraded{job="integrations/backup"} == 1)
+                    )
                   )
+                  * on (instance, service, backup_id) group_left (criticality)
+                  group by (instance, service, backup_id, criticality) (backup_info{job="integrations/backup"})
+                  or
+                  (
+                    group by (instance, service, backup_id) (
+                      (backup_last_attempt_success{job="integrations/backup"} == 0)
+                      unless on (instance, service, backup_id)
+                      (backup_last_attempt_degraded{job="integrations/backup"} == 1)
+                    )
+                  )
+                  unless on (instance, service, backup_id)
+                  group by (instance, service, backup_id) (backup_info{job="integrations/backup"})
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (
@@ -276,10 +484,11 @@ groups:
             A última tentativa do backup {{ $labels.service }}/{{ $labels.backup_id }} em {{ $labels.instance }} falhou. O alerta resolve sozinho no próximo sucesso.
 
             Veja o log da execução no servidor (para o BackupSeven, a pasta Logs e a etapa entre colchetes). Se as falhas continuarem, o atraso vira BKP-102 e BKP-101.
+            Backup que publica criticality=baixa entra um nivel abaixo.
         labels:
           alert_code: BKP-110
           alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'
-          severity: warning
+          severity: '{{ if eq $$labels.criticality "baixa" }}info{{ else }}warning{{ end }}'
           area: backups
           scope: service
           dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
@@ -299,9 +508,21 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  group by (instance, service, backup_id) (
-                    backup_last_attempt_degraded{job="integrations/backup"} == 1
+                  (
+                    group by (instance, service, backup_id) (
+                      backup_last_attempt_degraded{job="integrations/backup"} == 1
+                    )
                   )
+                  * on (instance, service, backup_id) group_left (criticality)
+                  group by (instance, service, backup_id, criticality) (backup_info{job="integrations/backup"})
+                  or
+                  (
+                    group by (instance, service, backup_id) (
+                      backup_last_attempt_degraded{job="integrations/backup"} == 1
+                    )
+                  )
+                  unless on (instance, service, backup_id)
+                  group by (instance, service, backup_id) (backup_info{job="integrations/backup"})
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -311,9 +532,21 @@ groups:
                 )
                 or
                 (
-                  group by (instance, service, backup_id) (
-                    backup_last_attempt_degraded{job="integrations/backup"} == 1
+                  (
+                    group by (instance, service, backup_id) (
+                      backup_last_attempt_degraded{job="integrations/backup"} == 1
+                    )
                   )
+                  * on (instance, service, backup_id) group_left (criticality)
+                  group by (instance, service, backup_id, criticality) (backup_info{job="integrations/backup"})
+                  or
+                  (
+                    group by (instance, service, backup_id) (
+                      backup_last_attempt_degraded{job="integrations/backup"} == 1
+                    )
+                  )
+                  unless on (instance, service, backup_id)
+                  group by (instance, service, backup_id) (backup_info{job="integrations/backup"})
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (
@@ -363,10 +596,11 @@ groups:
             A última tentativa do backup {{ $labels.service }}/{{ $labels.backup_id }} em {{ $labels.instance }} publicou um backup utilizável, porém incompleto (fallback). Não conta como sucesso.
 
             No BackupSeven: o dump normal do banco falhou e foram publicados os archives _DEGRADED e _GRANULAR_DEGRADED (exit code 5). O manifest.json e os _FAILED.txt dizem quais objetos falharam.
+            Backup que publica criticality=baixa entra um nivel abaixo.
         labels:
           alert_code: BKP-111
           alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'
-          severity: warning
+          severity: '{{ if eq $$labels.criticality "baixa" }}info{{ else }}warning{{ end }}'
           area: backups
           scope: service
           dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
@@ -386,9 +620,21 @@ groups:
               editorMode: code
               expr: |-
                 (
-                  backup_last_success_size_bytes{job="integrations/backup"}
-                    < on (instance, service, backup_id)
-                  0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
+                  (
+                    backup_last_success_size_bytes{job="integrations/backup"}
+                      < on (instance, service, backup_id)
+                    0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
+                  )
+                  * on (instance, service, backup_id) group_left (criticality)
+                  group by (instance, service, backup_id, criticality) (backup_info{job="integrations/backup"})
+                  or
+                  (
+                    backup_last_success_size_bytes{job="integrations/backup"}
+                      < on (instance, service, backup_id)
+                    0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
+                  )
+                  unless on (instance, service, backup_id)
+                  group by (instance, service, backup_id) (backup_info{job="integrations/backup"})
                 )
                 * on (instance) group_left (vm, hypervisor)
                 max by (instance, vm, hypervisor) (
@@ -398,9 +644,21 @@ groups:
                 )
                 or
                 (
-                  backup_last_success_size_bytes{job="integrations/backup"}
-                    < on (instance, service, backup_id)
-                  0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
+                  (
+                    backup_last_success_size_bytes{job="integrations/backup"}
+                      < on (instance, service, backup_id)
+                    0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
+                  )
+                  * on (instance, service, backup_id) group_left (criticality)
+                  group by (instance, service, backup_id, criticality) (backup_info{job="integrations/backup"})
+                  or
+                  (
+                    backup_last_success_size_bytes{job="integrations/backup"}
+                      < on (instance, service, backup_id)
+                    0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
+                  )
+                  unless on (instance, service, backup_id)
+                  group by (instance, service, backup_id) (backup_info{job="integrations/backup"})
                 )
                 unless on (instance)
                 max by (instance, vm, hypervisor) (
@@ -450,10 +708,11 @@ groups:
             O último backup bem-sucedido de {{ $labels.service }}/{{ $labels.backup_id }} em {{ $labels.instance }} tem {{ with $values.A }}{{ humanize1024 .Value }}B{{ end }}, menos da metade do maior tamanho dos últimos 7 dias.
 
             Pode ser um dump ou uma pasta de origem truncados ou vazios, mesmo com a execução marcada como sucesso. Se a redução for esperada (limpeza de dados), o alerta para quando a janela de 7 dias passar.
+            Backup que publica criticality=baixa entra um nivel abaixo.
         labels:
           alert_code: BKP-120
           alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'
-          severity: warning
+          severity: '{{ if eq $$labels.criticality "baixa" }}info{{ else }}warning{{ end }}'
           area: backups
           scope: service
           dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
@@ -564,6 +823,8 @@ groups:
                     group by (instance, service, backup_id) (max_over_time(backup_collection_timestamp_seconds{job="integrations/backup"}[7d]))
                     unless on (instance, service, backup_id)
                     backup_collection_timestamp_seconds{job="integrations/backup"}
+                    unless on (instance, service, backup_id)
+                    @catalogo:backups@
                   )
                   and on (instance)
                   group by (instance) (up{job="integrations/backup"} == 1)
@@ -580,6 +841,8 @@ groups:
                     group by (instance, service, backup_id) (max_over_time(backup_collection_timestamp_seconds{job="integrations/backup"}[7d]))
                     unless on (instance, service, backup_id)
                     backup_collection_timestamp_seconds{job="integrations/backup"}
+                    unless on (instance, service, backup_id)
+                    @catalogo:backups@
                   )
                   and on (instance)
                   group by (instance) (up{job="integrations/backup"} == 1)
@@ -631,7 +894,7 @@ groups:
           description: |-
             O backup {{ $labels.service }}/{{ $labels.backup_id }} de {{ $labels.instance }} era reportado nos últimos 7 dias e sumiu, embora o Alloy continue lendo a pasta de backups.
 
-            Possíveis causas: arquivo .prom apagado ou inválido, monitoramento desligado na configuração do produtor, backup desinstalado. Backup retirado de propósito some deste alerta depois de 7 dias (ou silencie).
+            Possíveis causas: arquivo .prom apagado ou inválido, monitoramento desligado na configuração do produtor, backup desinstalado. Backup retirado de propósito some deste alerta depois de 7 dias (ou silencie). Backups da lista de esperados (catalogo.yml) ficam com o BKP-304.
         labels:
           alert_code: BKP-302
           alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'
@@ -722,6 +985,109 @@ groups:
         labels:
           alert_code: BKP-303
           alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
+          severity: warning
+          area: backups
+          scope: collection
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: bkp-304
+        title: '[BKP-304] Backup esperado não reportado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  (
+                    @catalogo:backups@
+                    unless on (instance, service, backup_id)
+                    group by (instance, service, backup_id) (backup_collection_timestamp_seconds{job="integrations/backup"})
+                  )
+                  and on (instance)
+                  (
+                    group by (instance) (up{job="integrations/windows"} == 1)
+                    or
+                    group by (instance) (up{job="integrations/unix"} == 1)
+                  )
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  (
+                    @catalogo:backups@
+                    unless on (instance, service, backup_id)
+                    group by (instance, service, backup_id) (backup_collection_timestamp_seconds{job="integrations/backup"})
+                  )
+                  and on (instance)
+                  (
+                    group by (instance) (up{job="integrations/windows"} == 1)
+                    or
+                    group by (instance) (up{job="integrations/unix"} == 1)
+                  )
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-304.md
+          summary: 'Backup esperado {{ $labels.service }}/{{ $labels.backup_id }} não reportado em {{ $labels.instance }}'
+          description: |-
+            O backup {{ $labels.service }}/{{ $labels.backup_id }} está na lista de backups esperados (seção backups do catalogo.yml), mas {{ $labels.instance }} não o reporta, embora continue enviando métricas.
+
+            Possíveis causas: produtor não instalado ou com o monitoramento desligado, Alloy sem a leitura de backups (alloyctl, [1] Reaplicar), arquivo .prom ausente. Backup retirado de propósito: remova-o do catalogo.yml.
+        labels:
+          alert_code: BKP-304
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'
           severity: warning
           area: backups
           scope: collection

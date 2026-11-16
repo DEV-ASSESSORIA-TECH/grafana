@@ -1,7 +1,7 @@
 # Catalogo dos codigos de alerta; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_code_catalog
-version: 0.4.0
+version: 0.5.0
 id: alert-codes
 title: Catalogo de codigos de alerta
 status: defined
@@ -559,3 +559,10 @@ codes:
     scope: service
     status: active
     runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-401.md
+  BKP-304:
+    uid: bkp-304
+    title: Backup esperado não reportado
+    severity: warning
+    scope: collection
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-304.md

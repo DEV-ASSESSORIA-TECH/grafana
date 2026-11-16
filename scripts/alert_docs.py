@@ -32,7 +32,7 @@ AREA_PT = {"hypervisor": "Hipervisor", "windows": "Windows", "linux": "Linux", "
 
 def sev_text(value):
     default, alt = catalogo.severity_values(value)
-    return f"{default} ({alt} se o container for secundario no catalogo.yml)" if alt else default
+    return f"{default} ({alt} {catalogo.severity_condition(value)})" if alt else default
 
 
 def load(path):

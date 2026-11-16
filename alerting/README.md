@@ -29,7 +29,7 @@ Todas as regras ficam na pasta INFRA do Grafana, um grupo por arquivo. O catálo
 | `servicos.yaml` | `servicos-1m` | Uptime Kuma: serviços por criticidade, externos (15 min de tolerância), certificados (sem Tiflux e Sispcard, de terceiros), Kuma sem métricas |
 | `monitoramento.yaml` | `monitoramento-5m` | Prometheus: configuração inválida, falha de compactação |
 | `sqlanywhere.yaml` | `sqlanywhere-1m` | SQL Anywhere: banco inacessível, reinício, cache sem página livre, memória de consulta negada, coleta parada, fila de requisições, thread deadlock |
-| `backups.yaml` | `backups-1m` | Backups (`integrations/backup`, qualquer produtor): atrasado e muito atrasado, falha, degradado, tamanho caiu, estado não lido, backup que sumiu, leitor com erro, lentidão |
+| `backups.yaml` | `backups-1m` | Backups (`integrations/backup`, qualquer produtor): atrasado e muito atrasado, falha, degradado, tamanho caiu, estado não lido, backup que sumiu, leitor com erro, backup esperado não reportado, lentidão |
 
 **Decisões que estão nas consultas** (mude aqui quando mudar a operação):
 
@@ -39,7 +39,8 @@ Todas as regras ficam na pasta INFRA do Grafana, um grupo por arquivo. O catálo
 - **Estações Windows (sem alertas):** máquinas descartáveis publicam em `integrations/windows-desktop` e `windows-desktop-eventlog` (perfil estação do Alloy). Nenhuma regra usa esses jobs, e como toda consulta fixa o job, elas nunca entram nos alertas de servidor. Não crie regras para eles. Ao converter um servidor em estação, marque-o como `ignorar` em `servidores:` no catálogo até passarem os 7 dias do WIN-102.
 - **Excluídos de propósito:** unidades `fwupd*` (LIN-110), o container `grafana-alerting-temp` do deploy (CTR) e a memória total dos hosts Hyper-V (em host, use HYP-205).
 - **Deixados de fora de propósito:** erros do armazenamento virtual do Hyper-V (o contador sobe em todos os discos, é ruído de base) e saúde do Loki (se ele cair, as regras de log entram em erro e o Grafana gera `DatasourceError` com os labels da regra).
-- **Backups são genéricos:** nenhuma regra cita servidor, sistema ou horário. Cada backup publica o próprio intervalo esperado (`backup_expected_interval_seconds`) e as regras comparam série a série (`instance`, `service`, `backup_id`): atrasado (BKP-102) acima de intervalo × 1,1 + 30 min, muito atrasado (BKP-101) acima de 2 × intervalo. Backup sem intervalo publicado não tem alerta de atraso. Backup novo não exige mudança aqui.
+- **Backups são genéricos:** nenhuma regra cita servidor, sistema ou horário; as regras comparam série a série (`instance`, `service`, `backup_id`) com o que cada backup publica. Com prazo do próximo sucesso (`backup_success_due_timestamp_seconds`): atrasado (BKP-102) depois do prazo + 30 min + 1,5 × duração da última tentativa, muito atrasado (BKP-101) depois disso + um intervalo. Sem prazo, pelo intervalo (`backup_expected_interval_seconds`): acima de intervalo × 1,1 + 30 min e de 2 × intervalo. Sem nenhum dos dois, não há alerta de atraso. Backup novo não exige mudança aqui.
+- **Criticidade dos backups:** `criticality=baixa` no `backup_info` desce um nível a severidade de BKP-101, 102, 110, 111 e 120 (template sobre o label, como a severidade dos containers). Ausente ou `alta`, vale a severidade padrão.
 - **"Sem métricas" e "container sumiu"** comparam com o que existia nos últimos 7 dias e 24 horas: servidor ou container desativado de propósito para de alertar depois desse prazo (ou silencie antes).
 
 ## Padrão das regras
@@ -119,12 +120,13 @@ Monte a policy padrão pelos labels (`contracts/alerts/notifications.yml`, `rout
 | `vms` | nome da VM no Hyper-V | `critica`, `importante`, `informativa`, `ignorar` | VM desligada: HYP-111 (critical), HYP-112 (warning), HYP-113 (info, não notifica) ou nada |
 | `servidores` | instance do Alloy | `critico`, `normal` (padrão), `ignorar` | Servidor sem métricas: LIN/WIN-101 (critical), LIN/WIN-102 (warning) ou nada |
 | `containers` | nome do container | `importante` (padrão), `secundario`, `ignorar` | CTR-101 a 104 em warning, em info (não notifica) ou fora dos alertas e das contagens dos dashboards |
+| `backups` | instance → lista `service/backup_id` | — | Backups esperados (opt-in): item sem série com o servidor enviando métricas gera BKP-304. Só o que você quer garantir; servidor sem backup interno não entra |
 
 Desligar uma VM não exige mudar o catálogo: a classe só define o quanto o desligamento importa. Tudo o que roda numa VM desligada (servidor, containers, serviços do Kuma com a tag `vm`) fica inibido enquanto o alerta da VM estiver ativo (ver [Dependências e inibição](#dependências-e-inibição)).
 
 **Mudar uma classe:** edite `catalogo.yml` (o editor do GitHub serve), faça o merge e rode `sudo grafana-alerting deploy`.
 
-**Conferir:** `sudo grafana-alerting catalogo` (ou opção `c` do menu) compara o arquivo com o que a produção reportou nos últimos 7 dias: classe efetiva de cada VM (e se está ligada), servidores, containers (rodando ou parado) e nomes do catálogo que não existem mais.
+**Conferir:** `sudo grafana-alerting catalogo` (ou opção `c` do menu) compara o arquivo com o que a produção reportou nos últimos 7 dias: classe efetiva de cada VM (e se está ligada), servidores, containers (rodando ou parado), backups esperados e reportados, e nomes do catálogo que não existem mais.
 
 Marcadores nas regras (expansão em `scripts/catalogo.py`; o resultado é uma alternância de regex com os nomes escapados):
 
@@ -133,6 +135,7 @@ Marcadores nas regras (expansão em `scripts/catalogo.py`; o resultado é uma al
 | `@catalogo:vms=critica@` | VMs listadas como `critica` |
 | `@catalogo:vms!=critica@` | VMs listadas com outra classe |
 | `@catalogo:hosts@` | todos os hosts |
+| `@catalogo:backups@` | expressão PromQL com uma série (`instance`, `service`, `backup_id`) por backup esperado, entre parênteses |
 
 A severidade de CTR-101 a 104 usa um template com `match` sobre o nome do container (`@catalogo:containers=secundario@`), conferido no Grafana 13.3.0. Os dashboards não passam pelo build (o Git Sync lê o JSON direto): quando o catálogo muda, o workflow `catalogo` regrava o filtro de containers ignorados nos dashboards e faz o commit na mesma branch, sozinho.
 

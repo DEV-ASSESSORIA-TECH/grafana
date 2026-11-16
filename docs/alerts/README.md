@@ -118,4 +118,5 @@ Padrão em [`contracts/alerts/docs.yml`](../../contracts/alerts/docs.yml). Arqui
 | [BKP-301](BKP-301.md) | Estado do backup não lido | warning |
 | [BKP-302](BKP-302.md) | Backup deixou de ser reportado | warning |
 | [BKP-303](BKP-303.md) | Leitor de backups com erro | warning |
+| [BKP-304](BKP-304.md) | Backup esperado não reportado | warning |
 | [BKP-401](BKP-401.md) | Backup lento | info |

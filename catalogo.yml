@@ -68,3 +68,10 @@ containers:
   n8n-postgres: secundario
   snipe-it-app: secundario
   snipe-it-db: secundario
+
+# Backups esperados (instance -> service/backup_id): lista opt-in, so do que precisa existir. Item listado sem
+# serie no job integrations/backup, com o servidor enviando metricas, gera o BKP-304. Nao e lista de servidores:
+# servidor sem backup interno, ou backup que voce nao quer garantir, simplesmente nao aparece aqui.
+backups:
+  srv-contabil-ass: [seven/database, seven/fiscal]
+  srv-seven-mtc: [seven/database, seven/fiscal]

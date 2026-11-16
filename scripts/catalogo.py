@@ -7,9 +7,11 @@ build (alerting_build.py) e os validadores expandem a partir do catalogo.yml:
     @catalogo:<secao>@              todos os nomes da secao
     @catalogo:<secao>=<classes>@    nomes com uma das classes (separadas por virgula)
     @catalogo:<secao>!=<classes>@   nomes listados com outra classe
+    @catalogo:backups@              backups esperados, como expressao PromQL (uma serie por backup)
 
 O resultado e uma alternancia de regex (a|b|c) com os nomes escapados; lista vazia vira "" (=~"" nao casa com
-nada, !~"" nao exclui nada).
+nada, !~"" nao exclui nada). A secao backups (instance: [service/backup_id, ...]) vira uma expressao com uma serie
+(instance, service, backup_id) por item, ou uma expressao vazia sem itens.
 
 Uso:
     python scripts/catalogo.py                       # resumo do catalogo
@@ -40,6 +42,11 @@ NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 MARK = re.compile(r"@catalogo:([a-z]+)(?:(!?=)([a-z,]+))?@")
 # severidade que depende do catalogo: '{{ if match "^(...)$" $labels.name }}info{{ else }}warning{{ end }}'
 SEVERITY = re.compile(r'^\{\{ if match "\^\((.*)\)\$" \$\$?labels\.name \}\}(\w+)\{\{ else \}\}(\w+)\{\{ end \}\}$')
+# severidade que depende da criticidade publicada pelo backup (backup_info, contracts/prometheus/backup.yml):
+# '{{ if eq $labels.criticality "baixa" }}warning{{ else }}critical{{ end }}'
+SEVERITY_CRITICALITY = re.compile(
+    r'^\{\{ if eq \$\$?labels\.criticality "baixa" \}\}(\w+)\{\{ else \}\}(\w+)\{\{ end \}\}$')
+BACKUP_ID = re.compile(r"^[a-z0-9]+([-_][a-z0-9]+)*/[a-z0-9]+([-_][a-z0-9]+)*$")
 # filtro de containers ignorados nos dashboards (Git Sync le o JSON direto, sem build). Forma exigida, logo apos o job:
 #   Prometheus  {job="integrations/docker",name!~"|<ignorados>",...}
 #   Loki        {job="docker",container!~"|<ignorados>",...}
@@ -47,9 +54,18 @@ DASH_IGNORE = re.compile(r'((?:integrations/docker\\",name|job=\\"docker\\",cont
 
 
 def severity_values(value):
-    """(padrao, alternativa) de uma severidade com template do catalogo; (valor, None) se fixa."""
-    m = SEVERITY.match(value or "")
-    return (m.group(3), m.group(2)) if m else (value, None)
+    """(padrao, alternativa) de uma severidade com template; (valor, None) se fixa."""
+    m = SEVERITY.match(value or "") or SEVERITY_CRITICALITY.match(value or "")
+    return (m.group(m.lastindex), m.group(m.lastindex - 1)) if m else (value, None)
+
+
+def severity_condition(value):
+    """Quando vale a severidade alternativa (texto da documentacao); None se fixa."""
+    if SEVERITY.match(value or ""):
+        return "se o container for secundario no catalogo.yml"
+    if SEVERITY_CRITICALITY.match(value or ""):
+        return "se o backup publicar criticality=baixa"
+    return None
 
 
 def sync_dashboards(cat, write=False, root=ROOT):
@@ -92,7 +108,7 @@ def load(path=FILE):
         return {s: {} for s in SECTIONS}, [f"{path.name}: {e}"]
     cat = {}
     for key in data:
-        if key not in SECTIONS and key != "versao":
+        if key not in SECTIONS and key not in ("versao", "backups"):
             errors.append(f"{path.name}: secao desconhecida: {key}")
     for section, (classes, _) in SECTIONS.items():
         raw = data.get(section) or {}
@@ -109,6 +125,25 @@ def load(path=FILE):
             if cls not in classes:
                 errors.append(f"{path.name}: {section}.{name}: classe {cls!r} (aceitas: {', '.join(classes)})")
             cat[section][name] = cls
+    raw = data.get("backups") or {}
+    cat["backups"] = {}
+    if not isinstance(raw, dict):
+        errors.append(f"{path.name}: backups deve ser um mapa instance: [service/backup_id, ...]")
+        raw = {}
+    for name, items in raw.items():
+        name = str(name)
+        if not NAME.match(name):
+            errors.append(f"{path.name}: backups: nome invalido: {name!r}")
+        if not isinstance(items, list) or not items:
+            errors.append(f"{path.name}: backups.{name}: lista de service/backup_id")
+            items = []
+        for item in items:
+            if not isinstance(item, str) or not BACKUP_ID.match(item):
+                errors.append(f"{path.name}: backups.{name}: {item!r} fora do formato service/backup_id")
+            elif item in cat["backups"].get(name, []):
+                errors.append(f"{path.name}: backups.{name}: {item} repetido")
+            else:
+                cat["backups"].setdefault(name, []).append(item)
     return cat, errors
 
 
@@ -124,12 +159,26 @@ def regex(values):
     return "|".join(re.sub(r"([.\\+*?()\[\]{}^$|])", r"\\\1", v) for v in values)
 
 
+def backups_vector(cat):
+    """Backups esperados como expressao PromQL: uma serie (instance, service, backup_id) com valor 1 por item."""
+    parts = []
+    for instance, items in sorted(cat.get("backups", {}).items()):
+        for item in items:
+            service, backup_id = item.split("/")
+            parts.append(f'label_replace(label_replace(label_replace(vector(1), "instance", "{instance}", "", ""), '
+                         f'"service", "{service}", "", ""), "backup_id", "{backup_id}", "", "")')
+    # entre parenteses: "unless"/"and" ligam mais forte que "or" e pegariam so o ultimo item
+    return "(" + " or ".join(parts) + ")" if parts else "(vector(1) < 0)"
+
+
 def render(text, cat):
     """Expande os marcadores; devolve (texto, erros)."""
     errors = []
 
     def sub(m):
         section, op, classes = m.groups()
+        if section == "backups" and not op:
+            return backups_vector(cat)
         if section not in SECTIONS:
             errors.append(f"marcador com secao desconhecida: {m.group(0)}")
             return m.group(0)
@@ -154,6 +203,9 @@ def summary(cat):
             print(f"  {c:12} {', '.join(ns)}")
         if default:
             print(f"  (nao listado = {default})")
+    print("backups (esperados):")
+    for n, items in sorted(cat.get("backups", {}).items()):
+        print(f"  {n:28} {', '.join(items)}")
 
 
 # --------------------------------------------------------------- auditoria
@@ -225,6 +277,17 @@ def audit(cat, url, token):
         if c not in containers:
             note, pend = "  <- remover do catalogo?", pend + 1
         print(f"  {c:34} {cls:12} {where:18} {state}{note}")
+    head("Backups (esperados no catalogo x reportados nos ultimos 7 dias)")
+    seen = {(m["instance"], f'{m["service"]}/{m["backup_id"]}') for m in prom(
+        url, token, 'group by (instance, service, backup_id) (max_over_time(backup_collection_timestamp_seconds{job="integrations/backup"}[7d]))')}
+    expected = {(n, i) for n, items in cat.get("backups", {}).items() for i in items}
+    for n, i in sorted(expected | seen):
+        note = ""
+        if (n, i) not in seen:
+            note, pend = "  <- esperado, nao reportado ha 7 dias", pend + 1
+        elif (n, i) not in expected:
+            note = "  (reportado, fora da lista de esperados)"
+        print(f"  {n:28} {i:28}{note}")
     print(f"\n{pend} pendencia(s) no catalogo." if pend else "\nCatalogo em dia com a producao.")
     return pend
 

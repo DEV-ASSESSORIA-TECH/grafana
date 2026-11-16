@@ -1,7 +1,7 @@
 # Contrato definido (convencao para produtores externos); nao provisionar este YAML no Grafana.
 schema_version: 2
 kind: observability_contract
-version: 0.2.0
+version: 0.3.0
 id: backup
 title: Backups / convencao generica de estado (textfile)
 status: defined
@@ -71,6 +71,7 @@ metric_help:
   backup_collection_success: Produtor conseguiu observar o estado do backup (1 = sim, 0 = nao).
   backup_last_attempt_degraded: Ultima tentativa publicou um backup degradado (1 = sim, 0 = nao).
   backup_expected_interval_seconds: Intervalo esperado entre backups bem-sucedidos.
+  backup_success_due_timestamp_seconds: Primeira execucao agendada depois do ultimo sucesso, prazo do proximo sucesso (Unix).
   backup_info: Descricao do backup (valor sempre 1).
 metric_type: gauge (todas)
 metric_groups:
@@ -110,12 +111,16 @@ metric_groups:
     metrics_observed:
       - backup_last_attempt_degraded
       - backup_expected_interval_seconds
+      - backup_success_due_timestamp_seconds
       - backup_info
     labels:
       backup_last_attempt_degraded:
         - service
         - backup_id
       backup_expected_interval_seconds:
+        - service
+        - backup_id
+      backup_success_due_timestamp_seconds:
         - service
         - backup_id
       backup_info:
@@ -130,14 +135,20 @@ metric_groups:
           - target
           - destination
           - site
+          - criticality
     interpretation: >-
       degraded = 1 quando a tentativa publicou um backup utilizavel porem incompleto (ex. fallback); nesse caso
       last_attempt_success = 0 e last_success_* nao mudam. expected_interval e a cadencia declarada pelo produtor e
       o que habilita o alerta de atraso: as regras comparam cada backup com o intervalo que ele mesmo publica (serie a
-      serie, por instance/service/backup_id). Ausente, o backup nao tem alerta de atraso. backup_info vale 1 e
+      serie, por instance/service/backup_id). success_due e a primeira execucao agendada depois do ultimo sucesso
+      (inicio, no horario do servidor convertido para Unix): o prazo do proximo sucesso. Ancorado no ultimo sucesso, nao
+      avanca quando uma execucao falha; sem sucesso conhecido, o produtor mantem o primeiro prazo publicado. Com
+      success_due, o atraso usa o prazo (preciso em agenda irregular: fim de semana, mensal); sem ele, o intervalo. Os
+      dois formatos valem; cada backup e avaliado pelo que publica. backup_info vale 1 e
       carrega descricao estavel e de baixa cardinalidade: kind (database, files, vm, config...), producer (software que
       gera o arquivo), producer_version, target (host ou instancia dos dados, quando diferente de instance) e
-      destination (tipo de destino, ex. s3, nas, local) e site (cliente ou local, quando o produtor tem esse nome). Labels
+      destination (tipo de destino, ex. s3, nas, local), site (cliente ou local, quando o produtor tem esse nome) e
+      criticality (alta ou baixa; ausente = alta): com baixa, os alertas do backup descem um nivel de severidade. Labels
       extras so em backup_info, nunca nas demais metricas.
   reader_health:
     title: Saude da leitura (Alloy)
@@ -165,8 +176,15 @@ metric_groups:
       no Windows e com o caminho completo no Linux. Serie duplicada ou HELP divergente pode ser descartada sem erro:
       conferir que cada backup esperado tem series.
 query_recipes:
+  - id: success_past_due
+    title: Passou do prazo do proximo sucesso mais 30 min e 1,5x a duracao da ultima tentativa (backups com prazo)
+    promql: (time() - backup_success_due_timestamp_seconds{job="integrations/backup"}) > on (instance, service, backup_id) (backup_last_attempt_duration_seconds{job="integrations/backup"} * 1.5 + 1800 or backup_success_due_timestamp_seconds{job="integrations/backup"} * 0 + 1800)
+    unit: seconds
+    dependencies:
+      - backup_success_due_timestamp_seconds
+      - backup_last_attempt_duration_seconds
   - id: success_overdue
-    title: Ultimo sucesso mais antigo que o intervalo esperado + 10% + 30 min (uma execucao perdida)
+    title: Ultimo sucesso mais antigo que o intervalo esperado + 10% + 30 min (backups sem prazo)
     promql: (time() - backup_last_success_timestamp_seconds{job="integrations/backup"}) > on (instance, service, backup_id) (backup_expected_interval_seconds{job="integrations/backup"} * 1.1 + 1800)
     unit: seconds
     dependencies:
@@ -230,7 +248,7 @@ limitations:
     lista de backups esperados.
   - expected_interval e declarado pelo produtor; ausente, a regra generica de atraso nao avalia o backup.
   - expected_interval e o maior intervalo entre execucoes; em agenda irregular (ex. sem fim de semana) o atraso nos
-    dias normais so e percebido depois desse maior intervalo.
+    dias normais so e percebido depois desse maior intervalo. success_due resolve esse caso.
   - Valores sao os do ultimo arquivo gravado; produtor parado mantem os ultimos valores (usar os timestamps).
 change_policy:
   require_new_metrics_before_using_in_dashboard: true

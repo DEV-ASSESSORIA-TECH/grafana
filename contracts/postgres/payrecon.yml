@@ -1,0 +1,148 @@
+# Contrato definido para o PayRecon (PostgreSQL). Os dashboards de demonstracao embutem dados simulados com
+# exatamente as colunas das views abaixo (TestData csv_content); a integracao real troca so a consulta de origem.
+schema_version: 1
+kind: sql_dataset_contract
+version: 0.1.0
+id: payrecon
+title: PayRecon / controle e conciliacao de recebimentos (Cielo x Sicredi)
+status: defined
+defined_date: '2026-11-17'
+database:
+  engine: postgresql
+  schema: payrecon
+  grafana_datasource:
+    type: grafana-postgresql-datasource
+    uid: payrecon
+    note: >-
+      UID fixo por ambiente isolado (um banco por cliente). Usuario do Grafana somente leitura, com SELECT apenas nas
+      views vw_*; tabelas de origem ficam fora do alcance do Grafana.
+  timezone: America/Sao_Paulo
+conventions:
+  money: numeric(14,2) em BRL; valores negativos so em ajustes e diferencas.
+  dates: >-
+    Colunas data_* sao date (dia civil em America/Sao_Paulo). Na consulta do Grafana, converter para timestamp no
+    fuso local, ex. (data_prevista::timestamp AT TIME ZONE 'America/Sao_Paulo') AS data_prevista.
+  codes: Codigos minusculos ASCII em modalidade, bandeira e situacao; o texto exibido vem das value mappings do dashboard.
+  data_base: >-
+    Data de referencia da posicao (current_date no fuso do ambiente). Toda classificacao relativa ao tempo
+    (situacao, dias_para_liquidacao) e calculada na view a partir dela, nunca gravada.
+domains:
+  modalidade:
+    pix: Pix na maquininha
+    debito: Cartao de debito
+    credito: Cartao de credito a vista
+  bandeira:
+    visa: Visa
+    mastercard: Mastercard
+    elo: Elo
+    hipercard: Hipercard
+    amex: American Express
+    sem_bandeira: Pix (nao tem bandeira)
+settlement_rules:
+  pix: D+0 (mesmo dia, inclusive fim de semana e feriado)
+  debito: D+1 dia util
+  credito: D+30 dias corridos; caindo em fim de semana ou feriado nacional, vai para o proximo dia util
+  business_days: Segunda a sexta, exceto feriados nacionais da tabela payrecon.feriados.
+  override: >-
+    Quando o arquivo da adquirente informa a data de pagamento, ela prevalece sobre a regra (antecipacao, reagenda).
+sources:
+  cielo_vendas:
+    origin: Cielo (EDI ou API, metodo de coleta em definicao)
+    grain: uma transacao (NSU + data da venda + estabelecimento)
+    key: [estabelecimento, nsu, data_venda]
+  cielo_ajustes:
+    origin: Cielo (registros de ajuste do EDI)
+    grain: um ajuste informado (aluguel de equipamento, cancelamento, chargeback, tarifa)
+    key: [estabelecimento, id_ajuste]
+  sicredi_lancamentos:
+    origin: API Sicredi (extrato da conta)
+    grain: um lancamento a credito ou debito
+    key: [conta, id_lancamento]
+  feriados:
+    origin: tabela mantida no proprio banco
+    grain: um feriado nacional
+  retention: >-
+    Registros coletados sao imutaveis (append-only, com data de coleta e hash do arquivo de origem guardado em S3);
+    correcoes entram como nova versao, preservando o historico para auditoria.
+views:
+  vw_movimento_diario:
+    title: Vendas por dia, modalidade e bandeira
+    grain: [data_venda, modalidade, bandeira]
+    columns:
+      data_venda: {type: date, meaning: Dia da venda}
+      modalidade: {type: text, domain: modalidade}
+      bandeira: {type: text, domain: bandeira}
+      qtd_transacoes: {type: integer, meaning: Transacoes aprovadas, menos canceladas no mesmo dia}
+      valor_bruto: {type: numeric, unit: BRL, meaning: Valor pago pelo cliente}
+      valor_taxa: {type: numeric, unit: BRL, meaning: Taxa da adquirente (MDR)}
+      valor_liquido: {type: numeric, unit: BRL, meaning: valor_bruto - valor_taxa}
+    consumers: [payrecon-visao-geral]
+  vw_agenda_recebimentos:
+    title: Agenda de recebiveis por dia de venda e data prevista
+    grain: [data_prevista, data_venda, modalidade, bandeira]
+    columns:
+      data_prevista: {type: date, meaning: Data prevista de credito na conta (settlement_rules)}
+      data_venda: {type: date}
+      modalidade: {type: text, domain: modalidade}
+      bandeira: {type: text, domain: bandeira}
+      valor_bruto: {type: numeric, unit: BRL}
+      valor_taxa: {type: numeric, unit: BRL}
+      valor_liquido: {type: numeric, unit: BRL, meaning: Valor a creditar, sem ajustes (ajustes ficam na conciliacao)}
+      prazo_dias: {type: integer, meaning: data_prevista - data_venda}
+      dias_para_liquidacao: {type: integer, meaning: data_prevista - data_base (negativo = ja venceu)}
+      situacao: {type: text, domain: situacao_agenda}
+    situacao_agenda:
+      previsto: data_prevista depois da data_base. Previsao, nunca atraso.
+      aguardando: data_prevista igual a data_base; o banco pode creditar ao longo do dia.
+      liquidado: data_prevista antes da data_base e chave encontrada na conciliacao.
+      nao_localizado: data_prevista antes da data_base e chave da conciliacao em nao_localizado.
+    consumers: [payrecon-agenda]
+  vw_conciliacao:
+    title: Previsto pela Cielo x creditado no Sicredi
+    grain: [data_prevista, modalidade, bandeira]
+    matching: >-
+      Um credito da Cielo no extrato Sicredi por chave (data, modalidade, bandeira), identificado pelo historico e
+      pelo valor. Credito agrupado ou em data diferente e associado manualmente e registrado como vinculo auditavel.
+    columns:
+      data_prevista: {type: date}
+      modalidade: {type: text, domain: modalidade}
+      bandeira: {type: text, domain: bandeira}
+      valor_previsto: {type: numeric, unit: BRL, meaning: Soma de vw_agenda_recebimentos.valor_liquido na chave}
+      valor_ajustes: {type: numeric, unit: BRL, meaning: Soma dos ajustes informados pela Cielo na chave (negativo = desconto)}
+      valor_esperado: {type: numeric, unit: BRL, meaning: valor_previsto + valor_ajustes}
+      valor_recebido: {type: numeric, unit: BRL, meaning: Credito identificado no Sicredi (0 sem credito)}
+      diferenca: {type: numeric, unit: BRL, meaning: valor_recebido - valor_esperado so quando avaliado = 1; senao 0}
+      situacao: {type: text, domain: situacao_conciliacao}
+      conciliado: {type: integer, meaning: 1 em conciliado e conciliado_ajuste}
+      pendente: {type: integer, meaning: 1 em aguardando e nao_localizado}
+      divergente: {type: integer, meaning: 1 em divergente}
+      avaliado: {type: integer, meaning: 1 quando a data_prevista ja venceu (exclui aguardando e a_receber)}
+      ocorrencia: {type: text, meaning: Motivo do ajuste ou nota de analise; vazio quando conciliado sem ajuste}
+    situacao_conciliacao:
+      conciliado: abs(valor_recebido - valor_esperado) <= 0.01 e sem ajuste.
+      conciliado_ajuste: Igual ao anterior, com ajuste informado pela Cielo explicando a diferenca para o previsto.
+      divergente: >-
+        Diferenca acima da tolerancia sem ajuste correspondente. Fica em analise; nao e presumida como divida da
+        adquirente (pode ser ajuste nao lido, tarifa bancaria, credito agrupado).
+      nao_localizado: Data vencida e nenhum credito associado.
+      aguardando: data_prevista igual a data_base.
+      a_receber: data_prevista depois da data_base. Nunca entra como atraso nem divergencia.
+    tolerance: 0.01
+    consumers: [payrecon-conciliacao]
+consumption_rules:
+  - Painel nunca recalcula situacao; usa a coluna da view.
+  - Totais de previsto x recebido excluem a_receber; indice de conciliacao usa so linhas com avaliado = 1.
+  - Filtros de periodo aplicam-se a data_venda (vendas) ou data_prevista (agenda e conciliacao).
+  - Variaveis do dashboard filtram modalidade, bandeira e situacao pelos codigos de domains.
+query_recipes:
+  - id: conciliacao_periodo
+    sql: >-
+      SELECT (data_prevista::timestamp AT TIME ZONE 'America/Sao_Paulo') AS data_prevista, modalidade, bandeira,
+      valor_previsto, valor_ajustes, valor_esperado, valor_recebido, diferenca, situacao, conciliado, pendente,
+      divergente, avaliado, ocorrencia FROM payrecon.vw_conciliacao WHERE $__timeFilter(data_prevista)
+demo:
+  datasource: grafana-testdata-datasource (uid testdata), cenario csv_content
+  rule: >-
+    O cabecalho do CSV embutido e identico a lista de colunas de uma view (mesma ordem); validate_dashboards.py
+    confere. Uma consulta TestData por dashboard; os demais paineis usam o datasource -- Dashboard --.
+  generator: scripts/payrecon_demo.py

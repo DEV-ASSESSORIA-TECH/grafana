@@ -1,0 +1,4699 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "payrecon-conciliacao"
+  },
+  "spec": {
+    "annotations": [
+      {
+        "kind": "AnnotationQuery",
+        "spec": {
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana",
+            "version": "v0",
+            "datasource": {
+              "name": "-- Grafana --"
+            },
+            "spec": {}
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "builtIn": true,
+          "legacyOptions": {
+            "type": "dashboard"
+          }
+        }
+      }
+    ],
+    "cursorSync": "Crosshair",
+    "description": "DEMONSTRAÇÃO — DADOS SIMULADOS. Comparação entre o previsto pela Cielo e os créditos no Sicredi: conciliados, pendentes e divergentes.",
+    "editable": true,
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "",
+          "description": "Dashboard de demonstração comercial do PayRecon. Valores, datas, bandeiras e ocorrências são fictícios e foram gerados por scripts/payrecon_demo.py; nenhuma integração real com Cielo ou Sicredi.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "text",
+            "version": "",
+            "spec": {
+              "options": {
+                "mode": "html",
+                "content": "<div style=\"display:flex;align-items:center;gap:16px;height:100%;padding:0 16px;background:#E0752D;color:#fff;border-radius:4px\"><div style=\"font-size:18px;font-weight:700;letter-spacing:.5px;white-space:nowrap;flex-shrink:0\">DEMONSTRAÇÃO — DADOS SIMULADOS</div><div style=\"font-size:13px;line-height:1.35\">Cielo (previsto) × Sicredi (creditado) para o posto fictício · posição em 17/11/2026 às 08h00 · valores com data futura ficam como A receber e não entram como atraso; diferença sem ajuste informado fica Em análise, sem presumir dívida da adquirente.</div></div>",
+                "code": {
+                  "language": "plaintext",
+                  "showLineNumbers": false,
+                  "showMiniMap": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "",
+          "description": "Líquido que a Cielo informou para pagamento até a data-base, já com ajustes informados por ela (aluguel, cancelamento, chargeback). Não inclui valores a receber no futuro.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-testdata-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "testdata"
+                      },
+                      "spec": {
+                        "scenarioId": "csv_content",
+                        "csvContent": "data_prevista,modalidade,bandeira,valor_previsto,valor_ajustes,valor_esperado,valor_recebido,diferenca,situacao,conciliado,pendente,divergente,avaliado,ocorrencia\n2026-10-18T00:00:00-03:00,pix,sem_bandeira,12863.38,0.00,12863.38,12863.38,0.00,conciliado,1,0,0,1,\n2026-10-19T00:00:00-03:00,pix,sem_bandeira,16633.28,0.00,16633.28,16633.28,0.00,conciliado,1,0,0,1,\n2026-10-19T00:00:00-03:00,debito,elo,11029.23,0.00,11029.23,11029.23,0.00,conciliado,1,0,0,1,\n2026-10-19T00:00:00-03:00,debito,mastercard,20409.58,0.00,20409.58,20409.58,0.00,conciliado,1,0,0,1,\n2026-10-19T00:00:00-03:00,debito,visa,19344.89,0.00,19344.89,19344.89,0.00,conciliado,1,0,0,1,\n2026-10-19T00:00:00-03:00,credito,amex,2937.56,0.00,2937.56,2937.56,0.00,conciliado,1,0,0,1,\n2026-10-19T00:00:00-03:00,credito,elo,7988.34,0.00,7988.34,7988.34,0.00,conciliado,1,0,0,1,\n2026-10-19T00:00:00-03:00,credito,hipercard,3783.00,0.00,3783.00,3783.00,0.00,conciliado,1,0,0,1,\n2026-10-19T00:00:00-03:00,credito,mastercard,19929.07,0.00,19929.07,19929.07,0.00,conciliado,1,0,0,1,\n2026-10-19T00:00:00-03:00,credito,visa,20244.16,0.00,20244.16,20244.16,0.00,conciliado,1,0,0,1,\n2026-10-20T00:00:00-03:00,pix,sem_bandeira,16324.78,0.00,16324.78,16324.78,0.00,conciliado,1,0,0,1,\n2026-10-20T00:00:00-03:00,debito,elo,3122.89,0.00,3122.89,3122.89,0.00,conciliado,1,0,0,1,\n2026-10-20T00:00:00-03:00,debito,mastercard,6063.49,0.00,6063.49,6063.49,0.00,conciliado,1,0,0,1,\n2026-10-20T00:00:00-03:00,debito,visa,5903.96,0.00,5903.96,5903.96,0.00,conciliado,1,0,0,1,\n2026-10-20T00:00:00-03:00,credito,amex,938.06,0.00,938.06,938.06,0.00,conciliado,1,0,0,1,\n2026-10-20T00:00:00-03:00,credito,elo,3053.25,0.00,3053.25,3053.25,0.00,conciliado,1,0,0,1,\n2026-10-20T00:00:00-03:00,credito,hipercard,1444.49,0.00,1444.49,1444.49,0.00,conciliado,1,0,0,1,\n2026-10-20T00:00:00-03:00,credito,mastercard,6676.25,0.00,6676.25,6676.25,0.00,conciliado,1,0,0,1,\n2026-10-20T00:00:00-03:00,credito,visa,6607.79,0.00,6607.79,6607.79,0.00,conciliado,1,0,0,1,\n2026-10-21T00:00:00-03:00,pix,sem_bandeira,15182.93,0.00,15182.93,15182.93,0.00,conciliado,1,0,0,1,\n2026-10-21T00:00:00-03:00,debito,elo,3655.15,0.00,3655.15,3655.15,0.00,conciliado,1,0,0,1,\n2026-10-21T00:00:00-03:00,debito,mastercard,6623.94,0.00,6623.94,6623.94,0.00,conciliado,1,0,0,1,\n2026-10-21T00:00:00-03:00,debito,visa,6355.97,0.00,6355.97,6355.97,0.00,conciliado,1,0,0,1,\n2026-10-21T00:00:00-03:00,credito,amex,1019.24,0.00,1019.24,1019.24,0.00,conciliado,1,0,0,1,\n2026-10-21T00:00:00-03:00,credito,elo,2999.66,0.00,2999.66,2999.66,0.00,conciliado,1,0,0,1,\n2026-10-21T00:00:00-03:00,credito,hipercard,1215.96,0.00,1215.96,1215.96,0.00,conciliado,1,0,0,1,\n2026-10-21T00:00:00-03:00,credito,mastercard,6448.60,0.00,6448.60,6448.60,0.00,conciliado,1,0,0,1,\n2026-10-21T00:00:00-03:00,credito,visa,6495.90,0.00,6495.90,6495.90,0.00,conciliado,1,0,0,1,\n2026-10-22T00:00:00-03:00,pix,sem_bandeira,16383.98,0.00,16383.98,16383.98,0.00,conciliado,1,0,0,1,\n2026-10-22T00:00:00-03:00,debito,elo,3414.49,0.00,3414.49,3414.49,0.00,conciliado,1,0,0,1,\n2026-10-22T00:00:00-03:00,debito,mastercard,5698.48,0.00,5698.48,5698.48,0.00,conciliado,1,0,0,1,\n2026-10-22T00:00:00-03:00,debito,visa,6507.71,0.00,6507.71,6507.71,0.00,conciliado,1,0,0,1,\n2026-10-22T00:00:00-03:00,credito,amex,971.67,0.00,971.67,971.67,0.00,conciliado,1,0,0,1,\n2026-10-22T00:00:00-03:00,credito,elo,2685.57,0.00,2685.57,2685.57,0.00,conciliado,1,0,0,1,\n2026-10-22T00:00:00-03:00,credito,hipercard,1320.68,0.00,1320.68,1320.68,0.00,conciliado,1,0,0,1,\n2026-10-22T00:00:00-03:00,credito,mastercard,5995.02,0.00,5995.02,5995.02,0.00,conciliado,1,0,0,1,\n2026-10-22T00:00:00-03:00,credito,visa,6855.88,0.00,6855.88,6855.88,0.00,conciliado,1,0,0,1,\n2026-10-23T00:00:00-03:00,pix,sem_bandeira,15677.48,0.00,15677.48,15677.48,0.00,conciliado,1,0,0,1,\n2026-10-23T00:00:00-03:00,debito,elo,3937.37,0.00,3937.37,3937.37,0.00,conciliado,1,0,0,1,\n2026-10-23T00:00:00-03:00,debito,mastercard,6153.65,0.00,6153.65,6153.65,0.00,conciliado,1,0,0,1,\n2026-10-23T00:00:00-03:00,debito,visa,6302.41,0.00,6302.41,6302.41,0.00,conciliado,1,0,0,1,\n2026-10-23T00:00:00-03:00,credito,amex,901.20,0.00,901.20,901.20,0.00,conciliado,1,0,0,1,\n2026-10-23T00:00:00-03:00,credito,elo,2664.83,0.00,2664.83,2664.83,0.00,conciliado,1,0,0,1,\n2026-10-23T00:00:00-03:00,credito,hipercard,1327.51,0.00,1327.51,1327.51,0.00,conciliado,1,0,0,1,\n2026-10-23T00:00:00-03:00,credito,mastercard,6458.57,0.00,6458.57,6458.57,0.00,conciliado,1,0,0,1,\n2026-10-23T00:00:00-03:00,credito,visa,6536.02,0.00,6536.02,6536.02,0.00,conciliado,1,0,0,1,\n2026-10-24T00:00:00-03:00,pix,sem_bandeira,19029.22,0.00,19029.22,19029.22,0.00,conciliado,1,0,0,1,\n2026-10-25T00:00:00-03:00,pix,sem_bandeira,12224.09,0.00,12224.09,12224.09,0.00,conciliado,1,0,0,1,\n2026-10-26T00:00:00-03:00,pix,sem_bandeira,14122.44,0.00,14122.44,14122.44,0.00,conciliado,1,0,0,1,\n2026-10-26T00:00:00-03:00,debito,elo,11612.72,0.00,11612.72,11612.72,0.00,conciliado,1,0,0,1,\n2026-10-26T00:00:00-03:00,debito,mastercard,20650.39,0.00,20650.39,20650.39,0.00,conciliado,1,0,0,1,\n2026-10-26T00:00:00-03:00,debito,visa,21598.29,0.00,21598.29,21598.29,0.00,conciliado,1,0,0,1,\n2026-10-26T00:00:00-03:00,credito,amex,3438.97,0.00,3438.97,3438.97,0.00,conciliado,1,0,0,1,\n2026-10-26T00:00:00-03:00,credito,elo,9518.05,0.00,9518.05,9518.05,0.00,conciliado,1,0,0,1,\n2026-10-26T00:00:00-03:00,credito,hipercard,4697.25,0.00,4697.25,4697.25,0.00,conciliado,1,0,0,1,\n2026-10-26T00:00:00-03:00,credito,mastercard,24694.76,0.00,24694.76,24694.76,0.00,conciliado,1,0,0,1,\n2026-10-26T00:00:00-03:00,credito,visa,24808.52,0.00,24808.52,24808.52,0.00,conciliado,1,0,0,1,\n2026-10-27T00:00:00-03:00,pix,sem_bandeira,13860.23,0.00,13860.23,13860.23,0.00,conciliado,1,0,0,1,\n2026-10-27T00:00:00-03:00,debito,elo,3057.22,0.00,3057.22,3057.22,0.00,conciliado,1,0,0,1,\n2026-10-27T00:00:00-03:00,debito,mastercard,5834.75,0.00,5834.75,5834.75,0.00,conciliado,1,0,0,1,\n2026-10-27T00:00:00-03:00,debito,visa,6527.47,0.00,6527.47,6527.47,0.00,conciliado,1,0,0,1,\n2026-10-27T00:00:00-03:00,credito,amex,790.36,0.00,790.36,790.36,0.00,conciliado,1,0,0,1,\n2026-10-27T00:00:00-03:00,credito,elo,2636.70,0.00,2636.70,2636.70,0.00,conciliado,1,0,0,1,\n2026-10-27T00:00:00-03:00,credito,hipercard,1142.89,0.00,1142.89,1142.89,0.00,conciliado,1,0,0,1,\n2026-10-27T00:00:00-03:00,credito,mastercard,6697.95,0.00,6697.95,6697.95,0.00,conciliado,1,0,0,1,\n2026-10-27T00:00:00-03:00,credito,visa,5994.96,0.00,5994.96,5994.96,0.00,conciliado,1,0,0,1,\n2026-10-28T00:00:00-03:00,pix,sem_bandeira,13454.79,0.00,13454.79,13454.79,0.00,conciliado,1,0,0,1,\n2026-10-28T00:00:00-03:00,debito,elo,3046.74,-186.50,2860.24,2860.24,0.00,conciliado_ajuste,1,0,0,1,Cancelamento de venda de 26/10 informado pela Cielo\n2026-10-28T00:00:00-03:00,debito,mastercard,5812.68,0.00,5812.68,5812.68,0.00,conciliado,1,0,0,1,\n2026-10-28T00:00:00-03:00,debito,visa,5739.24,0.00,5739.24,5739.24,0.00,conciliado,1,0,0,1,\n2026-10-28T00:00:00-03:00,credito,amex,941.10,0.00,941.10,941.10,0.00,conciliado,1,0,0,1,\n2026-10-28T00:00:00-03:00,credito,elo,2919.64,0.00,2919.64,2919.64,0.00,conciliado,1,0,0,1,\n2026-10-28T00:00:00-03:00,credito,hipercard,1345.55,0.00,1345.55,1345.55,0.00,conciliado,1,0,0,1,\n2026-10-28T00:00:00-03:00,credito,mastercard,6119.23,0.00,6119.23,6119.23,0.00,conciliado,1,0,0,1,\n2026-10-28T00:00:00-03:00,credito,visa,6094.31,0.00,6094.31,6094.31,0.00,conciliado,1,0,0,1,\n2026-10-29T00:00:00-03:00,pix,sem_bandeira,18185.55,0.00,18185.55,18185.55,0.00,conciliado,1,0,0,1,\n2026-10-29T00:00:00-03:00,debito,elo,3491.78,0.00,3491.78,3491.78,0.00,conciliado,1,0,0,1,\n2026-10-29T00:00:00-03:00,debito,mastercard,6147.30,0.00,6147.30,6147.30,0.00,conciliado,1,0,0,1,\n2026-10-29T00:00:00-03:00,debito,visa,5758.70,0.00,5758.70,5804.60,45.90,divergente,0,0,1,1,\"Recebido a maior, sem ajuste no EDI: em análise\"\n2026-10-29T00:00:00-03:00,credito,amex,907.22,0.00,907.22,907.22,0.00,conciliado,1,0,0,1,\n2026-10-29T00:00:00-03:00,credito,elo,2607.81,0.00,2607.81,2607.81,0.00,conciliado,1,0,0,1,\n2026-10-29T00:00:00-03:00,credito,hipercard,1283.40,0.00,1283.40,1283.40,0.00,conciliado,1,0,0,1,\n2026-10-29T00:00:00-03:00,credito,mastercard,6863.89,0.00,6863.89,6863.89,0.00,conciliado,1,0,0,1,\n2026-10-29T00:00:00-03:00,credito,visa,6377.30,0.00,6377.30,6377.30,0.00,conciliado,1,0,0,1,\n2026-10-30T00:00:00-03:00,pix,sem_bandeira,20039.28,0.00,20039.28,20039.28,0.00,conciliado,1,0,0,1,\n2026-10-30T00:00:00-03:00,debito,elo,3873.73,0.00,3873.73,3873.73,0.00,conciliado,1,0,0,1,\n2026-10-30T00:00:00-03:00,debito,mastercard,5887.39,0.00,5887.39,5887.39,0.00,conciliado,1,0,0,1,\n2026-10-30T00:00:00-03:00,debito,visa,7277.74,0.00,7277.74,7277.74,0.00,conciliado,1,0,0,1,\n2026-10-30T00:00:00-03:00,credito,amex,847.24,0.00,847.24,847.24,0.00,conciliado,1,0,0,1,\n2026-10-30T00:00:00-03:00,credito,elo,2963.48,0.00,2963.48,2963.48,0.00,conciliado,1,0,0,1,\n2026-10-30T00:00:00-03:00,credito,hipercard,1315.39,0.00,1315.39,1315.39,0.00,conciliado,1,0,0,1,\n2026-10-30T00:00:00-03:00,credito,mastercard,6502.41,0.00,6502.41,6502.41,0.00,conciliado,1,0,0,1,\n2026-10-30T00:00:00-03:00,credito,visa,6648.23,0.00,6648.23,6648.23,0.00,conciliado,1,0,0,1,\n2026-10-31T00:00:00-03:00,pix,sem_bandeira,19835.39,0.00,19835.39,19835.39,0.00,conciliado,1,0,0,1,\n2026-11-01T00:00:00-03:00,pix,sem_bandeira,14761.47,0.00,14761.47,14761.47,0.00,conciliado,1,0,0,1,\n2026-11-02T00:00:00-03:00,pix,sem_bandeira,16991.87,0.00,16991.87,16991.87,0.00,conciliado,1,0,0,1,\n2026-11-03T00:00:00-03:00,pix,sem_bandeira,15175.42,0.00,15175.42,15175.42,0.00,conciliado,1,0,0,1,\n2026-11-03T00:00:00-03:00,debito,elo,14983.77,0.00,14983.77,14983.77,0.00,conciliado,1,0,0,1,\n2026-11-03T00:00:00-03:00,debito,mastercard,27017.34,0.00,27017.34,27017.34,0.00,conciliado,1,0,0,1,\n2026-11-03T00:00:00-03:00,debito,visa,30136.69,0.00,30136.69,30136.69,0.00,conciliado,1,0,0,1,\n2026-11-03T00:00:00-03:00,credito,amex,4312.95,0.00,4312.95,4312.95,0.00,conciliado,1,0,0,1,\n2026-11-03T00:00:00-03:00,credito,elo,13340.14,0.00,13340.14,13340.14,0.00,conciliado,1,0,0,1,\n2026-11-03T00:00:00-03:00,credito,hipercard,6135.61,0.00,6135.61,6135.61,0.00,conciliado,1,0,0,1,\n2026-11-03T00:00:00-03:00,credito,mastercard,30727.52,0.00,30727.52,30727.52,0.00,conciliado,1,0,0,1,\n2026-11-03T00:00:00-03:00,credito,visa,32194.40,-238.00,31956.40,31956.40,0.00,conciliado_ajuste,1,0,0,1,Aluguel de 2 maquininhas (out/2026) descontado na agenda\n2026-11-04T00:00:00-03:00,pix,sem_bandeira,14602.45,0.00,14602.45,14602.45,0.00,conciliado,1,0,0,1,\n2026-11-04T00:00:00-03:00,debito,elo,3663.82,0.00,3663.82,3663.82,0.00,conciliado,1,0,0,1,\n2026-11-04T00:00:00-03:00,debito,mastercard,6644.18,0.00,6644.18,6644.18,0.00,conciliado,1,0,0,1,\n2026-11-04T00:00:00-03:00,debito,visa,6033.90,0.00,6033.90,6033.90,0.00,conciliado,1,0,0,1,\n2026-11-04T00:00:00-03:00,credito,amex,1124.38,0.00,1124.38,1124.38,0.00,conciliado,1,0,0,1,\n2026-11-04T00:00:00-03:00,credito,elo,3360.14,0.00,3360.14,3360.14,0.00,conciliado,1,0,0,1,\n2026-11-04T00:00:00-03:00,credito,hipercard,1527.71,0.00,1527.71,1527.71,0.00,conciliado,1,0,0,1,\n2026-11-04T00:00:00-03:00,credito,mastercard,8149.52,0.00,8149.52,8149.52,0.00,conciliado,1,0,0,1,\n2026-11-04T00:00:00-03:00,credito,visa,8223.68,0.00,8223.68,8223.68,0.00,conciliado,1,0,0,1,\n2026-11-05T00:00:00-03:00,pix,sem_bandeira,17156.09,0.00,17156.09,17156.09,0.00,conciliado,1,0,0,1,\n2026-11-05T00:00:00-03:00,debito,elo,3406.11,0.00,3406.11,3406.11,0.00,conciliado,1,0,0,1,\n2026-11-05T00:00:00-03:00,debito,mastercard,5691.85,0.00,5691.85,5691.85,0.00,conciliado,1,0,0,1,\n2026-11-05T00:00:00-03:00,debito,visa,5505.27,0.00,5505.27,5505.27,0.00,conciliado,1,0,0,1,\n2026-11-05T00:00:00-03:00,credito,amex,1053.32,0.00,1053.32,1053.32,0.00,conciliado,1,0,0,1,\n2026-11-05T00:00:00-03:00,credito,elo,2890.90,0.00,2890.90,2890.90,0.00,conciliado,1,0,0,1,\n2026-11-05T00:00:00-03:00,credito,hipercard,1427.67,0.00,1427.67,1427.67,0.00,conciliado,1,0,0,1,\n2026-11-05T00:00:00-03:00,credito,mastercard,7726.72,0.00,7726.72,7726.72,0.00,conciliado,1,0,0,1,\n2026-11-05T00:00:00-03:00,credito,visa,7198.79,0.00,7198.79,7198.79,0.00,conciliado,1,0,0,1,\n2026-11-06T00:00:00-03:00,pix,sem_bandeira,19915.64,0.00,19915.64,19915.64,0.00,conciliado,1,0,0,1,\n2026-11-06T00:00:00-03:00,debito,elo,3965.06,0.00,3965.06,3965.06,0.00,conciliado,1,0,0,1,\n2026-11-06T00:00:00-03:00,debito,mastercard,6481.83,0.00,6481.83,6481.83,0.00,conciliado,1,0,0,1,\n2026-11-06T00:00:00-03:00,debito,visa,7549.45,0.00,7549.45,7549.45,0.00,conciliado,1,0,0,1,\n2026-11-06T00:00:00-03:00,credito,amex,892.65,0.00,892.65,892.65,0.00,conciliado,1,0,0,1,\n2026-11-06T00:00:00-03:00,credito,elo,2660.61,0.00,2660.61,2573.26,-87.35,divergente,0,0,1,1,\"Recebido a menor, sem ajuste no EDI: em análise com a Cielo\"\n2026-11-06T00:00:00-03:00,credito,hipercard,1324.69,0.00,1324.69,1324.69,0.00,conciliado,1,0,0,1,\n2026-11-06T00:00:00-03:00,credito,mastercard,7259.40,0.00,7259.40,7259.40,0.00,conciliado,1,0,0,1,\n2026-11-06T00:00:00-03:00,credito,visa,7337.00,0.00,7337.00,7337.00,0.00,conciliado,1,0,0,1,\n2026-11-07T00:00:00-03:00,pix,sem_bandeira,19623.73,0.00,19623.73,19623.73,0.00,conciliado,1,0,0,1,\n2026-11-08T00:00:00-03:00,pix,sem_bandeira,11631.16,0.00,11631.16,11631.16,0.00,conciliado,1,0,0,1,\n2026-11-09T00:00:00-03:00,pix,sem_bandeira,12252.95,0.00,12252.95,12252.95,0.00,conciliado,1,0,0,1,\n2026-11-09T00:00:00-03:00,debito,elo,12322.21,0.00,12322.21,12322.21,0.00,conciliado,1,0,0,1,\n2026-11-09T00:00:00-03:00,debito,mastercard,20651.21,0.00,20651.21,20651.21,0.00,conciliado,1,0,0,1,\n2026-11-09T00:00:00-03:00,debito,visa,22812.54,0.00,22812.54,22812.54,0.00,conciliado,1,0,0,1,\n2026-11-09T00:00:00-03:00,credito,amex,3400.06,0.00,3400.06,3400.06,0.00,conciliado,1,0,0,1,\n2026-11-09T00:00:00-03:00,credito,elo,9971.59,0.00,9971.59,9971.59,0.00,conciliado,1,0,0,1,\n2026-11-09T00:00:00-03:00,credito,hipercard,4890.28,0.00,4890.28,4890.28,0.00,conciliado,1,0,0,1,\n2026-11-09T00:00:00-03:00,credito,mastercard,24192.24,0.00,24192.24,24192.24,0.00,conciliado,1,0,0,1,\n2026-11-09T00:00:00-03:00,credito,visa,25763.54,0.00,25763.54,25763.54,0.00,conciliado,1,0,0,1,\n2026-11-10T00:00:00-03:00,pix,sem_bandeira,12020.55,0.00,12020.55,12020.55,0.00,conciliado,1,0,0,1,\n2026-11-10T00:00:00-03:00,debito,elo,3004.25,0.00,3004.25,3004.25,0.00,conciliado,1,0,0,1,\n2026-11-10T00:00:00-03:00,debito,mastercard,5645.72,0.00,5645.72,5645.72,0.00,conciliado,1,0,0,1,\n2026-11-10T00:00:00-03:00,debito,visa,6407.74,0.00,6407.74,6407.74,0.00,conciliado,1,0,0,1,\n2026-11-10T00:00:00-03:00,credito,amex,932.00,0.00,932.00,932.00,0.00,conciliado,1,0,0,1,\n2026-11-10T00:00:00-03:00,credito,elo,2453.74,0.00,2453.74,2453.74,0.00,conciliado,1,0,0,1,\n2026-11-10T00:00:00-03:00,credito,hipercard,1302.73,0.00,1302.73,1302.73,0.00,conciliado,1,0,0,1,\n2026-11-10T00:00:00-03:00,credito,mastercard,6415.25,-312.40,6102.85,6102.85,0.00,conciliado_ajuste,1,0,0,1,Chargeback de venda contestada pelo portador\n2026-11-10T00:00:00-03:00,credito,visa,7382.89,0.00,7382.89,7382.89,0.00,conciliado,1,0,0,1,\n2026-11-11T00:00:00-03:00,pix,sem_bandeira,14978.63,0.00,14978.63,14978.63,0.00,conciliado,1,0,0,1,\n2026-11-11T00:00:00-03:00,debito,elo,3830.82,0.00,3830.82,3830.82,0.00,conciliado,1,0,0,1,\n2026-11-11T00:00:00-03:00,debito,mastercard,6462.18,0.00,6462.18,6462.18,0.00,conciliado,1,0,0,1,\n2026-11-11T00:00:00-03:00,debito,visa,6877.14,0.00,6877.14,6877.14,0.00,conciliado,1,0,0,1,\n2026-11-11T00:00:00-03:00,credito,amex,1022.90,0.00,1022.90,1022.90,0.00,conciliado,1,0,0,1,\n2026-11-11T00:00:00-03:00,credito,elo,2802.97,0.00,2802.97,2802.97,0.00,conciliado,1,0,0,1,\n2026-11-11T00:00:00-03:00,credito,hipercard,1328.27,0.00,1328.27,1328.27,0.00,conciliado,1,0,0,1,\n2026-11-11T00:00:00-03:00,credito,mastercard,6579.84,0.00,6579.84,6579.84,0.00,conciliado,1,0,0,1,\n2026-11-11T00:00:00-03:00,credito,visa,7326.52,0.00,7326.52,7326.52,0.00,conciliado,1,0,0,1,\n2026-11-12T00:00:00-03:00,pix,sem_bandeira,17268.95,0.00,17268.95,17268.95,0.00,conciliado,1,0,0,1,\n2026-11-12T00:00:00-03:00,debito,elo,3256.39,0.00,3256.39,3256.39,0.00,conciliado,1,0,0,1,\n2026-11-12T00:00:00-03:00,debito,mastercard,4928.34,0.00,4928.34,4928.34,0.00,conciliado,1,0,0,1,\n2026-11-12T00:00:00-03:00,debito,visa,5703.40,0.00,5703.40,5703.40,0.00,conciliado,1,0,0,1,\n2026-11-12T00:00:00-03:00,credito,amex,962.09,0.00,962.09,962.09,0.00,conciliado,1,0,0,1,\n2026-11-12T00:00:00-03:00,credito,elo,2926.09,0.00,2926.09,2926.09,0.00,conciliado,1,0,0,1,\n2026-11-12T00:00:00-03:00,credito,hipercard,1383.58,0.00,1383.58,1383.58,0.00,conciliado,1,0,0,1,\n2026-11-12T00:00:00-03:00,credito,mastercard,7178.81,0.00,7178.81,7178.81,0.00,conciliado,1,0,0,1,\n2026-11-12T00:00:00-03:00,credito,visa,7126.26,0.00,7126.26,7126.26,0.00,conciliado,1,0,0,1,\n2026-11-13T00:00:00-03:00,pix,sem_bandeira,17530.17,0.00,17530.17,17530.17,0.00,conciliado,1,0,0,1,\n2026-11-13T00:00:00-03:00,debito,elo,3355.87,0.00,3355.87,3355.87,0.00,conciliado,1,0,0,1,\n2026-11-13T00:00:00-03:00,debito,mastercard,6893.44,0.00,6893.44,6893.44,0.00,conciliado,1,0,0,1,\n2026-11-13T00:00:00-03:00,debito,visa,7280.64,0.00,7280.64,7280.64,0.00,conciliado,1,0,0,1,\n2026-11-13T00:00:00-03:00,credito,amex,925.67,0.00,925.67,0.00,-925.67,nao_localizado,0,1,0,1,Crédito não identificado no extrato Sicredi: conferir lançamento agrupado ou outra conta\n2026-11-13T00:00:00-03:00,credito,elo,2952.81,0.00,2952.81,2952.81,0.00,conciliado,1,0,0,1,\n2026-11-13T00:00:00-03:00,credito,hipercard,1511.90,0.00,1511.90,1511.90,0.00,conciliado,1,0,0,1,\n2026-11-13T00:00:00-03:00,credito,mastercard,6608.49,0.00,6608.49,6608.49,0.00,conciliado,1,0,0,1,\n2026-11-13T00:00:00-03:00,credito,visa,7372.44,0.00,7372.44,7372.44,0.00,conciliado,1,0,0,1,\n2026-11-14T00:00:00-03:00,pix,sem_bandeira,18336.05,0.00,18336.05,18336.05,0.00,conciliado,1,0,0,1,\n2026-11-15T00:00:00-03:00,pix,sem_bandeira,17260.07,0.00,17260.07,17260.07,0.00,conciliado,1,0,0,1,\n2026-11-16T00:00:00-03:00,pix,sem_bandeira,15392.31,0.00,15392.31,15392.31,0.00,conciliado,1,0,0,1,\n2026-11-16T00:00:00-03:00,debito,elo,11741.16,0.00,11741.16,11741.16,0.00,conciliado,1,0,0,1,\n2026-11-16T00:00:00-03:00,debito,mastercard,20863.67,0.00,20863.67,20863.67,0.00,conciliado,1,0,0,1,\n2026-11-16T00:00:00-03:00,debito,visa,21331.25,0.00,21331.25,21331.25,0.00,conciliado,1,0,0,1,\n2026-11-16T00:00:00-03:00,credito,amex,3179.91,0.00,3179.91,3179.91,0.00,conciliado,1,0,0,1,\n2026-11-16T00:00:00-03:00,credito,elo,10115.69,0.00,10115.69,10115.69,0.00,conciliado,1,0,0,1,\n2026-11-16T00:00:00-03:00,credito,hipercard,4733.21,0.00,4733.21,4733.21,0.00,conciliado,1,0,0,1,\n2026-11-16T00:00:00-03:00,credito,mastercard,24509.14,0.00,24509.14,24509.14,0.00,conciliado,1,0,0,1,\n2026-11-16T00:00:00-03:00,credito,visa,25536.04,0.00,25536.04,25536.04,0.00,conciliado,1,0,0,1,\n2026-11-17T00:00:00-03:00,debito,elo,3351.87,0.00,3351.87,0.00,0.00,aguardando,0,1,0,0,Previsto para a data-base; o banco pode creditar ao longo do dia\n2026-11-17T00:00:00-03:00,debito,mastercard,5405.16,0.00,5405.16,0.00,0.00,aguardando,0,1,0,0,Previsto para a data-base; o banco pode creditar ao longo do dia\n2026-11-17T00:00:00-03:00,debito,visa,6102.97,0.00,6102.97,0.00,0.00,aguardando,0,1,0,0,Previsto para a data-base; o banco pode creditar ao longo do dia\n2026-11-17T00:00:00-03:00,credito,amex,810.06,0.00,810.06,0.00,0.00,aguardando,0,1,0,0,Previsto para a data-base; o banco pode creditar ao longo do dia\n2026-11-17T00:00:00-03:00,credito,elo,2811.18,0.00,2811.18,0.00,0.00,aguardando,0,1,0,0,Previsto para a data-base; o banco pode creditar ao longo do dia\n2026-11-17T00:00:00-03:00,credito,hipercard,1376.10,0.00,1376.10,0.00,0.00,aguardando,0,1,0,0,Previsto para a data-base; o banco pode creditar ao longo do dia\n2026-11-17T00:00:00-03:00,credito,mastercard,6427.41,0.00,6427.41,0.00,0.00,aguardando,0,1,0,0,Previsto para a data-base; o banco pode creditar ao longo do dia\n2026-11-17T00:00:00-03:00,credito,visa,6527.56,0.00,6527.56,0.00,0.00,aguardando,0,1,0,0,Previsto para a data-base; o banco pode creditar ao longo do dia\n2026-11-18T00:00:00-03:00,credito,amex,1059.89,0.00,1059.89,0.00,0.00,a_receber,0,0,0,0,\n2026-11-18T00:00:00-03:00,credito,elo,3173.11,0.00,3173.11,0.00,0.00,a_receber,0,0,0,0,\n2026-11-18T00:00:00-03:00,credito,hipercard,1525.45,0.00,1525.45,0.00,0.00,a_receber,0,0,0,0,\n2026-11-18T00:00:00-03:00,credito,mastercard,6783.13,0.00,6783.13,0.00,0.00,a_receber,0,0,0,0,\n2026-11-18T00:00:00-03:00,credito,visa,7258.49,0.00,7258.49,0.00,0.00,a_receber,0,0,0,0,\n2026-11-19T00:00:00-03:00,credito,amex,1072.57,0.00,1072.57,0.00,0.00,a_receber,0,0,0,0,\n2026-11-19T00:00:00-03:00,credito,elo,3297.99,0.00,3297.99,0.00,0.00,a_receber,0,0,0,0,\n2026-11-19T00:00:00-03:00,credito,hipercard,1542.08,0.00,1542.08,0.00,0.00,a_receber,0,0,0,0,\n2026-11-19T00:00:00-03:00,credito,mastercard,6796.22,0.00,6796.22,0.00,0.00,a_receber,0,0,0,0,\n2026-11-19T00:00:00-03:00,credito,visa,7614.12,0.00,7614.12,0.00,0.00,a_receber,0,0,0,0,\n2026-11-23T00:00:00-03:00,credito,amex,4856.99,0.00,4856.99,0.00,0.00,a_receber,0,0,0,0,\n2026-11-23T00:00:00-03:00,credito,elo,14433.12,0.00,14433.12,0.00,0.00,a_receber,0,0,0,0,\n2026-11-23T00:00:00-03:00,credito,hipercard,6255.81,0.00,6255.81,0.00,0.00,a_receber,0,0,0,0,\n2026-11-23T00:00:00-03:00,credito,mastercard,34745.66,0.00,34745.66,0.00,0.00,a_receber,0,0,0,0,\n2026-11-23T00:00:00-03:00,credito,visa,34641.33,0.00,34641.33,0.00,0.00,a_receber,0,0,0,0,\n2026-11-24T00:00:00-03:00,credito,amex,772.02,0.00,772.02,0.00,0.00,a_receber,0,0,0,0,\n2026-11-24T00:00:00-03:00,credito,elo,2640.54,0.00,2640.54,0.00,0.00,a_receber,0,0,0,0,\n2026-11-24T00:00:00-03:00,credito,hipercard,1190.16,0.00,1190.16,0.00,0.00,a_receber,0,0,0,0,\n2026-11-24T00:00:00-03:00,credito,mastercard,6230.93,0.00,6230.93,0.00,0.00,a_receber,0,0,0,0,\n2026-11-24T00:00:00-03:00,credito,visa,5837.34,0.00,5837.34,0.00,0.00,a_receber,0,0,0,0,\n2026-11-25T00:00:00-03:00,credito,amex,847.82,0.00,847.82,0.00,0.00,a_receber,0,0,0,0,\n2026-11-25T00:00:00-03:00,credito,elo,2708.77,0.00,2708.77,0.00,0.00,a_receber,0,0,0,0,\n2026-11-25T00:00:00-03:00,credito,hipercard,1151.16,0.00,1151.16,0.00,0.00,a_receber,0,0,0,0,\n2026-11-25T00:00:00-03:00,credito,mastercard,6637.43,0.00,6637.43,0.00,0.00,a_receber,0,0,0,0,\n2026-11-25T00:00:00-03:00,credito,visa,6205.95,0.00,6205.95,0.00,0.00,a_receber,0,0,0,0,\n2026-11-26T00:00:00-03:00,credito,amex,932.82,0.00,932.82,0.00,0.00,a_receber,0,0,0,0,\n2026-11-26T00:00:00-03:00,credito,elo,2687.64,0.00,2687.64,0.00,0.00,a_receber,0,0,0,0,\n2026-11-26T00:00:00-03:00,credito,hipercard,1170.29,0.00,1170.29,0.00,0.00,a_receber,0,0,0,0,\n2026-11-26T00:00:00-03:00,credito,mastercard,6316.25,0.00,6316.25,0.00,0.00,a_receber,0,0,0,0,\n2026-11-26T00:00:00-03:00,credito,visa,6217.18,0.00,6217.18,0.00,0.00,a_receber,0,0,0,0,\n2026-11-27T00:00:00-03:00,credito,amex,1094.00,0.00,1094.00,0.00,0.00,a_receber,0,0,0,0,\n2026-11-27T00:00:00-03:00,credito,elo,2794.83,0.00,2794.83,0.00,0.00,a_receber,0,0,0,0,\n2026-11-27T00:00:00-03:00,credito,hipercard,1321.63,0.00,1321.63,0.00,0.00,a_receber,0,0,0,0,\n2026-11-27T00:00:00-03:00,credito,mastercard,7874.02,0.00,7874.02,0.00,0.00,a_receber,0,0,0,0,\n2026-11-27T00:00:00-03:00,credito,visa,7887.01,0.00,7887.01,0.00,0.00,a_receber,0,0,0,0,\n2026-11-30T00:00:00-03:00,credito,amex,3465.68,0.00,3465.68,0.00,0.00,a_receber,0,0,0,0,\n2026-11-30T00:00:00-03:00,credito,elo,10516.25,0.00,10516.25,0.00,0.00,a_receber,0,0,0,0,\n2026-11-30T00:00:00-03:00,credito,hipercard,4909.08,0.00,4909.08,0.00,0.00,a_receber,0,0,0,0,\n2026-11-30T00:00:00-03:00,credito,mastercard,26831.33,0.00,26831.33,0.00,0.00,a_receber,0,0,0,0,\n2026-11-30T00:00:00-03:00,credito,visa,25310.41,0.00,25310.41,0.00,0.00,a_receber,0,0,0,0,\n2026-12-01T00:00:00-03:00,credito,amex,833.51,0.00,833.51,0.00,0.00,a_receber,0,0,0,0,\n2026-12-01T00:00:00-03:00,credito,elo,2709.20,0.00,2709.20,0.00,0.00,a_receber,0,0,0,0,\n2026-12-01T00:00:00-03:00,credito,hipercard,1290.98,0.00,1290.98,0.00,0.00,a_receber,0,0,0,0,\n2026-12-01T00:00:00-03:00,credito,mastercard,6102.88,0.00,6102.88,0.00,0.00,a_receber,0,0,0,0,\n2026-12-01T00:00:00-03:00,credito,visa,6736.46,0.00,6736.46,0.00,0.00,a_receber,0,0,0,0,\n2026-12-02T00:00:00-03:00,credito,amex,1058.16,0.00,1058.16,0.00,0.00,a_receber,0,0,0,0,\n2026-12-02T00:00:00-03:00,credito,elo,3099.30,0.00,3099.30,0.00,0.00,a_receber,0,0,0,0,\n2026-12-02T00:00:00-03:00,credito,hipercard,1470.21,0.00,1470.21,0.00,0.00,a_receber,0,0,0,0,\n2026-12-02T00:00:00-03:00,credito,mastercard,7882.32,0.00,7882.32,0.00,0.00,a_receber,0,0,0,0,\n2026-12-02T00:00:00-03:00,credito,visa,7415.23,0.00,7415.23,0.00,0.00,a_receber,0,0,0,0,\n2026-12-03T00:00:00-03:00,credito,amex,901.34,0.00,901.34,0.00,0.00,a_receber,0,0,0,0,\n2026-12-03T00:00:00-03:00,credito,elo,2669.31,0.00,2669.31,0.00,0.00,a_receber,0,0,0,0,\n2026-12-03T00:00:00-03:00,credito,hipercard,1151.12,0.00,1151.12,0.00,0.00,a_receber,0,0,0,0,\n2026-12-03T00:00:00-03:00,credito,mastercard,6831.24,0.00,6831.24,0.00,0.00,a_receber,0,0,0,0,\n2026-12-03T00:00:00-03:00,credito,visa,5958.91,0.00,5958.91,0.00,0.00,a_receber,0,0,0,0,\n2026-12-04T00:00:00-03:00,credito,amex,919.27,0.00,919.27,0.00,0.00,a_receber,0,0,0,0,\n2026-12-04T00:00:00-03:00,credito,elo,3151.53,0.00,3151.53,0.00,0.00,a_receber,0,0,0,0,\n2026-12-04T00:00:00-03:00,credito,hipercard,1326.94,0.00,1326.94,0.00,0.00,a_receber,0,0,0,0,\n2026-12-04T00:00:00-03:00,credito,mastercard,7204.42,0.00,7204.42,0.00,0.00,a_receber,0,0,0,0,\n2026-12-04T00:00:00-03:00,credito,visa,7039.33,0.00,7039.33,0.00,0.00,a_receber,0,0,0,0,\n2026-12-07T00:00:00-03:00,credito,amex,3764.97,0.00,3764.97,0.00,0.00,a_receber,0,0,0,0,\n2026-12-07T00:00:00-03:00,credito,elo,12034.72,0.00,12034.72,0.00,0.00,a_receber,0,0,0,0,\n2026-12-07T00:00:00-03:00,credito,hipercard,5087.12,0.00,5087.12,0.00,0.00,a_receber,0,0,0,0,\n2026-12-07T00:00:00-03:00,credito,mastercard,28900.58,0.00,28900.58,0.00,0.00,a_receber,0,0,0,0,\n2026-12-07T00:00:00-03:00,credito,visa,29207.24,0.00,29207.24,0.00,0.00,a_receber,0,0,0,0,\n2026-12-08T00:00:00-03:00,credito,amex,867.31,0.00,867.31,0.00,0.00,a_receber,0,0,0,0,\n2026-12-08T00:00:00-03:00,credito,elo,2228.12,0.00,2228.12,0.00,0.00,a_receber,0,0,0,0,\n2026-12-08T00:00:00-03:00,credito,hipercard,1041.23,0.00,1041.23,0.00,0.00,a_receber,0,0,0,0,\n2026-12-08T00:00:00-03:00,credito,mastercard,5433.48,0.00,5433.48,0.00,0.00,a_receber,0,0,0,0,\n2026-12-08T00:00:00-03:00,credito,visa,6104.61,0.00,6104.61,0.00,0.00,a_receber,0,0,0,0,\n2026-12-09T00:00:00-03:00,credito,amex,862.67,0.00,862.67,0.00,0.00,a_receber,0,0,0,0,\n2026-12-09T00:00:00-03:00,credito,elo,2649.31,0.00,2649.31,0.00,0.00,a_receber,0,0,0,0,\n2026-12-09T00:00:00-03:00,credito,hipercard,1381.71,0.00,1381.71,0.00,0.00,a_receber,0,0,0,0,\n2026-12-09T00:00:00-03:00,credito,mastercard,6800.02,0.00,6800.02,0.00,0.00,a_receber,0,0,0,0,\n2026-12-09T00:00:00-03:00,credito,visa,6335.38,0.00,6335.38,0.00,0.00,a_receber,0,0,0,0,\n2026-12-10T00:00:00-03:00,credito,amex,1020.02,0.00,1020.02,0.00,0.00,a_receber,0,0,0,0,\n2026-12-10T00:00:00-03:00,credito,elo,2887.27,0.00,2887.27,0.00,0.00,a_receber,0,0,0,0,\n2026-12-10T00:00:00-03:00,credito,hipercard,1449.97,0.00,1449.97,0.00,0.00,a_receber,0,0,0,0,\n2026-12-10T00:00:00-03:00,credito,mastercard,6444.96,0.00,6444.96,0.00,0.00,a_receber,0,0,0,0,\n2026-12-10T00:00:00-03:00,credito,visa,6438.97,0.00,6438.97,0.00,0.00,a_receber,0,0,0,0,\n2026-12-11T00:00:00-03:00,credito,amex,966.69,0.00,966.69,0.00,0.00,a_receber,0,0,0,0,\n2026-12-11T00:00:00-03:00,credito,elo,2996.66,0.00,2996.66,0.00,0.00,a_receber,0,0,0,0,\n2026-12-11T00:00:00-03:00,credito,hipercard,1399.34,0.00,1399.34,0.00,0.00,a_receber,0,0,0,0,\n2026-12-11T00:00:00-03:00,credito,mastercard,6089.73,0.00,6089.73,0.00,0.00,a_receber,0,0,0,0,\n2026-12-11T00:00:00-03:00,credito,visa,6771.46,0.00,6771.46,0.00,0.00,a_receber,0,0,0,0,\n2026-12-14T00:00:00-03:00,credito,amex,3781.94,0.00,3781.94,0.00,0.00,a_receber,0,0,0,0,\n2026-12-14T00:00:00-03:00,credito,elo,11262.30,0.00,11262.30,0.00,0.00,a_receber,0,0,0,0,\n2026-12-14T00:00:00-03:00,credito,hipercard,5151.62,0.00,5151.62,0.00,0.00,a_receber,0,0,0,0,\n2026-12-14T00:00:00-03:00,credito,mastercard,27414.79,0.00,27414.79,0.00,0.00,a_receber,0,0,0,0,\n2026-12-14T00:00:00-03:00,credito,visa,26953.17,0.00,26953.17,0.00,0.00,a_receber,0,0,0,0,\n2026-12-15T00:00:00-03:00,credito,amex,800.79,0.00,800.79,0.00,0.00,a_receber,0,0,0,0,\n2026-12-15T00:00:00-03:00,credito,elo,2866.41,0.00,2866.41,0.00,0.00,a_receber,0,0,0,0,\n2026-12-15T00:00:00-03:00,credito,hipercard,1339.15,0.00,1339.15,0.00,0.00,a_receber,0,0,0,0,\n2026-12-15T00:00:00-03:00,credito,mastercard,6004.92,0.00,6004.92,0.00,0.00,a_receber,0,0,0,0,\n2026-12-15T00:00:00-03:00,credito,visa,6165.20,0.00,6165.20,0.00,0.00,a_receber,0,0,0,0,\n2026-12-16T00:00:00-03:00,credito,amex,1113.15,0.00,1113.15,0.00,0.00,a_receber,0,0,0,0,\n2026-12-16T00:00:00-03:00,credito,elo,3248.57,0.00,3248.57,0.00,0.00,a_receber,0,0,0,0,\n2026-12-16T00:00:00-03:00,credito,hipercard,1320.57,0.00,1320.57,0.00,0.00,a_receber,0,0,0,0,\n2026-12-16T00:00:00-03:00,credito,mastercard,7847.06,0.00,7847.06,0.00,0.00,a_receber,0,0,0,0,\n2026-12-16T00:00:00-03:00,credito,visa,7896.43,0.00,7896.43,0.00,0.00,a_receber,0,0,0,0,\n"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "convertFieldType",
+                  "spec": {
+                    "options": {
+                      "conversions": [
+                        {
+                          "targetField": "data_prevista",
+                          "destinationType": "time"
+                        }
+                      ],
+                      "fields": {}
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterByValue",
+                  "spec": {
+                    "options": {
+                      "type": "include",
+                      "match": "all",
+                      "filters": [
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "greaterOrEqual",
+                            "options": {
+                              "value": "${__from}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "lowerOrEqual",
+                            "options": {
+                              "value": "${__to}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "modalidade",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${modalidade:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "bandeira",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${bandeira:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${situacao:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^(?!a_receber$).*"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "reduce",
+                  "spec": {
+                    "options": {
+                      "mode": "reduceFields",
+                      "reducers": [
+                        "sum"
+                      ],
+                      "includeTimeField": false
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterFieldsByName",
+                  "spec": {
+                    "options": {
+                      "include": {
+                        "pattern": "^valor_esperado$"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "sum"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 13,
+                  "valueSize": 26
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      }
+                    ]
+                  },
+                  "decimals": 2,
+                  "unit": "currency:financial:R$ ",
+                  "noValue": "—"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "valor_esperado"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Previsto pela Cielo"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "",
+          "description": "Créditos da Cielo identificados no extrato Sicredi no período.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "-- Dashboard --"
+                      },
+                      "spec": {
+                        "panelId": 2,
+                        "withTransforms": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "convertFieldType",
+                  "spec": {
+                    "options": {
+                      "conversions": [
+                        {
+                          "targetField": "data_prevista",
+                          "destinationType": "time"
+                        }
+                      ],
+                      "fields": {}
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterByValue",
+                  "spec": {
+                    "options": {
+                      "type": "include",
+                      "match": "all",
+                      "filters": [
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "greaterOrEqual",
+                            "options": {
+                              "value": "${__from}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "lowerOrEqual",
+                            "options": {
+                              "value": "${__to}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "modalidade",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${modalidade:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "bandeira",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${bandeira:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${situacao:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^(?!a_receber$).*"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "reduce",
+                  "spec": {
+                    "options": {
+                      "mode": "reduceFields",
+                      "reducers": [
+                        "sum"
+                      ],
+                      "includeTimeField": false
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterFieldsByName",
+                  "spec": {
+                    "options": {
+                      "include": {
+                        "pattern": "^valor_recebido$"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "sum"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 13,
+                  "valueSize": 26
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#1F60C4"
+                      }
+                    ]
+                  },
+                  "decimals": 2,
+                  "unit": "currency:financial:R$ ",
+                  "noValue": "—"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "valor_recebido"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Recebido no Sicredi"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-4": {
+        "kind": "Panel",
+        "spec": {
+          "id": 4,
+          "title": "",
+          "description": "Valor recebido que bate com o previsto (inclusive quando a diferença é explicada por ajuste informado pela Cielo).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "-- Dashboard --"
+                      },
+                      "spec": {
+                        "panelId": 2,
+                        "withTransforms": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "convertFieldType",
+                  "spec": {
+                    "options": {
+                      "conversions": [
+                        {
+                          "targetField": "data_prevista",
+                          "destinationType": "time"
+                        }
+                      ],
+                      "fields": {}
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterByValue",
+                  "spec": {
+                    "options": {
+                      "type": "include",
+                      "match": "all",
+                      "filters": [
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "greaterOrEqual",
+                            "options": {
+                              "value": "${__from}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "lowerOrEqual",
+                            "options": {
+                              "value": "${__to}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "modalidade",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${modalidade:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "bandeira",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${bandeira:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${situacao:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "conciliado",
+                          "config": {
+                            "id": "equal",
+                            "options": {
+                              "value": 1
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "reduce",
+                  "spec": {
+                    "options": {
+                      "mode": "reduceFields",
+                      "reducers": [
+                        "sum"
+                      ],
+                      "includeTimeField": false
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterFieldsByName",
+                  "spec": {
+                    "options": {
+                      "include": {
+                        "pattern": "^valor_recebido$"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "sum"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 13,
+                  "valueSize": 26
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#37872D"
+                      }
+                    ]
+                  },
+                  "decimals": 2,
+                  "unit": "currency:financial:R$ ",
+                  "noValue": "—"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "valor_recebido"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Conciliado"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-5": {
+        "kind": "Panel",
+        "spec": {
+          "id": 5,
+          "title": "",
+          "description": "Previsto ainda sem crédito: aguardando (vence na data-base) ou não localizado (vencido sem crédito identificado).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "-- Dashboard --"
+                      },
+                      "spec": {
+                        "panelId": 2,
+                        "withTransforms": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "convertFieldType",
+                  "spec": {
+                    "options": {
+                      "conversions": [
+                        {
+                          "targetField": "data_prevista",
+                          "destinationType": "time"
+                        }
+                      ],
+                      "fields": {}
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterByValue",
+                  "spec": {
+                    "options": {
+                      "type": "include",
+                      "match": "all",
+                      "filters": [
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "greaterOrEqual",
+                            "options": {
+                              "value": "${__from}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "lowerOrEqual",
+                            "options": {
+                              "value": "${__to}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "modalidade",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${modalidade:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "bandeira",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${bandeira:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${situacao:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "pendente",
+                          "config": {
+                            "id": "equal",
+                            "options": {
+                              "value": 1
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "reduce",
+                  "spec": {
+                    "options": {
+                      "mode": "reduceFields",
+                      "reducers": [
+                        "sum"
+                      ],
+                      "includeTimeField": false
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterFieldsByName",
+                  "spec": {
+                    "options": {
+                      "include": {
+                        "pattern": "^valor_esperado$"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "sum"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 13,
+                  "valueSize": 26
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#2F333A"
+                      }
+                    ]
+                  },
+                  "decimals": 2,
+                  "unit": "currency:financial:R$ ",
+                  "noValue": "—"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "valor_esperado"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Pendente"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-6": {
+        "kind": "Panel",
+        "spec": {
+          "id": 6,
+          "title": "",
+          "description": "Soma das diferenças absolutas sem ajuste correspondente. Diferença não é presumida como dívida da Cielo: fica em análise até a explicação.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "-- Dashboard --"
+                      },
+                      "spec": {
+                        "panelId": 2,
+                        "withTransforms": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "convertFieldType",
+                  "spec": {
+                    "options": {
+                      "conversions": [
+                        {
+                          "targetField": "data_prevista",
+                          "destinationType": "time"
+                        }
+                      ],
+                      "fields": {}
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterByValue",
+                  "spec": {
+                    "options": {
+                      "type": "include",
+                      "match": "all",
+                      "filters": [
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "greaterOrEqual",
+                            "options": {
+                              "value": "${__from}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "lowerOrEqual",
+                            "options": {
+                              "value": "${__to}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "modalidade",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${modalidade:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "bandeira",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${bandeira:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${situacao:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "divergente",
+                          "config": {
+                            "id": "equal",
+                            "options": {
+                              "value": 1
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "calculateField",
+                  "spec": {
+                    "options": {
+                      "mode": "unary",
+                      "unary": {
+                        "operator": "abs",
+                        "fieldName": "diferenca"
+                      },
+                      "alias": "divergencia",
+                      "replaceFields": false
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "reduce",
+                  "spec": {
+                    "options": {
+                      "mode": "reduceFields",
+                      "reducers": [
+                        "sum"
+                      ],
+                      "includeTimeField": false
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterFieldsByName",
+                  "spec": {
+                    "options": {
+                      "include": {
+                        "pattern": "^divergencia$"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "sum"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 13,
+                  "valueSize": 26
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#37872D"
+                      },
+                      {
+                        "value": 0.01,
+                        "color": "#E0752D"
+                      }
+                    ]
+                  },
+                  "decimals": 2,
+                  "unit": "currency:financial:R$ ",
+                  "noValue": "—"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "divergencia"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Divergente (em análise)"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-7": {
+        "kind": "Panel",
+        "spec": {
+          "id": 7,
+          "title": "",
+          "description": "Percentual dos lançamentos vencidos (conciliados, divergentes e não localizados) que foram conciliados. Aguardando e a receber não entram na conta.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "-- Dashboard --"
+                      },
+                      "spec": {
+                        "panelId": 2,
+                        "withTransforms": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "convertFieldType",
+                  "spec": {
+                    "options": {
+                      "conversions": [
+                        {
+                          "targetField": "data_prevista",
+                          "destinationType": "time"
+                        }
+                      ],
+                      "fields": {}
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterByValue",
+                  "spec": {
+                    "options": {
+                      "type": "include",
+                      "match": "all",
+                      "filters": [
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "greaterOrEqual",
+                            "options": {
+                              "value": "${__from}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "lowerOrEqual",
+                            "options": {
+                              "value": "${__to}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "modalidade",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${modalidade:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "bandeira",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${bandeira:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${situacao:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "avaliado",
+                          "config": {
+                            "id": "equal",
+                            "options": {
+                              "value": 1
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "reduce",
+                  "spec": {
+                    "options": {
+                      "mode": "reduceFields",
+                      "reducers": [
+                        "mean"
+                      ],
+                      "includeTimeField": false
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "calculateField",
+                  "spec": {
+                    "options": {
+                      "mode": "binary",
+                      "binary": {
+                        "left": {
+                          "matcher": {
+                            "id": "byName",
+                            "options": "conciliado"
+                          }
+                        },
+                        "operator": "*",
+                        "right": {
+                          "fixed": 100
+                        }
+                      },
+                      "alias": "indice",
+                      "replaceFields": false
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterFieldsByName",
+                  "spec": {
+                    "options": {
+                      "include": {
+                        "pattern": "^indice$"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "background_solid",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                  "calcs": [
+                    "sum"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {
+                  "titleSize": 13,
+                  "valueSize": 26
+                },
+                "textMode": "value_and_name",
+                "wideLayout": false
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#C4162A"
+                      },
+                      {
+                        "value": 95,
+                        "color": "#E0752D"
+                      },
+                      {
+                        "value": 98,
+                        "color": "#37872D"
+                      }
+                    ]
+                  },
+                  "decimals": 1,
+                  "unit": "currency:financial:%:suffix",
+                  "noValue": "—"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "indice"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Lançamentos conciliados"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-8": {
+        "kind": "Panel",
+        "spec": {
+          "id": 8,
+          "title": "",
+          "description": "Do previsto pela Cielo ao creditado no Sicredi, no período e filtros selecionados. A diferença líquida soma divergências e não localizados; pendências aguardando não entram.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "-- Dashboard --"
+                      },
+                      "spec": {
+                        "panelId": 2,
+                        "withTransforms": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "convertFieldType",
+                  "spec": {
+                    "options": {
+                      "conversions": [
+                        {
+                          "targetField": "data_prevista",
+                          "destinationType": "time"
+                        }
+                      ],
+                      "fields": {}
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterByValue",
+                  "spec": {
+                    "options": {
+                      "type": "include",
+                      "match": "all",
+                      "filters": [
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "greaterOrEqual",
+                            "options": {
+                              "value": "${__from}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "lowerOrEqual",
+                            "options": {
+                              "value": "${__to}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "modalidade",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${modalidade:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "bandeira",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${bandeira:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${situacao:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^(?!a_receber$).*"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "reduce",
+                  "spec": {
+                    "options": {
+                      "mode": "reduceFields",
+                      "reducers": [
+                        "sum"
+                      ],
+                      "includeTimeField": false
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "canvas",
+            "version": "",
+            "spec": {
+              "options": {
+                "inlineEditing": false,
+                "showAdvancedTypes": false,
+                "panZoom": false,
+                "infinitePan": false,
+                "root": {
+                  "type": "frame",
+                  "name": "Element root",
+                  "elements": [
+                    {
+                      "type": "rectangle",
+                      "name": "box previsto",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": ""
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 1.0,
+                        "top": 8,
+                        "right": 82.0,
+                        "bottom": 42
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "#1b1d22"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "width": 2,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "rotulo previsto",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "Previsto nas vendas"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 1.0,
+                        "top": 12,
+                        "right": 82.0,
+                        "bottom": 72
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "metric-value",
+                      "name": "valor previsto",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "valor_previsto",
+                          "fixed": ""
+                        },
+                        "size": 18,
+                        "color": {
+                          "field": "valor_previsto",
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 1.0,
+                        "top": 30,
+                        "right": 82.0,
+                        "bottom": 46
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "seta previsto",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "+"
+                        },
+                        "size": 22,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 18.0,
+                        "top": 20,
+                        "right": 80.0,
+                        "bottom": 56
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "box ajustes",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": ""
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 21.0,
+                        "top": 8,
+                        "right": 62.0,
+                        "bottom": 42
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "#1b1d22"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "width": 2,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "rotulo ajustes",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "Ajustes informados"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 21.0,
+                        "top": 12,
+                        "right": 62.0,
+                        "bottom": 72
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "metric-value",
+                      "name": "valor ajustes",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "valor_ajustes",
+                          "fixed": ""
+                        },
+                        "size": 18,
+                        "color": {
+                          "field": "valor_ajustes",
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 21.0,
+                        "top": 30,
+                        "right": 62.0,
+                        "bottom": 46
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "seta ajustes",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "→"
+                        },
+                        "size": 22,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 38.0,
+                        "top": 20,
+                        "right": 60.0,
+                        "bottom": 56
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "box esperado",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": ""
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 41.0,
+                        "top": 8,
+                        "right": 42.0,
+                        "bottom": 42
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "#1b1d22"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "width": 2,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "rotulo esperado",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "Previsto pela Cielo"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 41.0,
+                        "top": 12,
+                        "right": 42.0,
+                        "bottom": 72
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "metric-value",
+                      "name": "valor esperado",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "valor_esperado",
+                          "fixed": ""
+                        },
+                        "size": 18,
+                        "color": {
+                          "field": "valor_esperado",
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 41.0,
+                        "top": 30,
+                        "right": 42.0,
+                        "bottom": 46
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "seta esperado",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "→"
+                        },
+                        "size": 22,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 58.0,
+                        "top": 20,
+                        "right": 40.0,
+                        "bottom": 56
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "box recebido",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": ""
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 61.0,
+                        "top": 8,
+                        "right": 22.0,
+                        "bottom": 42
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "#1b1d22"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "#1F60C4"
+                        },
+                        "width": 2,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "rotulo recebido",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "Recebido no Sicredi"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 61.0,
+                        "top": 12,
+                        "right": 22.0,
+                        "bottom": 72
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "metric-value",
+                      "name": "valor recebido",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "valor_recebido",
+                          "fixed": ""
+                        },
+                        "size": 18,
+                        "color": {
+                          "field": "valor_recebido",
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 61.0,
+                        "top": 30,
+                        "right": 22.0,
+                        "bottom": 46
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "seta recebido",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "→"
+                        },
+                        "size": 22,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 78.0,
+                        "top": 20,
+                        "right": 20.0,
+                        "bottom": 56
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "box diferenca",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": ""
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 81.0,
+                        "top": 8,
+                        "right": 2.0,
+                        "bottom": 42
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "#1b1d22"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "#E0752D"
+                        },
+                        "width": 2,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "rotulo diferenca",
+                      "config": {
+                        "text": {
+                          "mode": "fixed",
+                          "fixed": "Diferença líquida"
+                        },
+                        "size": 12,
+                        "color": {
+                          "fixed": "#8E8E9E"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 81.0,
+                        "top": 12,
+                        "right": 2.0,
+                        "bottom": 72
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "metric-value",
+                      "name": "valor diferenca",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "diferenca",
+                          "fixed": ""
+                        },
+                        "size": 18,
+                        "color": {
+                          "field": "diferenca",
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 81.0,
+                        "top": 30,
+                        "right": 2.0,
+                        "bottom": 46
+                      },
+                      "background": {
+                        "color": {
+                          "fixed": "transparent"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 4
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "chip conciliado",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "conciliado",
+                          "fixed": ""
+                        },
+                        "size": 13,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 18,
+                        "top": 66,
+                        "right": 62,
+                        "bottom": 12
+                      },
+                      "background": {
+                        "color": {
+                          "field": "conciliado",
+                          "fixed": "#2F333A"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 3
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "chip pendente",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "pendente",
+                          "fixed": ""
+                        },
+                        "size": 13,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 40,
+                        "top": 66,
+                        "right": 40,
+                        "bottom": 12
+                      },
+                      "background": {
+                        "color": {
+                          "field": "pendente",
+                          "fixed": "#2F333A"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 3
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "name": "chip divergente",
+                      "config": {
+                        "text": {
+                          "mode": "field",
+                          "field": "divergente",
+                          "fixed": ""
+                        },
+                        "size": 13,
+                        "color": {
+                          "fixed": "#ffffff"
+                        },
+                        "align": "center",
+                        "valign": "middle"
+                      },
+                      "constraint": {
+                        "horizontal": "scale",
+                        "vertical": "scale"
+                      },
+                      "placement": {
+                        "left": 62,
+                        "top": 66,
+                        "right": 18,
+                        "bottom": 12
+                      },
+                      "background": {
+                        "color": {
+                          "field": "divergente",
+                          "fixed": "#2F333A"
+                        }
+                      },
+                      "border": {
+                        "color": {
+                          "fixed": "transparent"
+                        },
+                        "width": 0,
+                        "radius": 3
+                      }
+                    }
+                  ],
+                  "background": {
+                    "color": {
+                      "fixed": "transparent"
+                    }
+                  },
+                  "border": {
+                    "color": {
+                      "fixed": "transparent"
+                    }
+                  },
+                  "constraint": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  }
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "currency:financial:R$ ",
+                  "decimals": 2,
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#ffffff"
+                      }
+                    ]
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "diferenca"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#E0752D"
+                            },
+                            {
+                              "value": -0.01,
+                              "color": "#ffffff"
+                            },
+                            {
+                              "value": 0.01,
+                              "color": "#E0752D"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": "/^(conciliado|pendente|divergente|avaliado)$/"
+                    },
+                    "properties": [
+                      {
+                        "id": "decimals",
+                        "value": 0
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "divergente"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#2F333A"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#E0752D"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "unit",
+                        "value": "suffix: em análise"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "pendente"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#2F333A"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#1F60C4"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "unit",
+                        "value": "suffix: pendentes"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "conciliado"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#2F333A"
+                            },
+                            {
+                              "value": 1,
+                              "color": "#37872D"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "unit",
+                        "value": "suffix: conciliados"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-9": {
+        "kind": "Panel",
+        "spec": {
+          "id": 9,
+          "title": "Lançamentos por situação",
+          "description": "Quantidade de lançamentos (data prevista × modalidade × bandeira) em cada situação.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "-- Dashboard --"
+                      },
+                      "spec": {
+                        "panelId": 2,
+                        "withTransforms": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "convertFieldType",
+                  "spec": {
+                    "options": {
+                      "conversions": [
+                        {
+                          "targetField": "data_prevista",
+                          "destinationType": "time"
+                        }
+                      ],
+                      "fields": {}
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterByValue",
+                  "spec": {
+                    "options": {
+                      "type": "include",
+                      "match": "all",
+                      "filters": [
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "greaterOrEqual",
+                            "options": {
+                              "value": "${__from}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "lowerOrEqual",
+                            "options": {
+                              "value": "${__to}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "modalidade",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${modalidade:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "bandeira",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${bandeira:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${situacao:regex}$"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "groupBy",
+                  "spec": {
+                    "options": {
+                      "fields": {
+                        "situacao": {
+                          "operation": "groupby",
+                          "aggregations": []
+                        },
+                        "valor_esperado": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "count"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "rowsToFields",
+                  "spec": {
+                    "options": {
+                      "mappings": [
+                        {
+                          "fieldName": "situacao",
+                          "handlerKey": "field.name"
+                        },
+                        {
+                          "fieldName": "valor_esperado (count)",
+                          "handlerKey": "field.value"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "bargauge",
+            "version": "",
+            "spec": {
+              "options": {
+                "displayMode": "basic",
+                "legend": {
+                  "showLegend": false
+                },
+                "maxVizHeight": 26,
+                "minVizHeight": 14,
+                "namePlacement": "left",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                  "calcs": [
+                    "sum"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "valueMode": "color"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "none",
+                  "decimals": 0,
+                  "min": 0,
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "#8E8E9E"
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "conciliado"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Conciliado"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#37872D"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "conciliado_ajuste"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Conciliado com ajuste"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#56A64B"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "divergente"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Em análise"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#E0752D"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "nao_localizado"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Não localizado"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#C4162A"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "aguardando"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Aguardando crédito"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#1F60C4"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "a_receber"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "A receber (não vencido)"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#8E8E9E"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-10": {
+        "kind": "Panel",
+        "spec": {
+          "id": 10,
+          "title": "Previsto × recebido por dia",
+          "description": "Barras: previsto pela Cielo (com ajustes) e creditado no Sicredi em cada data. Linha: diferença (recebido − previsto), eixo da direita. No dia da data-base o crédito ainda pode cair.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "-- Dashboard --"
+                      },
+                      "spec": {
+                        "panelId": 2,
+                        "withTransforms": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "convertFieldType",
+                  "spec": {
+                    "options": {
+                      "conversions": [
+                        {
+                          "targetField": "data_prevista",
+                          "destinationType": "time"
+                        }
+                      ],
+                      "fields": {}
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterByValue",
+                  "spec": {
+                    "options": {
+                      "type": "include",
+                      "match": "all",
+                      "filters": [
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "greaterOrEqual",
+                            "options": {
+                              "value": "${__from}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "lowerOrEqual",
+                            "options": {
+                              "value": "${__to}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "modalidade",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${modalidade:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "bandeira",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${bandeira:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${situacao:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^(?!a_receber$).*"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "groupBy",
+                  "spec": {
+                    "options": {
+                      "fields": {
+                        "data_prevista": {
+                          "operation": "groupby",
+                          "aggregations": []
+                        },
+                        "valor_esperado": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "sum"
+                          ]
+                        },
+                        "valor_recebido": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "sum"
+                          ]
+                        },
+                        "diferenca": {
+                          "operation": "aggregate",
+                          "aggregations": [
+                            "sum"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true,
+                  "calcs": []
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "none",
+                  "hideZeros": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "currency:financial:R$ ",
+                  "decimals": 2,
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "drawStyle": "bars",
+                    "fillOpacity": 80,
+                    "lineWidth": 1,
+                    "barAlignment": 0,
+                    "showPoints": "never",
+                    "axisSoftMin": 0
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "data_prevista"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "time:DD/MM"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "valor_esperado (sum)"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Previsto Cielo"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#8E8E9E"
+                        }
+                      },
+                      {
+                        "id": "custom.barWidthFactor",
+                        "value": 0.45
+                      },
+                      {
+                        "id": "custom.barAlignment",
+                        "value": -1
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "valor_recebido (sum)"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Recebido Sicredi"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#1F60C4"
+                        }
+                      },
+                      {
+                        "id": "custom.barWidthFactor",
+                        "value": 0.45
+                      },
+                      {
+                        "id": "custom.barAlignment",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "diferenca (sum)"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Diferença"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "#E0752D"
+                        }
+                      },
+                      {
+                        "id": "custom.drawStyle",
+                        "value": "line"
+                      },
+                      {
+                        "id": "custom.lineWidth",
+                        "value": 2
+                      },
+                      {
+                        "id": "custom.fillOpacity",
+                        "value": 0
+                      },
+                      {
+                        "id": "custom.showPoints",
+                        "value": "always"
+                      },
+                      {
+                        "id": "custom.pointSize",
+                        "value": 5
+                      },
+                      {
+                        "id": "custom.axisPlacement",
+                        "value": "right"
+                      },
+                      {
+                        "id": "custom.axisSoftMin",
+                        "value": -200
+                      },
+                      {
+                        "id": "custom.axisSoftMax",
+                        "value": 200
+                      },
+                      {
+                        "id": "custom.axisLabel",
+                        "value": "Diferença"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-11": {
+        "kind": "Panel",
+        "spec": {
+          "id": 11,
+          "title": "Ocorrências da conciliação",
+          "description": "Lançamentos que pedem atenção ou explicação: ajustes informados pela Cielo, divergências em análise, créditos não localizados. Valores aguardando crédito na data-base não são ocorrência.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "-- Dashboard --"
+                      },
+                      "spec": {
+                        "panelId": 2,
+                        "withTransforms": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "convertFieldType",
+                  "spec": {
+                    "options": {
+                      "conversions": [
+                        {
+                          "targetField": "data_prevista",
+                          "destinationType": "time"
+                        }
+                      ],
+                      "fields": {}
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterByValue",
+                  "spec": {
+                    "options": {
+                      "type": "include",
+                      "match": "all",
+                      "filters": [
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "greaterOrEqual",
+                            "options": {
+                              "value": "${__from}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "lowerOrEqual",
+                            "options": {
+                              "value": "${__to}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "modalidade",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${modalidade:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "bandeira",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${bandeira:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${situacao:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^(conciliado_ajuste|divergente|nao_localizado)$"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "organize",
+                  "spec": {
+                    "options": {
+                      "excludeByName": {
+                        "conciliado": true,
+                        "pendente": true,
+                        "divergente": true,
+                        "avaliado": true,
+                        "valor_previsto": true
+                      },
+                      "indexByName": {
+                        "situacao": 0,
+                        "data_prevista": 1,
+                        "modalidade": 2,
+                        "bandeira": 3,
+                        "valor_ajustes": 4,
+                        "valor_esperado": 5,
+                        "valor_recebido": 6,
+                        "diferenca": 7,
+                        "ocorrencia": 8
+                      },
+                      "renameByName": {
+                        "situacao": "Situação",
+                        "data_prevista": "Data prevista",
+                        "modalidade": "Modalidade",
+                        "bandeira": "Bandeira",
+                        "valor_ajustes": "Ajustes Cielo",
+                        "valor_esperado": "Previsto",
+                        "valor_recebido": "Recebido",
+                        "diferenca": "Diferença",
+                        "ocorrencia": "Ocorrência"
+                      },
+                      "includeByName": {}
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "sortBy",
+                  "spec": {
+                    "options": {
+                      "fields": {},
+                      "sort": [
+                        {
+                          "field": "Data prevista",
+                          "desc": true
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true,
+                "footer": {
+                  "show": false,
+                  "reducer": [
+                    "sum"
+                  ],
+                  "countRows": false
+                },
+                "sortBy": [
+                  {
+                    "displayName": "Situação",
+                    "desc": true
+                  }
+                ]
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "filterable": true,
+                    "minWidth": 80
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "text"
+                      }
+                    ]
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Data prevista"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "time:DD/MM/YYYY"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 110
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Modalidade"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "pix": {
+                                "text": "Pix",
+                                "color": "#1F9E89",
+                                "index": 0
+                              },
+                              "debito": {
+                                "text": "Débito",
+                                "color": "#3274D9",
+                                "index": 1
+                              },
+                              "credito": {
+                                "text": "Crédito",
+                                "color": "#8F3BB8",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 100
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Bandeira"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "visa": {
+                                "text": "Visa",
+                                "color": "#5794F2",
+                                "index": 0
+                              },
+                              "mastercard": {
+                                "text": "Mastercard",
+                                "color": "#FF9830",
+                                "index": 1
+                              },
+                              "elo": {
+                                "text": "Elo",
+                                "color": "#FADE2A",
+                                "index": 2
+                              },
+                              "hipercard": {
+                                "text": "Hipercard",
+                                "color": "#F2495C",
+                                "index": 3
+                              },
+                              "amex": {
+                                "text": "American Express",
+                                "color": "#96D98D",
+                                "index": 4
+                              },
+                              "sem_bandeira": {
+                                "text": "Sem bandeira (Pix)",
+                                "color": "#1F9E89",
+                                "index": 5
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 150
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Ajustes Cielo"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "currency:financial:R$ "
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "right"
+                      },
+                      {
+                        "id": "custom.minWidth",
+                        "value": 125
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Previsto"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "currency:financial:R$ "
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "right"
+                      },
+                      {
+                        "id": "custom.minWidth",
+                        "value": 125
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Recebido"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "currency:financial:R$ "
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "right"
+                      },
+                      {
+                        "id": "custom.minWidth",
+                        "value": 125
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Diferença"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "currency:financial:R$ "
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "right"
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#E0752D"
+                            },
+                            {
+                              "value": -0.005,
+                              "color": "text"
+                            },
+                            {
+                              "value": 0.005,
+                              "color": "#E0752D"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Situação"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "conciliado": {
+                                "text": "Conciliado",
+                                "color": "#37872D",
+                                "index": 0
+                              },
+                              "conciliado_ajuste": {
+                                "text": "Conciliado com ajuste",
+                                "color": "#56A64B",
+                                "index": 1
+                              },
+                              "divergente": {
+                                "text": "Em análise",
+                                "color": "#E0752D",
+                                "index": 2
+                              },
+                              "nao_localizado": {
+                                "text": "Não localizado",
+                                "color": "#C4162A",
+                                "index": 3
+                              },
+                              "aguardando": {
+                                "text": "Aguardando crédito",
+                                "color": "#1F60C4",
+                                "index": 4
+                              },
+                              "a_receber": {
+                                "text": "A receber (não vencido)",
+                                "color": "#8E8E9E",
+                                "index": 5
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-background"
+                        }
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 190
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Ocorrência"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.minWidth",
+                        "value": 420
+                      },
+                      {
+                        "id": "custom.wrapText",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Ajustes Cielo"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 120
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Previsto"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 125
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Recebido"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 125
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Diferença"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 115
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Bandeira"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 140
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Modalidade"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 95
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Data prevista"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 110
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-12": {
+        "kind": "Panel",
+        "spec": {
+          "id": 12,
+          "title": "Conciliação por data, modalidade e bandeira",
+          "description": "Previsto = líquido das vendas na agenda Cielo; Ajustes = descontos/créditos informados pela Cielo; Esperado = previsto + ajustes; Diferença = recebido − esperado (só em lançamentos vencidos).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "-- Dashboard --"
+                      },
+                      "spec": {
+                        "panelId": 2,
+                        "withTransforms": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "convertFieldType",
+                  "spec": {
+                    "options": {
+                      "conversions": [
+                        {
+                          "targetField": "data_prevista",
+                          "destinationType": "time"
+                        }
+                      ],
+                      "fields": {}
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "filterByValue",
+                  "spec": {
+                    "options": {
+                      "type": "include",
+                      "match": "all",
+                      "filters": [
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "greaterOrEqual",
+                            "options": {
+                              "value": "${__from}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "data_prevista",
+                          "config": {
+                            "id": "lowerOrEqual",
+                            "options": {
+                              "value": "${__to}"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "modalidade",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${modalidade:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "bandeira",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${bandeira:regex}$"
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "situacao",
+                          "config": {
+                            "id": "regex",
+                            "options": {
+                              "value": "^${situacao:regex}$"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "organize",
+                  "spec": {
+                    "options": {
+                      "excludeByName": {
+                        "conciliado": true,
+                        "pendente": true,
+                        "divergente": true,
+                        "avaliado": true
+                      },
+                      "indexByName": {
+                        "data_prevista": 0,
+                        "modalidade": 1,
+                        "bandeira": 2,
+                        "valor_previsto": 3,
+                        "valor_ajustes": 4,
+                        "valor_esperado": 5,
+                        "valor_recebido": 6,
+                        "diferenca": 7,
+                        "situacao": 8,
+                        "ocorrencia": 9
+                      },
+                      "renameByName": {
+                        "data_prevista": "Data prevista",
+                        "modalidade": "Modalidade",
+                        "bandeira": "Bandeira",
+                        "valor_previsto": "Previsto (vendas)",
+                        "valor_ajustes": "Ajustes Cielo",
+                        "valor_esperado": "Previsto",
+                        "valor_recebido": "Recebido",
+                        "diferenca": "Diferença",
+                        "situacao": "Situação",
+                        "ocorrencia": "Ocorrência"
+                      },
+                      "includeByName": {}
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "sortBy",
+                  "spec": {
+                    "options": {
+                      "fields": {},
+                      "sort": [
+                        {
+                          "field": "Data prevista",
+                          "desc": true
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true,
+                "footer": {
+                  "show": true,
+                  "reducer": [
+                    "sum"
+                  ],
+                  "countRows": false,
+                  "fields": [
+                    "Previsto (vendas)",
+                    "Ajustes Cielo",
+                    "Previsto",
+                    "Recebido",
+                    "Diferença"
+                  ]
+                },
+                "sortBy": [
+                  {
+                    "displayName": "Data prevista",
+                    "desc": true
+                  }
+                ]
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "filterable": true,
+                    "minWidth": 80
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "text"
+                      }
+                    ]
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Data prevista"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "time:DD/MM/YYYY"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 110
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Modalidade"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "pix": {
+                                "text": "Pix",
+                                "color": "#1F9E89",
+                                "index": 0
+                              },
+                              "debito": {
+                                "text": "Débito",
+                                "color": "#3274D9",
+                                "index": 1
+                              },
+                              "credito": {
+                                "text": "Crédito",
+                                "color": "#8F3BB8",
+                                "index": 2
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 100
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Bandeira"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "visa": {
+                                "text": "Visa",
+                                "color": "#5794F2",
+                                "index": 0
+                              },
+                              "mastercard": {
+                                "text": "Mastercard",
+                                "color": "#FF9830",
+                                "index": 1
+                              },
+                              "elo": {
+                                "text": "Elo",
+                                "color": "#FADE2A",
+                                "index": 2
+                              },
+                              "hipercard": {
+                                "text": "Hipercard",
+                                "color": "#F2495C",
+                                "index": 3
+                              },
+                              "amex": {
+                                "text": "American Express",
+                                "color": "#96D98D",
+                                "index": 4
+                              },
+                              "sem_bandeira": {
+                                "text": "Sem bandeira (Pix)",
+                                "color": "#1F9E89",
+                                "index": 5
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 150
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Ajustes Cielo"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "currency:financial:R$ "
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "right"
+                      },
+                      {
+                        "id": "custom.minWidth",
+                        "value": 125
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Previsto"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "currency:financial:R$ "
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "right"
+                      },
+                      {
+                        "id": "custom.minWidth",
+                        "value": 125
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Recebido"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "currency:financial:R$ "
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "right"
+                      },
+                      {
+                        "id": "custom.minWidth",
+                        "value": 125
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Diferença"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "currency:financial:R$ "
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "right"
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "#E0752D"
+                            },
+                            {
+                              "value": -0.005,
+                              "color": "text"
+                            },
+                            {
+                              "value": 0.005,
+                              "color": "#E0752D"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Situação"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "conciliado": {
+                                "text": "Conciliado",
+                                "color": "#37872D",
+                                "index": 0
+                              },
+                              "conciliado_ajuste": {
+                                "text": "Conciliado com ajuste",
+                                "color": "#56A64B",
+                                "index": 1
+                              },
+                              "divergente": {
+                                "text": "Em análise",
+                                "color": "#E0752D",
+                                "index": 2
+                              },
+                              "nao_localizado": {
+                                "text": "Não localizado",
+                                "color": "#C4162A",
+                                "index": 3
+                              },
+                              "aguardando": {
+                                "text": "Aguardando crédito",
+                                "color": "#1F60C4",
+                                "index": 4
+                              },
+                              "a_receber": {
+                                "text": "A receber (não vencido)",
+                                "color": "#8E8E9E",
+                                "index": 5
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-background"
+                        }
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 190
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Previsto (vendas)"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "currency:financial:R$ "
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "right"
+                      },
+                      {
+                        "id": "custom.minWidth",
+                        "value": 125
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Ocorrência"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.minWidth",
+                        "value": 260
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-13": {
+        "kind": "Panel",
+        "spec": {
+          "id": 13,
+          "title": "Como a conciliação é classificada",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "text",
+            "version": "",
+            "spec": {
+              "options": {
+                "mode": "markdown",
+                "content": "| Situação | Quando | Leitura |\n|---|---|---|\n| **Conciliado** | Recebido no Sicredi = previsto pela Cielo (tolerância de R$ 0,01) | Ok |\n| **Conciliado com ajuste** | A diferença é explicada por ajuste informado pela Cielo (aluguel de maquininha, cancelamento, chargeback) | Ok: o desconto é legítimo e está documentado |\n| **Divergente (em análise)** | Recebido ≠ previsto e não há ajuste que explique | Investigar: pode ser ajuste ainda não lido, tarifa bancária ou erro. **Não é presumido como dívida da Cielo** |\n| **Não localizado** | Data prevista já passou e nenhum crédito correspondente foi identificado | Verificar crédito agrupado, data diferente ou outra conta antes de reclamar |\n| **Aguardando crédito** | Data prevista = data-base | Ainda não é atraso: o banco pode creditar ao longo do dia |\n| **A receber** | Data prevista depois da data-base | Previsão: nunca entra como atraso nem como divergência |\n\n**Prazos de liquidação usados:** Pix D+0 (inclusive fim de semana), débito D+1 dia útil, crédito à vista D+30 corridos (se cair em fim de semana ou feriado, vai para o próximo dia útil).\n\n**Chave da conciliação:** data prevista × modalidade × bandeira (um crédito da Cielo no extrato Sicredi por chave). *Previsto pela Cielo* = líquido das vendas + ajustes informados. *Diferença* = recebido − previsto, só em lançamentos vencidos.\n\n*Demonstração: todos os valores e ocorrências são simulados.*",
+                "code": {
+                  "language": "plaintext",
+                  "showLineNumbers": false,
+                  "showMiniMap": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "RowsLayout",
+      "spec": {
+        "rows": [
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 2,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-1"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "hideHeader": true
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Resumo da conciliação",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 4,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-2"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 4,
+                        "y": 0,
+                        "width": 4,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-3"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 8,
+                        "y": 0,
+                        "width": 4,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-4"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 0,
+                        "width": 4,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-5"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 16,
+                        "y": 0,
+                        "width": 4,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-6"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 20,
+                        "y": 0,
+                        "width": 4,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-7"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Indicadores de divergência",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 16,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-8"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 16,
+                        "y": 0,
+                        "width": 8,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-9"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Comparativo diário",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 10,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-10"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Ocorrências",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 11,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-11"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Conciliação detalhada",
+              "collapse": false,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 13,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-12"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "RowsLayoutRow",
+            "spec": {
+              "title": "Regras da conciliação",
+              "collapse": true,
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 24,
+                        "height": 11,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-13"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "links": [
+      {
+        "title": "Visão Geral",
+        "type": "link",
+        "url": "/grafana/d/payrecon-visao-geral",
+        "icon": "dashboard",
+        "tooltip": "PayRecon: vendas por modalidade e bandeira",
+        "tags": [],
+        "asDropdown": false,
+        "targetBlank": false,
+        "includeVars": true,
+        "keepTime": false
+      },
+      {
+        "title": "PayRecon",
+        "type": "dashboards",
+        "icon": "external link",
+        "tooltip": "",
+        "tags": [
+          "payrecon"
+        ],
+        "asDropdown": true,
+        "targetBlank": false,
+        "includeVars": true,
+        "keepTime": false
+      }
+    ],
+    "liveNow": false,
+    "preload": false,
+    "tags": [
+      "payrecon",
+      "demonstracao",
+      "conciliacao"
+    ],
+    "timeSettings": {
+      "timezone": "America/Sao_Paulo",
+      "from": "2026-10-18T03:00:00.000Z",
+      "to": "2026-11-18T02:59:59.000Z",
+      "autoRefresh": "",
+      "autoRefreshIntervals": [
+        "1m",
+        "5m",
+        "15m",
+        "1h"
+      ],
+      "hideTimepicker": false,
+      "fiscalYearStartMonth": 0
+    },
+    "title": "PayRecon — Conciliação Financeira · DEMONSTRAÇÃO",
+    "variables": [
+      {
+        "kind": "CustomVariable",
+        "spec": {
+          "name": "modalidade",
+          "query": "Pix : pix, Débito : debito, Crédito : credito",
+          "current": {
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "options": [],
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*",
+          "label": "Modalidade",
+          "description": "Pix, débito ou crédito",
+          "hide": "dontHide",
+          "skipUrlSync": false,
+          "allowCustomValue": false
+        }
+      },
+      {
+        "kind": "CustomVariable",
+        "spec": {
+          "name": "bandeira",
+          "query": "Visa : visa, Mastercard : mastercard, Elo : elo, Hipercard : hipercard, American Express : amex, Sem bandeira (Pix) : sem_bandeira",
+          "current": {
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "options": [],
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*",
+          "label": "Bandeira",
+          "description": "Bandeira do cartão (Pix não tem bandeira)",
+          "hide": "dontHide",
+          "skipUrlSync": false,
+          "allowCustomValue": false
+        }
+      },
+      {
+        "kind": "CustomVariable",
+        "spec": {
+          "name": "situacao",
+          "query": "Conciliado : conciliado, Conciliado com ajuste : conciliado_ajuste, Em análise : divergente, Não localizado : nao_localizado, Aguardando crédito : aguardando, A receber (não vencido) : a_receber",
+          "current": {
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "options": [],
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*",
+          "label": "Situação",
+          "description": "Situação da conciliação",
+          "hide": "dontHide",
+          "skipUrlSync": false,
+          "allowCustomValue": false
+        }
+      }
+    ]
+  }
+}

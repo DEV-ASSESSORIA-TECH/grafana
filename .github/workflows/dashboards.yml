@@ -9,6 +9,7 @@ on:
       - scripts/contracts.py
       - scripts/validate_contracts.py
       - scripts/grafana_check.py
+      - scripts/payrecon_demo.py
       - scripts/catalogo.py
       - catalogo.yml
       - .github/workflows/dashboards.yml
@@ -20,6 +21,7 @@ on:
       - scripts/contracts.py
       - scripts/validate_contracts.py
       - scripts/grafana_check.py
+      - scripts/payrecon_demo.py
       - scripts/catalogo.py
       - catalogo.yml
       - .github/workflows/dashboards.yml
@@ -36,6 +38,8 @@ jobs:
       - name: Neutralidade dos contratos
         run: python scripts/validate_contracts.py
       - run: python scripts/validate_dashboards.py
+      - name: Dashboards PayRecon gerados pelo script
+        run: python scripts/payrecon_demo.py --check
 
   # Sincroniza dashboards/ num Grafana 13.3.0 real (motor do Git Sync) e confere o resultado
   grafana-sync:

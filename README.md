@@ -12,6 +12,7 @@ Dashboards e alertas do Grafana da infraestrutura (Grafana **13.3.0**), e os con
 | `dashboards/` | Dashboards (recursos V2) e metadados de pasta. **Única pasta sincronizada pelo Git Sync** |
 | `contracts/prometheus/` | Métricas, jobs e labels observados por fonte (Alloy, Prometheus, Uptime Kuma) |
 | `contracts/loki/` | Streams e labels de log observados (inclui o heartbeat dos hosts, `alloy-heartbeat`) |
+| `contracts/postgres/` | Views SQL consumidas pelos dashboards do PayRecon (colunas, domínios, regras de situação) |
 | `alerting/` | Regras (`rules/`), notificações (`notifications/`) e inibição (`inhibition/`). **Fora do Git Sync** |
 | `contracts/alerts/` | Labels e dependências das regras (`labels.yml`), catálogo de códigos (`codes.yml`) e divisão repositório/UI das notificações (`notifications.yml`) |
 | `docs/alerts/` | Documentação operacional de cada alerta (um arquivo por código; padrão em `contracts/alerts/docs.yml`) |
@@ -40,6 +41,9 @@ Dashboards e alertas do Grafana da infraestrutura (Grafana **13.3.0**), e os con
 | SQL Anywhere | `sqlanywhere` | `databases/sqlanywhere.json` | Bancos de dados | `integrations/sqlanywhere` | — |
 | MySQL | `mysql` | `databases/mysql.json` | Bancos de dados | `integrations/mysql` | `mysql` (error log e slow query log) |
 | Visão geral | `overview` | `overview/overview.json` | Visão geral | `GRAFANA_ALERTS` (histórico de alertas) + jobs acima | — |
+| PayRecon — Visão Geral · Agenda · Conciliação (**demonstração**) | `payrecon-visao-geral`, `payrecon-agenda`, `payrecon-conciliacao` | `payrecon/*.json` (gerados por `scripts/payrecon_demo.py`) | PayRecon (demonstração) | — (TestData `testdata`, dados simulados; contrato `contracts/postgres/payrecon.yml`) | — |
+
+Os dashboards do PayRecon têm navegação própria (tag `payrecon`, sem `infra`) e dependem de um datasource TestData com UID `testdata`. Detalhes em [`docs/payrecon/README.md`](docs/payrecon/README.md).
 
 ## Formato dos arquivos (Schema V2)
 
@@ -73,6 +77,7 @@ Os datasources são provisionados no Grafana com UIDs fixos, e as consultas apon
 |---|---|
 | `prometheus` | `prometheus` |
 | `loki` | `loki` |
+| `grafana-testdata-datasource` | `testdata` (só para os dashboards de demonstração do PayRecon) |
 
 Não há mais `__inputs`/`__requires` nem `${DS_PROMETHEUS}`/`${DS_LOKI}`: o dashboard não é importado manualmente, chega pelo Git Sync. Se um UID mudar no Grafana, atualize `DATASOURCES` em `scripts/contracts.py` e os dashboards e regras de alerta juntos.
 

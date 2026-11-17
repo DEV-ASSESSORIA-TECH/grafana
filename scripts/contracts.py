@@ -10,7 +10,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 # UIDs reais dos datasources provisionados no Grafana (grupo da consulta -> UID)
-DATASOURCES = {"prometheus": "prometheus", "loki": "loki"}
+DATASOURCES = {"prometheus": "prometheus", "loki": "loki", "grafana-testdata-datasource": "testdata"}
 
 
 class Contracts:
@@ -18,6 +18,7 @@ class Contracts:
         self.prom_jobs = {}  # job -> set(metricas)
         self.loki_jobs = {}  # job -> set(labels)
         self.by_kind = {}    # kind -> [(arquivo, contrato)] dos contratos que nao sao de job
+        self.sql_views = {}  # view -> [colunas] (sql_dataset_contract)
         for path in sorted(ROOT.glob("contracts/**/*.yml")):
             rel = path.relative_to(ROOT)
             try:
@@ -38,6 +39,9 @@ class Contracts:
                 self.loki_jobs[job] = set((c.get("identity") or {}).get("observed_labels") or [])
             elif kind:
                 self.by_kind.setdefault(kind, []).append((rel, c))
+                if kind == "sql_dataset_contract":
+                    for view, spec in (c.get("views") or {}).items():
+                        self.sql_views[view] = list((spec.get("columns") or {}).keys())
 
     def one(self, kind, errors):
         """Contrato unico de um kind (ex.: alert_label_contract)."""

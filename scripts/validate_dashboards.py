@@ -12,7 +12,10 @@
    ${DS_*}); toda consulta aponta para um datasource provisionado por UID.
 5. Contratos: toda metrica usada em consulta Prometheus existe no contrato do
    job fixado na consulta; toda consulta Loki usa job e labels observados.
-6. Navegacao: tag infra, menu Paineis (dropdown por tag) e link para a Visao geral.
+6. Navegacao: tag do dominio, menu de paineis (dropdown por tag) e link para a pagina inicial do dominio.
+   Infraestrutura: tag infra e Visao geral. PayRecon (dashboards/payrecon): tag payrecon e payrecon-visao-geral.
+7. Dados de demonstracao (TestData csv_content): o cabecalho do CSV e identico as colunas de uma view de um
+   contrato sql_dataset_contract (contracts/postgres/).
 
 Os alertas sao validados por validate_alerting.py.
 """
@@ -31,11 +34,14 @@ DASHBOARD_API = "dashboard.grafana.app/v2"
 FOLDER_API = "folder.grafana.app/v1"
 FOLDER_FILE = "_folder.json"
 # datasources embutidos do Grafana (anotacoes nativas)
-BUILTIN_DATASOURCES = {("grafana", "-- Grafana --"), ("datasource", "grafana")}
+BUILTIN_DATASOURCES = {("grafana", "-- Grafana --"), ("datasource", "grafana"),
+                       ("datasource", "-- Dashboard --")}  # reaproveita o resultado de outro painel
 UID_RE = re.compile(r"^[a-zA-Z0-9_-]{1,40}$")
 LEGACY_KEYS = ("__inputs", "__requires", "__elements")
 NAV_TAG = "infra"      # dashboards com esta tag aparecem no menu Paineis
 HOME_UID = "overview"  # Visao geral: pagina inicial
+# dominios com navegacao propria (pasta em dashboards/ -> (tag do menu, UID da pagina inicial))
+NAV_DOMAINS = {"payrecon": ("payrecon", "payrecon-visao-geral")}
 
 contracts = ct.Contracts(errors)
 
@@ -66,6 +72,9 @@ def check_datasource(where, query):
 
 def check_query(where, query):
     group = check_datasource(where, query)
+    if group == "grafana-testdata-datasource":
+        check_testdata(where, query.get("spec") or {})
+        return
     expr = (query.get("spec") or {}).get("expr")
     if not expr:
         return
@@ -132,15 +141,30 @@ def check_metadata(rel, res, allowed_api, kind):
 
 
 def check_navigation(rel, name, spec):
-    """Navegacao comum: tag infra (menu Paineis) e link para a Visao geral nos demais dashboards."""
-    if NAV_TAG not in (spec.get("tags") or []):
-        errors.append(f"{rel}: falta a tag '{NAV_TAG}' (menu Paineis dos dashboards)")
+    """Navegacao comum: tag do dominio (menu de paineis) e link para a pagina inicial nos demais dashboards."""
+    folder = rel.parts[1] if len(rel.parts) > 2 else ""
+    tag, home = NAV_DOMAINS.get(folder, (NAV_TAG, HOME_UID))
+    if tag not in (spec.get("tags") or []):
+        errors.append(f"{rel}: falta a tag '{tag}' (menu de paineis do dominio)")
+    if folder in NAV_DOMAINS and NAV_TAG in (spec.get("tags") or []):
+        errors.append(f"{rel}: tag '{NAV_TAG}' em dashboard de outro dominio ({folder})")
     links = spec.get("links") or []
-    if not any(link.get("type") == "dashboards" and link.get("asDropdown") and NAV_TAG in (link.get("tags") or [])
+    if not any(link.get("type") == "dashboards" and link.get("asDropdown") and tag in (link.get("tags") or [])
                for link in links):
-        errors.append(f"{rel}: falta o link 'Paineis' (type dashboards, tag {NAV_TAG}, asDropdown)")
-    if name != HOME_UID and not any(link.get("url") == f"/grafana/d/{HOME_UID}" for link in links):
-        errors.append(f"{rel}: falta o link para a Visao geral (/grafana/d/{HOME_UID})")
+        errors.append(f"{rel}: falta o link do menu (type dashboards, tag {tag}, asDropdown)")
+    if name != home and not any(link.get("url") == f"/grafana/d/{home}" for link in links):
+        errors.append(f"{rel}: falta o link para a pagina inicial (/grafana/d/{home})")
+
+
+def check_testdata(where, spec):
+    """Demonstracao: CSV embutido com as colunas de uma view do contrato SQL."""
+    if spec.get("scenarioId") != "csv_content":
+        errors.append(f"{where}: TestData so com o cenario csv_content (dados de demonstracao)")
+        return
+    lines = (spec.get("csvContent") or "").strip().splitlines()
+    header = lines[0].split(",") if lines else []
+    if header not in contracts.sql_views.values():
+        errors.append(f"{where}: cabecalho do CSV nao corresponde a nenhuma view de contrato SQL: {header}")
 
 
 def check_dashboard(rel, res):
@@ -268,4 +292,4 @@ for path in catalogo.sync_dashboards(_cat):
 
 sys.exit(ct.report(errors, warnings,
                    f"{len(uids)} dashboards, {len(folder_uids)} pastas, {len(contracts.prom_jobs)} contratos Prometheus, "
-                   f"{len(contracts.loki_jobs)} contratos Loki"))
+                   f"{len(contracts.loki_jobs)} contratos Loki, {len(contracts.sql_views)} views SQL"))

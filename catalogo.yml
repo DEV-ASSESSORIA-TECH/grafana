@@ -73,7 +73,7 @@ containers:
 # serie no job integrations/backup, com o servidor enviando metricas, gera o BKP-304. Nao e lista de servidores:
 # servidor sem backup interno, ou backup que voce nao quer garantir, simplesmente nao aparece aqui.
 backups:
-   srv-contabil-ass:
+  srv-contabil-ass:
     - seven/database
     - seven/fiscal
     - dominio/database

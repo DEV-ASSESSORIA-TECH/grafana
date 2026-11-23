@@ -78,4 +78,5 @@ backups:
     - seven/fiscal
     - dominio/database
     - dominio/database-log
+  srv-dom-trs: [dominio/database, dominio/database-log]
   srv-seven-mtc: [seven/database, seven/fiscal]

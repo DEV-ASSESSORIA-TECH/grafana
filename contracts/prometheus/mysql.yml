@@ -8,7 +8,7 @@ status: defined
 defined_date: '2026-11-12'
 job: integrations/mysql
 source:
-  producer: DEV-ASSESSORIA-TECH/scripts monitoring/alloy/windows/mysql.alloy
+  producer: DEV-ASSESSORIA-TECH/alloy windows/modules/mysql.alloy
   collection: prometheus.exporter.mysql (mysqld_exporter embutido no Alloy) -> scrape 30s -> prometheus.relabel (so
     mysql_*) -> remote write
   transport: TCP em 127.0.0.1 com usuario de monitoramento (privilegio PROCESS); coletores global_status,

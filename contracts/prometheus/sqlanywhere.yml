@@ -7,7 +7,7 @@ title: SAP SQL Anywhere 17 / servidor e banco
 status: observed_baseline
 job: integrations/sqlanywhere
 source:
-  producer: DEV-ASSESSORIA-TECH/scripts monitoring/alloy/windows/sqlanywhere-collector.ps1
+  producer: DEV-ASSESSORIA-TECH/alloy windows/collectors/sqlanywhere-collector.ps1
   collection: tarefa agendada a cada 30 s (SYSTEM) -> textfile\sqlanywhere\sqlanywhere.prom -> prometheus.exporter.windows
     "sqlanywhere" (textfile) -> scrape 30s
   transport: ODBC local (driver SQL Anywhere 17, 64 bits); PROPERTY() para o servidor e DB_PROPERTY() para o banco

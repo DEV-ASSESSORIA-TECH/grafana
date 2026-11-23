@@ -230,7 +230,7 @@ query_recipes:
       - Nao confundir com o estado de cada monitor.
 heartbeat_monitors:
   description: >-
-    Monitores Push do heartbeat dos hosts (scripts/monitoring/alloy, menu [9]). O host faz o push a cada minuto;
+    Monitores Push do heartbeat dos hosts (DEV-ASSESSORIA-TECH/alloy, menu [9]). O host faz o push a cada minuto;
     o estado detalhado do Alloy fica no Loki (contrato contracts/loki/heartbeat.yml), nao no Kuma.
   monitor_type: push
   name_convention: heartbeat-<host>, com <host> igual ao label host do Alloy

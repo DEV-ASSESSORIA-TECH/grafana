@@ -13,7 +13,7 @@ source:
     outro sistema (NAS, appliance, servico em nuvem). Nao existe coletor proprio do Alloy para backup; cada produtor
     gera o seu arquivo seguindo este contrato.
   reader: >-
-    DEV-ASSESSORIA-TECH/scripts monitoring/alloy (windows|linux)/backup.alloy, instalado em todo servidor, sem modulo
+    DEV-ASSESSORIA-TECH/alloy (windows|linux)/modules/backup.alloy, instalado em todo servidor, sem modulo
     opcional. Pasta vazia nao publica nenhuma serie backup_*.
   collection:
     windows: C:\ProgramData\GrafanaLabs\Alloy\textfile\backup\*.prom -> prometheus.exporter.windows "backup" (textfile)

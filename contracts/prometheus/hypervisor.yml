@@ -8,7 +8,7 @@ status: observed_baseline
 observed_at_utc: '2026-11-05T14:39:00Z'
 job: integrations/hypervisor
 source:
-  producer: DEV-ASSESSORIA-TECH/scripts monitoring/alloy/windows/hypervisor-inventory.ps1
+  producer: DEV-ASSESSORIA-TECH/alloy windows/collectors/hypervisor-inventory.ps1
   producer_version: 19d8012
   collection: tarefa agendada a cada 1 min (SYSTEM) -> textfile\hypervisor\hypervisor.prom -> prometheus.exporter.windows
     "hypervisor" (textfile, so o subdiretorio hypervisor) -> scrape 60s
@@ -33,8 +33,8 @@ identity:
   vm_id: GUID da VM em maiusculas (label vm_id em hypervisor_vm_info)
   vm_key: >-
     Chave canonica da VM (minusculas, '-' -> '_'; label vm_key em hypervisor_vm_info), igual a tag vm do Uptime Kuma e
-    ao label dep_vm dos alertas (contracts/alerts/labels.yml). Publicada pelo hypervisor-inventory.ps1 a partir do
-    commit 19d8012 do repositorio scripts.
+    ao label dep_vm dos alertas (contracts/alerts/labels.yml). Publicada pelo hypervisor-inventory.ps1 (repositorio
+    DEV-ASSESSORIA-TECH/alloy).
   guest_join:
     status: implemented
     label: guest_host (hypervisor_vm_info)

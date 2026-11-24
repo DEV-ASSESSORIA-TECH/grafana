@@ -483,7 +483,7 @@ groups:
           description: |-
             A última tentativa do backup {{ $labels.service }}/{{ $labels.backup_id }} em {{ $labels.instance }} falhou. O alerta resolve sozinho no próximo sucesso.
 
-            Veja o log da execução no servidor (para o BackupSeven, a pasta Logs e a etapa entre colchetes). Se as falhas continuarem, o atraso vira BKP-102 e BKP-101.
+            Veja o log da execução no servidor: etapa e mensagem da falha. Se as falhas continuarem, o atraso vira BKP-102 e BKP-101.
             Backup que publica criticality=baixa entra um nivel abaixo.
         labels:
           alert_code: BKP-110
@@ -595,7 +595,7 @@ groups:
           description: |-
             A última tentativa do backup {{ $labels.service }}/{{ $labels.backup_id }} em {{ $labels.instance }} publicou um backup utilizável, porém incompleto (fallback). Não conta como sucesso.
 
-            No BackupSeven: o dump normal do banco falhou e foram publicados os archives _DEGRADED e _GRANULAR_DEGRADED (exit code 5). O manifest.json e os _FAILED.txt dizem quais objetos falharam.
+            Exemplo: o dump normal do banco falhou e foi publicada uma cópia parcial ou objeto a objeto. O manifesto ou relatório do pacote diz quais objetos falharam.
             Backup que publica criticality=baixa entra um nivel abaixo.
         labels:
           alert_code: BKP-111
@@ -621,7 +621,7 @@ groups:
               expr: |-
                 (
                   (
-                    backup_last_success_size_bytes{job="integrations/backup"}
+                    (backup_last_success_size_bytes{job="integrations/backup"} unless on (instance, service, backup_id) backup_info{job="integrations/backup",kind="log"})
                       < on (instance, service, backup_id)
                     0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
                   )
@@ -629,7 +629,7 @@ groups:
                   group by (instance, service, backup_id, criticality) (backup_info{job="integrations/backup"})
                   or
                   (
-                    backup_last_success_size_bytes{job="integrations/backup"}
+                    (backup_last_success_size_bytes{job="integrations/backup"} unless on (instance, service, backup_id) backup_info{job="integrations/backup",kind="log"})
                       < on (instance, service, backup_id)
                     0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
                   )
@@ -645,7 +645,7 @@ groups:
                 or
                 (
                   (
-                    backup_last_success_size_bytes{job="integrations/backup"}
+                    (backup_last_success_size_bytes{job="integrations/backup"} unless on (instance, service, backup_id) backup_info{job="integrations/backup",kind="log"})
                       < on (instance, service, backup_id)
                     0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
                   )
@@ -653,7 +653,7 @@ groups:
                   group by (instance, service, backup_id, criticality) (backup_info{job="integrations/backup"})
                   or
                   (
-                    backup_last_success_size_bytes{job="integrations/backup"}
+                    (backup_last_success_size_bytes{job="integrations/backup"} unless on (instance, service, backup_id) backup_info{job="integrations/backup",kind="log"})
                       < on (instance, service, backup_id)
                     0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
                   )
@@ -708,6 +708,7 @@ groups:
             O último backup bem-sucedido de {{ $labels.service }}/{{ $labels.backup_id }} em {{ $labels.instance }} tem {{ with $values.A }}{{ humanize1024 .Value }}B{{ end }}, menos da metade do maior tamanho dos últimos 7 dias.
 
             Pode ser um dump ou uma pasta de origem truncados ou vazios, mesmo com a execução marcada como sucesso. Se a redução for esperada (limpeza de dados), o alerta para quando a janela de 7 dias passar.
+            Backups de log (kind=log) ficam de fora: o tamanho deles varia ao longo do dia.
             Backup que publica criticality=baixa entra um nivel abaixo.
         labels:
           alert_code: BKP-120
@@ -795,7 +796,7 @@ groups:
           description: |-
             O produtor do backup {{ $labels.service }}/{{ $labels.backup_id }} em {{ $labels.instance }} informa que não conseguiu ler o estado do backup. Os valores de último sucesso e tentativa podem estar ausentes ou desatualizados.
 
-            No BackupSeven: falha ao ler a pasta Completed ou o arquivo anterior; o log mostra WARN na etapa <tipo>/Monitoring.
+            Causa comum: o produtor não conseguiu ler o próprio histórico local (pacotes concluídos ou estado anterior); veja o aviso na etapa de monitoramento do log.
         labels:
           alert_code: BKP-301
           alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}{{ with $$labels.service }} · {{ . }}{{ end }}{{ with $$labels.backup_id }}/{{ . }}{{ end }}'

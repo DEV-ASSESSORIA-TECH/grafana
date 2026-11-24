@@ -621,7 +621,7 @@ groups:
               expr: |-
                 (
                   (
-                    backup_last_success_size_bytes{job="integrations/backup"}
+                    (backup_last_success_size_bytes{job="integrations/backup"} unless on (instance, service, backup_id) backup_info{job="integrations/backup",kind="log"})
                       < on (instance, service, backup_id)
                     0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
                   )
@@ -629,7 +629,7 @@ groups:
                   group by (instance, service, backup_id, criticality) (backup_info{job="integrations/backup"})
                   or
                   (
-                    backup_last_success_size_bytes{job="integrations/backup"}
+                    (backup_last_success_size_bytes{job="integrations/backup"} unless on (instance, service, backup_id) backup_info{job="integrations/backup",kind="log"})
                       < on (instance, service, backup_id)
                     0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
                   )
@@ -645,7 +645,7 @@ groups:
                 or
                 (
                   (
-                    backup_last_success_size_bytes{job="integrations/backup"}
+                    (backup_last_success_size_bytes{job="integrations/backup"} unless on (instance, service, backup_id) backup_info{job="integrations/backup",kind="log"})
                       < on (instance, service, backup_id)
                     0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
                   )
@@ -653,7 +653,7 @@ groups:
                   group by (instance, service, backup_id, criticality) (backup_info{job="integrations/backup"})
                   or
                   (
-                    backup_last_success_size_bytes{job="integrations/backup"}
+                    (backup_last_success_size_bytes{job="integrations/backup"} unless on (instance, service, backup_id) backup_info{job="integrations/backup",kind="log"})
                       < on (instance, service, backup_id)
                     0.5 * max_over_time(backup_last_success_size_bytes{job="integrations/backup"}[7d])
                   )
@@ -708,6 +708,7 @@ groups:
             O último backup bem-sucedido de {{ $labels.service }}/{{ $labels.backup_id }} em {{ $labels.instance }} tem {{ with $values.A }}{{ humanize1024 .Value }}B{{ end }}, menos da metade do maior tamanho dos últimos 7 dias.
 
             Pode ser um dump ou uma pasta de origem truncados ou vazios, mesmo com a execução marcada como sucesso. Se a redução for esperada (limpeza de dados), o alerta para quando a janela de 7 dias passar.
+            Backups de log (kind=log) ficam de fora: o tamanho deles varia ao longo do dia.
             Backup que publica criticality=baixa entra um nivel abaixo.
         labels:
           alert_code: BKP-120

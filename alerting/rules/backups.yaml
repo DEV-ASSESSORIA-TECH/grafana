@@ -595,7 +595,7 @@ groups:
           description: |-
             A última tentativa do backup {{ $labels.service }}/{{ $labels.backup_id }} em {{ $labels.instance }} publicou um backup utilizável, porém incompleto (fallback). Não conta como sucesso.
 
-            Exemplo: o dump normal do banco falhou e foi publicada uma cópia parcial ou objeto a objeto. O manifesto ou relatório do pacote diz quais objetos falharam.
+            Exemplos: o dump normal do banco falhou e foi publicada uma cópia parcial ou objeto a objeto (o manifesto ou relatório do pacote diz quais objetos falharam); ou, numa série de log (kind=log), a cadeia do log foi reiniciada por um backup feito fora do produtor e um completo foi feito no lugar do incremental.
             Backup que publica criticality=baixa entra um nivel abaixo.
         labels:
           alert_code: BKP-111

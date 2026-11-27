@@ -1,7 +1,23 @@
-# Mute timings provisionados. Hoje nenhum: a rota de info usa o mute timing da UI (mute-info).
+# Mute timings provisionados. A rota de info usa o mute timing da UI (mute-info).
+# fora-expediente-atendimento: usado pela rota area = atendimento (UI) para nao notificar a fila do TiFlux fora do
+# horario de atendimento. Os alertas continuam ativos no Grafana; a notificacao sai quando o expediente comeca.
+# Mudar o horario: edite aqui e rode o deploy. O nome nao muda sem ajustar a rota na UI.
 # 'sempre' foi provisionado antes e e removido abaixo; a exclusao pode sair depois que todos os
 # ambientes tiverem aplicado esta versao.
 apiVersion: 1
+muteTimes:
+  - orgId: 1
+    name: fora-expediente-atendimento
+    time_intervals:
+      - weekdays: [saturday, sunday]
+        location: America/Sao_Paulo
+      - weekdays: ['monday:friday']
+        times:
+          - start_time: '00:00'
+            end_time: '08:00'
+          - start_time: '18:00'
+            end_time: '24:00'
+        location: America/Sao_Paulo
 deleteMuteTimes:
   - orgId: 1
     name: sempre

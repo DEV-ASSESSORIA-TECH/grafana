@@ -18,7 +18,7 @@ Contratos em `contracts/alerts/`:
 
 ## Cobertura
 
-Todas as regras ficam na pasta INFRA do Grafana, um grupo por arquivo. O catálogo completo está em `contracts/alerts/codes.yml`.
+As regras ficam na pasta INFRA do Grafana, um grupo por arquivo; a fila do TiFlux (`atendimento.yaml`) fica na pasta ATENDIMENTO. O catálogo completo está em `contracts/alerts/codes.yml`.
 
 | Arquivo | Grupo | Cobre |
 |---|---|---|
@@ -30,10 +30,12 @@ Todas as regras ficam na pasta INFRA do Grafana, um grupo por arquivo. O catálo
 | `monitoramento.yaml` | `monitoramento-5m` | Prometheus: configuração inválida, falha de compactação |
 | `sqlanywhere.yaml` | `sqlanywhere-1m` | SQL Anywhere: banco inacessível, reinício, cache sem página livre, memória de consulta negada, coleta parada, fila de requisições, thread deadlock |
 | `backups.yaml` | `backups-1m` | Backups (`integrations/backup`, qualquer produtor): atrasado e muito atrasado, falha, degradado, tamanho caiu, estado não lido, backup que sumiu, leitor com erro, backup esperado não reportado, lentidão |
+| `atendimento.yaml` | `atendimento-1m` | Fila de chat do TiFlux (`integrations/tiflux`, tiflux-exporter), por departamento: caixa de entrada, triagem, cliente aguardando resposta (não lida e lida), sem movimentação; coletor sem métricas, falhando e leitura de mensagens atrasada |
 
 **Decisões que estão nas consultas** (mude aqui quando mudar a operação):
 
 - **Classificação de hosts, VMs, servidores e containers:** no `catalogo.yml` (ver [Catálogo](#catálogo-de-monitoramento)), nunca nas regras.
+- **Limites da fila do TiFlux (TFX-401 a 405):** no `catalogo.yml`, seção `atendimento` (minutos, padrão e por departamento). Cada alerta compara o pior chat do departamento com o limite dele. Horário de atendimento no mute timing `fora-expediente-atendimento` (seg-sex, 08:00-18:00, America/Sao_Paulo): fora dele os alertas ficam ativos no Grafana e só notificam quando o expediente começa.
 - **Volume F: do srv-host01 (backups):** fora de HYP-201/202; tem limite próprio em GiB livres (HYP-203 < 200, HYP-204 < 100).
 - **Serviços Windows:** WIN-110 (AD, critical), WIN-111 (aplicação, warning) e WIN-112 (em curadoria, info) têm listas fixas por servidor. Serviço automático parado fora dessas listas não alerta.
 - **Estações Windows (sem alertas):** máquinas descartáveis publicam em `integrations/windows-desktop` e `windows-desktop-eventlog` (perfil estação do Alloy). Nenhuma regra usa esses jobs, e como toda consulta fixa o job, elas nunca entram nos alertas de servidor. Não crie regras para eles. Ao converter um servidor em estação, marque-o como `ignorar` em `servidores:` no catálogo até passarem os 7 dias do WIN-102.
@@ -109,6 +111,7 @@ Monte a policy padrão pelos labels (`contracts/alerts/notifications.yml`, `rout
 - Rota `severity = info` com um mute timing de dia inteiro (hoje o `mute-info`, criado na UI): o alerta aparece no Grafana e nunca notifica.
 - Agrupamento por `area` e `dep_hypervisor`: a queda de um host vira uma notificação só.
 - Template `infra` (vem do repositório): no contact point, assunto `{{ template "infra.subject" . }}` e mensagem `{{ template "infra.message" . }}`.
+- Rota `area = atendimento` com o mute timing `fora-expediente-atendimento` (vem do repositório): a fila do TiFlux só notifica no expediente. Coloque o contact point da equipe de atendimento nessa rota.
 - Manutenção pontual: silence na UI.
 
 ## Catálogo de monitoramento
@@ -122,6 +125,7 @@ Monte a policy padrão pelos labels (`contracts/alerts/notifications.yml`, `rout
 | `servidores` | instance do Alloy | `critico`, `normal` (padrão), `ignorar` | Servidor sem métricas: LIN/WIN-101 (critical), LIN/WIN-102 (warning) ou nada |
 | `containers` | nome do container | `importante` (padrão), `secundario`, `ignorar` | CTR-101 a 104 em warning, em info (não notifica) ou fora dos alertas e das contagens dos dashboards |
 | `backups` | instance → lista `service/backup_id` | — | Backups esperados (opt-in): item sem série com o servidor enviando métricas gera BKP-304. Só o que você quer garantir; servidor sem backup interno não entra |
+| `atendimento` | `padrao` e `departamentos` (label `department`) | minutos ou `ignorar` | Limite de TFX-401 a 405 por departamento; quem não está em `departamentos` usa o padrão |
 
 Desligar uma VM não exige mudar o catálogo: a classe só define o quanto o desligamento importa. Tudo o que roda numa VM desligada (servidor, containers, serviços do Kuma com a tag `vm`) fica inibido enquanto o alerta da VM estiver ativo (ver [Dependências e inibição](#dependências-e-inibição)).
 
@@ -137,6 +141,7 @@ Marcadores nas regras (expansão em `scripts/catalogo.py`; o resultado é uma al
 | `@catalogo:vms!=critica@` | VMs listadas com outra classe |
 | `@catalogo:hosts@` | todos os hosts |
 | `@catalogo:backups@` | expressão PromQL com uma série (`instance`, `service`, `backup_id`) por backup esperado, entre parênteses |
+| `@catalogo:atendimento=<limite>@` | expressão PromQL com o limite em segundos de cada departamento (`caixa_entrada`, `triagem`, `cliente_nao_lida`, `cliente_lida`, `sem_movimentacao`), entre parênteses; departamento com `ignorar` fica sem série |
 
 A severidade de CTR-101 a 104 usa um template com `match` sobre o nome do container (`@catalogo:containers=secundario@`), conferido no Grafana 13.3.0. Os dashboards não passam pelo build (o Git Sync lê o JSON direto): quando o catálogo muda, o workflow `catalogo` regrava o filtro de containers ignorados nos dashboards e faz o commit na mesma branch, sozinho.
 

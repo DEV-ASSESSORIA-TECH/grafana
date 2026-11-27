@@ -23,11 +23,11 @@ import catalogo  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 PLACEHOLDER = "A preencher."
 SCOPE_PT = {"hypervisor": "hosts", "vm": "VMs", "guest": "sistemas convidados", "service": "serviços/containers",
-            "external": "serviços externos", "collection": "coleta"}
+            "external": "serviços externos", "collection": "coleta", "atendimento": "fila de atendimento"}
 EQUAL_PT = {"dep_hypervisor": "do mesmo host", "dep_vm": "da mesma VM"}
 AREA_PT = {"hypervisor": "Hipervisor", "windows": "Windows", "linux": "Linux", "containers": "Containers",
            "servicos": "Serviços", "monitoramento": "Monitoramento", "bancos": "Bancos de dados",
-           "backups": "Backups"}
+           "backups": "Backups", "atendimento": "Atendimento (TiFlux)"}
 
 
 def sev_text(value):

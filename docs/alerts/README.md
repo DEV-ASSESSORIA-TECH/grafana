@@ -120,3 +120,16 @@ Padrão em [`contracts/alerts/docs.yml`](../../contracts/alerts/docs.yml). Arqui
 | [BKP-303](BKP-303.md) | Leitor de backups com erro | warning |
 | [BKP-304](BKP-304.md) | Backup esperado não reportado | warning |
 | [BKP-401](BKP-401.md) | Backup lento | info |
+
+## Atendimento (TiFlux)
+
+| Código | Alerta | Severidade |
+|---|---|---|
+| [TFX-301](TFX-301.md) | Coletor do TiFlux sem métricas | warning |
+| [TFX-302](TFX-302.md) | Coleta do TiFlux falhando | warning |
+| [TFX-303](TFX-303.md) | Leitura de mensagens do TiFlux atrasada | info |
+| [TFX-401](TFX-401.md) | Chat aguardando atendimento na caixa de entrada | warning |
+| [TFX-402](TFX-402.md) | Chat parado na triagem | warning |
+| [TFX-403](TFX-403.md) | Cliente aguardando resposta (mensagem não lida) | warning |
+| [TFX-404](TFX-404.md) | Cliente aguardando resposta (mensagem lida) | warning |
+| [TFX-405](TFX-405.md) | Chat sem movimentação | warning |

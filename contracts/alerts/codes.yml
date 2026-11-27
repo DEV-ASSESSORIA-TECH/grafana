@@ -1,7 +1,7 @@
 # Catalogo dos codigos de alerta; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_code_catalog
-version: 0.5.0
+version: 0.6.0
 id: alert-codes
 title: Catalogo de codigos de alerta
 status: defined
@@ -566,3 +566,59 @@ codes:
     scope: collection
     status: active
     runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/BKP-304.md
+  TFX-301:
+    uid: tfx-301
+    title: Coletor do TiFlux sem métricas
+    severity: warning
+    scope: collection
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-301.md
+  TFX-302:
+    uid: tfx-302
+    title: Coleta do TiFlux falhando
+    severity: warning
+    scope: collection
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-302.md
+  TFX-303:
+    uid: tfx-303
+    title: Leitura de mensagens do TiFlux atrasada
+    severity: info
+    scope: collection
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-303.md
+  TFX-401:
+    uid: tfx-401
+    title: Chat aguardando atendimento na caixa de entrada
+    severity: warning
+    scope: atendimento
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-401.md
+  TFX-402:
+    uid: tfx-402
+    title: Chat parado na triagem
+    severity: warning
+    scope: atendimento
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-402.md
+  TFX-403:
+    uid: tfx-403
+    title: Cliente aguardando resposta (mensagem não lida)
+    severity: warning
+    scope: atendimento
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-403.md
+  TFX-404:
+    uid: tfx-404
+    title: Cliente aguardando resposta (mensagem lida)
+    severity: warning
+    scope: atendimento
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-404.md
+  TFX-405:
+    uid: tfx-405
+    title: Chat sem movimentação
+    severity: warning
+    scope: atendimento
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-405.md

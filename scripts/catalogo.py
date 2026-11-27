@@ -8,10 +8,14 @@ build (alerting_build.py) e os validadores expandem a partir do catalogo.yml:
     @catalogo:<secao>=<classes>@    nomes com uma das classes (separadas por virgula)
     @catalogo:<secao>!=<classes>@   nomes listados com outra classe
     @catalogo:backups@              backups esperados, como expressao PromQL (uma serie por backup)
+    @catalogo:atendimento=<limite>@ limites da fila do TiFlux em segundos, como expressao PromQL (uma serie por
+                                    department; ver a secao atendimento do catalogo.yml)
 
 O resultado e uma alternancia de regex (a|b|c) com os nomes escapados; lista vazia vira "" (=~"" nao casa com
 nada, !~"" nao exclui nada). A secao backups (instance: [service/backup_id, ...]) vira uma expressao com uma serie
-(instance, service, backup_id) por item, ou uma expressao vazia sem itens.
+(instance, service, backup_id) por item, ou uma expressao vazia sem itens. A secao atendimento vira uma expressao
+com o limite de cada departamento (sobrescrita do catalogo, ou o padrao para os demais departamentos que o
+tiflux-exporter publica); departamento com o limite 'ignorar' fica sem serie, e a comparacao nunca casa.
 
 Uso:
     python scripts/catalogo.py                       # resumo do catalogo
@@ -39,7 +43,7 @@ SECTIONS = {
     "containers": (("importante", "secundario", "ignorar"), "importante"),
 }
 NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
-MARK = re.compile(r"@catalogo:([a-z]+)(?:(!?=)([a-z,]+))?@")
+MARK = re.compile(r"@catalogo:([a-z]+)(?:(!?=)([a-z_,]+))?@")
 # severidade que depende do catalogo: '{{ if match "^(...)$" $labels.name }}info{{ else }}warning{{ end }}'
 SEVERITY = re.compile(r'^\{\{ if match "\^\((.*)\)\$" \$\$?labels\.name \}\}(\w+)\{\{ else \}\}(\w+)\{\{ end \}\}$')
 # severidade que depende da criticidade publicada pelo backup (backup_info, contracts/prometheus/backup.yml):
@@ -47,6 +51,11 @@ SEVERITY = re.compile(r'^\{\{ if match "\^\((.*)\)\$" \$\$?labels\.name \}\}(\w+
 SEVERITY_CRITICALITY = re.compile(
     r'^\{\{ if eq \$\$?labels\.criticality "baixa" \}\}(\w+)\{\{ else \}\}(\w+)\{\{ end \}\}$')
 BACKUP_ID = re.compile(r"^[a-z0-9]+([-_][a-z0-9]+)*/[a-z0-9]+([-_][a-z0-9]+)*$")
+# fila de atendimento (TiFlux, TFX-401 a 405): limite -> minutos padrao quando o catalogo nao define
+ATENDIMENTO_LIMITS = ("caixa_entrada", "triagem", "cliente_nao_lida", "cliente_lida", "sem_movimentacao")
+DEPARTMENT = re.compile(r"^[a-z0-9]+(_[a-z0-9]+)*$")
+# departamentos que o tiflux-exporter publica (zero preenchido), base do limite padrao
+ATENDIMENTO_DEPTS = 'group by (department) (tiflux_chats_open{job="integrations/tiflux"})'
 # filtro de containers ignorados nos dashboards (Git Sync le o JSON direto, sem build). Forma exigida, logo apos o job:
 #   Prometheus  {job="integrations/docker",name!~"|<ignorados>",...}
 #   Loki        {job="docker",container!~"|<ignorados>",...}
@@ -108,7 +117,7 @@ def load(path=FILE):
         return {s: {} for s in SECTIONS}, [f"{path.name}: {e}"]
     cat = {}
     for key in data:
-        if key not in SECTIONS and key not in ("versao", "backups"):
+        if key not in SECTIONS and key not in ("versao", "backups", "atendimento"):
             errors.append(f"{path.name}: secao desconhecida: {key}")
     for section, (classes, _) in SECTIONS.items():
         raw = data.get(section) or {}
@@ -144,7 +153,84 @@ def load(path=FILE):
                 errors.append(f"{path.name}: backups.{name}: {item} repetido")
             else:
                 cat["backups"].setdefault(name, []).append(item)
+    cat["atendimento"] = load_atendimento(data.get("atendimento"), path.name, errors)
     return cat, errors
+
+
+def _minutes(value, where, errors, allow_ignore):
+    if allow_ignore and value == "ignorar":
+        return None
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        errors.append(f"{where}: {value!r} (minutos inteiros > 0{' ou ignorar' if allow_ignore else ''})")
+        return None
+    return value
+
+
+def load_atendimento(raw, fname, errors):
+    """{'padrao': {limite: minutos}, 'departamentos': {department: {limite: minutos | None (ignorar)}}}."""
+    out = {"padrao": {}, "departamentos": {}}
+    if raw is None:
+        errors.append(f"{fname}: secao atendimento ausente (limites da fila do TiFlux)")
+        return out
+    if not isinstance(raw, dict):
+        errors.append(f"{fname}: atendimento deve ser um mapa com padrao e departamentos")
+        return out
+    for key in sorted(set(raw) - {"padrao", "departamentos"}):
+        errors.append(f"{fname}: atendimento: chave desconhecida: {key}")
+    padrao = raw.get("padrao") or {}
+    if not isinstance(padrao, dict):
+        errors.append(f"{fname}: atendimento.padrao deve ser um mapa limite: minutos")
+        padrao = {}
+    for limit in ATENDIMENTO_LIMITS:
+        if limit not in padrao:
+            errors.append(f"{fname}: atendimento.padrao.{limit} ausente")
+        else:
+            out["padrao"][limit] = _minutes(padrao[limit], f"{fname}: atendimento.padrao.{limit}", errors, False)
+    for key in sorted(set(padrao) - set(ATENDIMENTO_LIMITS)):
+        errors.append(f"{fname}: atendimento.padrao: limite desconhecido: {key} ({', '.join(ATENDIMENTO_LIMITS)})")
+    depts = raw.get("departamentos") or {}
+    if not isinstance(depts, dict):
+        errors.append(f"{fname}: atendimento.departamentos deve ser um mapa department: limites")
+        depts = {}
+    for dept, limits in depts.items():
+        dept = str(dept)
+        where = f"{fname}: atendimento.departamentos.{dept}"
+        if not DEPARTMENT.match(dept):
+            errors.append(f"{where}: nome fora do label department (minusculas ASCII separadas por _)")
+        if limits == "ignorar":
+            limits = {limit: "ignorar" for limit in ATENDIMENTO_LIMITS}
+        if not isinstance(limits, dict) or not limits:
+            errors.append(f"{where}: mapa limite: minutos (ou ignorar para o departamento inteiro)")
+            continue
+        out["departamentos"][dept] = {}
+        for limit, value in limits.items():
+            if limit not in ATENDIMENTO_LIMITS:
+                errors.append(f"{where}: limite desconhecido: {limit} ({', '.join(ATENDIMENTO_LIMITS)})")
+                continue
+            out["departamentos"][dept][limit] = _minutes(value, f"{where}.{limit}", errors, True)
+    return out
+
+
+def atendimento_vector(cat, limit):
+    """Limite (segundos) por department como expressao PromQL, entre parenteses.
+
+    Departamentos do catalogo com valor proprio viram uma serie cada; os demais publicados pelo exporter recebem o
+    padrao. 'ignorar' tira o departamento das duas partes (sem serie, a comparacao 'X > on (department) limite'
+    nunca casa)."""
+    at = cat.get("atendimento") or {}
+    default = (at.get("padrao") or {}).get(limit)
+    own, excluded = [], []
+    for dept, limits in sorted((at.get("departamentos") or {}).items()):
+        if limit not in limits:
+            continue
+        excluded.append(dept)
+        if limits[limit] is not None:
+            own.append(f'label_replace(vector({limits[limit] * 60}), "department", "{dept}", "", "")')
+    base = ATENDIMENTO_DEPTS
+    if excluded:
+        base = base.replace('job="integrations/tiflux"', f'job="integrations/tiflux",department!~"{regex(excluded)}"')
+    parts = own + ([f"({base} * 0 + {default * 60})"] if default else [])
+    return "(" + " or ".join(parts) + ")" if parts else "(vector(1) < 0)"
 
 
 def names(cat, section, op=None, classes=None):
@@ -179,6 +265,11 @@ def render(text, cat):
         section, op, classes = m.groups()
         if section == "backups" and not op:
             return backups_vector(cat)
+        if section == "atendimento":
+            if op != "=" or classes not in ATENDIMENTO_LIMITS:
+                errors.append(f"marcador de atendimento invalido: {m.group(0)} ({', '.join(ATENDIMENTO_LIMITS)})")
+                return m.group(0)
+            return atendimento_vector(cat, classes)
         if section not in SECTIONS:
             errors.append(f"marcador com secao desconhecida: {m.group(0)}")
             return m.group(0)
@@ -206,6 +297,11 @@ def summary(cat):
     print("backups (esperados):")
     for n, items in sorted(cat.get("backups", {}).items()):
         print(f"  {n:28} {', '.join(items)}")
+    at = cat.get("atendimento") or {}
+    print("atendimento (limites em minutos):")
+    print(f"  {'padrao':28} " + ", ".join(f"{k}={v}" for k, v in (at.get("padrao") or {}).items()))
+    for dept, limits in sorted((at.get("departamentos") or {}).items()):
+        print(f"  {dept:28} " + ", ".join(f"{k}={'ignorar' if v is None else v}" for k, v in limits.items()))
 
 
 # --------------------------------------------------------------- auditoria

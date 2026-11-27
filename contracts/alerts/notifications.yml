@@ -1,7 +1,7 @@
 # Contrato de notificacao; nao provisionar este YAML no Grafana.
 schema_version: 1
 kind: alert_notification_contract
-version: 0.4.0
+version: 0.5.0
 id: alert-notifications
 title: Divisao de responsabilidade das notificacoes
 status: defined
@@ -26,6 +26,11 @@ routing_labels:
 recommended_ui_policies:
   - matcher: severity = info
     why: info fica visivel no Grafana e nunca notifica (rota com um mute timing de dia inteiro, ex. mute-info na UI).
+  - matcher: area = atendimento
+    mute_timing: fora-expediente-atendimento
+    why: >-
+      Fila do TiFlux so notifica no horario de atendimento. Fora dele os alertas seguem ativos no Grafana e notificam
+      quando o expediente comeca, se a espera continuar.
   - group_by: [grafana_folder, alertname]
     why: >-
       Padrao do Grafana, mantido: uma notificacao por regra, com as instancias juntas e o codigo no assunto. A inibicao

@@ -1,0 +1,357 @@
+# Contrato definido (produtor: DEV-ASSESSORIA-TECH/tiflux-exporter); nao provisionar este YAML no Grafana.
+schema_version: 2
+kind: observability_contract
+version: 0.1.0
+id: tiflux
+title: TiFlux / filas de chat (tiflux-exporter)
+status: defined
+defined_date: '2026-11-26'
+job: integrations/tiflux
+source:
+  producer: >-
+    DEV-ASSESSORIA-TECH/tiflux-exporter. Consulta a API v2 do TiFlux a cada 60 s (paginas de 200, limite de
+    120 requisicoes por minuto por token), guarda o estado em SQLite local e publica somente agregados. O detalhe
+    por chat fica no endpoint JSON do exporter (json_endpoint abaixo), nunca no Prometheus.
+  collection: Prometheus -> scrape direto de /metrics do exporter (porta 9877, so local) -> scrape 60s
+  docs: tiflux-exporter README.md (metricas, configuracao) e docs/api-tiflux.md (comportamento da API)
+references:
+  common: common.yml
+identity:
+  target_key:
+    - job
+    - instance
+  instance_means: Endereco do exporter (host:porta do scrape). Ha um exporter por organizacao TiFlux.
+  group_key:
+    - job
+    - department
+  label_rules:
+    - Nenhum label identifica chat, cliente, atendente ou contato. Quem e qual chat vem do json_endpoint.
+    - department e o nome do departamento do TiFlux em minusculas ASCII, separado por '_' (SUPORTE TECNICO ->
+      suporte_tecnico). Chat sem departamento (bot de triagem) usa sem_departamento.
+    - Renomear um departamento no TiFlux muda o valor do label; series antigas param e novas comecam.
+    - Os valores de state, kind, signal, threshold e outcome sao fixos (label_values abaixo).
+label_values:
+  state:
+    inbox: Na caixa de entrada, aguardando alguem assumir
+    triage: Em triagem (bot ou departamento, sem responsavel)
+    unassigned: Aberto, sem responsavel, fora da caixa de entrada e da triagem
+    assumed: Com atendente responsavel
+  kind:
+    unread: Cliente escreveu e o atendente nao leu (waiting_answer da API)
+    read: Atendente leu e a ultima mensagem humana continua sendo do cliente
+  signal:
+    inbox: Tempo no estado inbox
+    triage: Tempo no estado triage
+    unassigned: Tempo no estado unassigned
+    assumed: Tempo no estado assumed
+    idle: Tempo sem mensagem humana (qualquer estado)
+    client_waiting_unread: Espera do cliente, mensagem nao lida (so assumed)
+    client_waiting_read: Espera do cliente, mensagem lida e nao respondida (so assumed)
+  threshold:
+    - '300'
+    - '900'
+    - '1800'
+    - '3600'
+    - '14400'
+    - '86400'
+    - '604800'
+  outcome:
+    finished: Chat finalizado
+    canceled: Chat cancelado
+  rating: Nota inteira do campo assessment da API, como texto
+  origin: Canal do chat (origin._type da API) - chat, site_widget, campaign, whatsapp, whatsapp_web, gupshup,
+    whatsapp_cloud
+signal_rules:
+  state_age: >-
+    Tempo no estado atual. inbox, triage e unassigned contam desde department.selected_at (ou created_at); assumed
+    conta desde assumed_at. Quando o exporter ve o chat voltar a um estado e o horario da API e anterior a volta,
+    conta desde a volta.
+  client_waiting: >-
+    So para chats assumed. Conta desde a ultima mensagem do cliente. unread quando waiting_answer = true; read quando
+    a ultima mensagem de autor client, attendant ou ai e do cliente. waiting_answer volta a false quando o atendente
+    apenas le, por isso read existe separado.
+  idle: >-
+    Tempo desde a ultima mensagem de autor client, attendant ou ai. Mensagens de sistema (eventos) nao contam. Sem
+    mensagem humana, conta desde assumed_at ou created_at.
+  messages_freshness: >-
+    client_waiting (read) e idle dependem das mensagens, que o exporter rele por prioridade dentro do limite de
+    requisicoes. tiflux_chat_messages_stale_max_seconds mostra o atraso dessa leitura.
+metric_help:
+  tiflux_up: 1 se o ultimo ciclo de coleta terminou sem erro
+  tiflux_last_success_timestamp_seconds: Fim do ultimo ciclo de coleta bem-sucedido
+  tiflux_cycle_duration_seconds: Duracao do ultimo ciclo de coleta
+  tiflux_cycles_total: Ciclos de coleta por resultado
+  tiflux_api_requests_total: Requisicoes a API do TiFlux
+  tiflux_api_ratelimit_remaining: Ratelimit-Remaining da ultima resposta da API
+  tiflux_chats_open: Chats abertos por estado e departamento
+  tiflux_chats_open_by_origin: Chats abertos por canal
+  tiflux_chats_client_waiting: 'Chats assumidos com o cliente aguardando resposta (unread: nao lida; read: lida e nao
+    respondida)'
+  tiflux_chat_state_age_max_seconds: Maior tempo no estado atual entre os chats abertos
+  tiflux_chat_client_waiting_max_seconds: Maior espera do cliente por resposta (desde a ultima mensagem dele)
+  tiflux_chat_idle_max_seconds: Maior tempo sem mensagem humana entre os chats abertos
+  tiflux_chats_over_age: Chats abertos com o sinal acima do limiar (segundos)
+  tiflux_chat_messages_stale_max_seconds: Maior tempo desde a ultima leitura das mensagens de um chat aberto
+  tiflux_chats_messages_unknown: Chats abertos cujas mensagens nunca foram lidas pelo exporter
+  tiflux_chats_archived_total: Chats encerrados vistos pelo exporter, por resultado
+  tiflux_chat_ratings_total: Avaliacoes de chats encerrados por nota
+  tiflux_chat_assign_wait_seconds: Espera ate o chat ser assumido (chats finalizados)
+metric_groups:
+  queue:
+    title: Chats abertos por estado
+    metrics_observed:
+      - tiflux_chats_open
+      - tiflux_chats_open_by_origin
+    labels:
+      tiflux_chats_open:
+        - state
+        - department
+      tiflux_chats_open_by_origin:
+        - origin
+    interpretation: >-
+      Gauges. tiflux_chats_open publica zero para cada combinacao de state e department conhecido (departamentos da
+      API e dos chats abertos); tiflux_chats_open_by_origin so publica canais com chats abertos.
+  waiting:
+    title: Esperas (base dos alertas de fila)
+    metrics_observed:
+      - tiflux_chats_client_waiting
+      - tiflux_chat_state_age_max_seconds
+      - tiflux_chat_client_waiting_max_seconds
+      - tiflux_chat_idle_max_seconds
+      - tiflux_chats_over_age
+    labels:
+      tiflux_chats_client_waiting:
+        - kind
+        - department
+      tiflux_chat_state_age_max_seconds:
+        - state
+        - department
+      tiflux_chat_client_waiting_max_seconds:
+        - kind
+        - department
+      tiflux_chat_idle_max_seconds:
+        - state
+        - department
+      tiflux_chats_over_age:
+        - signal
+        - department
+        - threshold
+    interpretation: >-
+      Gauges em segundos (exceto contagens), calculados no fim de cada ciclo. *_max_seconds e o pior chat do grupo:
+      a serie so existe quando ha ao menos um chat no grupo. tiflux_chats_over_age conta chats com o sinal >= threshold
+      e so existe quando a contagem e maior que zero. Para estas metricas, ausencia de serie com tiflux_up = 1
+      significa nenhum chat, ao contrario da regra geral de common.yml. tiflux_chats_client_waiting publica zero por
+      kind e department.
+  messages:
+    title: Frescor da leitura de mensagens
+    metrics_observed:
+      - tiflux_chat_messages_stale_max_seconds
+      - tiflux_chats_messages_unknown
+    interpretation: >-
+      stale_max_seconds e o maior tempo desde a ultima leitura das mensagens de um chat aberto (0 sem chats);
+      messages_unknown conta chats abertos sem nenhuma leitura. Valores altos significam client_waiting (read) e idle
+      menos confiaveis.
+  archived:
+    title: Chats encerrados
+    metrics_observed:
+      - tiflux_chats_archived_total
+      - tiflux_chat_ratings_total
+      - tiflux_chat_assign_wait_seconds_bucket
+      - tiflux_chat_assign_wait_seconds_count
+      - tiflux_chat_assign_wait_seconds_sum
+    labels:
+      tiflux_chats_archived_total:
+        - department
+        - outcome
+      tiflux_chat_ratings_total:
+        - department
+        - rating
+      tiflux_chat_assign_wait_seconds_bucket:
+        - department
+        - le
+      tiflux_chat_assign_wait_seconds_count:
+        - department
+      tiflux_chat_assign_wait_seconds_sum:
+        - department
+    interpretation: >-
+      Contadores e histograma montados a partir do SQLite do exporter: so crescem enquanto o banco existir (banco
+      novo = reset). Na primeira execucao o exporter importa os ultimos dias de encerrados (TIFLUX_ARCHIVED_BACKFILL_DAYS),
+      o que aparece como um salto unico. O department e o do momento do encerramento. assign_wait = assumed_at -
+      created_at dos chats finalizados (nao cancelados); buckets 60, 300, 900, 1800, 3600, 7200, 14400, 28800, 86400.
+      Usar increase/rate, nunca o valor absoluto.
+  exporter:
+    title: Saude do exporter
+    metrics_observed:
+      - tiflux_up
+      - tiflux_last_success_timestamp_seconds
+      - tiflux_cycle_duration_seconds
+      - tiflux_cycles_total
+      - tiflux_api_requests_total
+      - tiflux_api_ratelimit_remaining
+    labels:
+      tiflux_cycles_total:
+        - result
+      tiflux_api_requests_total:
+        - endpoint
+        - code
+    interpretation: >-
+      tiflux_up = 0 quando o ultimo ciclo falhou; os demais gauges mantem o ultimo ciclo bom. Atraso se mede por
+      tiflux_last_success_timestamp_seconds. result em ok, error. endpoint e a rota sem ids (/chats/{id}/messages);
+      code e o status HTTP ou error (falha de rede). Contadores reiniciam quando o processo reinicia.
+  collection_health:
+    title: Scrape do exporter
+    metrics_observed:
+      - up
+      - scrape_duration_seconds
+      - scrape_samples_scraped
+    interpretation: up = 1 indica so que /metrics respondeu, nunca que a API do TiFlux respondeu (usar tiflux_up).
+json_endpoint:
+  path: /api/chats
+  purpose: Detalhe por chat aberto para tabelas de dashboard (lista de quais chats esperam), fora do Prometheus.
+  query_params:
+    state: filtro, pode repetir (valores de label_values.state)
+    department: filtro, pode repetir (mesmo valor do label department)
+    origin: filtro, pode repetir
+    client_waiting: 'true para so chats com cliente aguardando'
+    sort: idle (padrao), state_age ou client_waiting; sempre decrescente
+  fields:
+    id: Numero do chat no TiFlux
+    state: Estado (label_values.state)
+    department: Valor do label department
+    department_name: Nome do departamento como no TiFlux
+    origin: Canal
+    client: Nome da empresa cliente
+    responsible: Nome do atendente responsavel (null sem responsavel)
+    ticket_number: Ticket vinculado (null sem ticket)
+    created_at: Criacao do chat (ISO 8601 UTC)
+    state_age_seconds: Tempo no estado
+    client_waiting_seconds: Espera do cliente (null sem espera)
+    client_waiting_kind: unread, read ou null
+    idle_seconds: Tempo sem mensagem humana
+    last_human_author: client, attendant, ai ou null
+    messages_known: false enquanto as mensagens do chat nao foram lidas
+  privacy: Nome, telefone e e-mail do contato (solicitante) nunca sao gravados nem publicados.
+query_recipes:
+  - id: inbox_wait_max
+    title: Maior espera na caixa de entrada por departamento (alerta de chat aguardando atendimento)
+    promql: max by (department) (tiflux_chat_state_age_max_seconds{job="integrations/tiflux",state="inbox"})
+    unit: seconds
+    dependencies:
+      - tiflux_chat_state_age_max_seconds
+  - id: triage_wait_max
+    title: Maior tempo parado na triagem
+    promql: max by (department) (tiflux_chat_state_age_max_seconds{job="integrations/tiflux",state="triage"})
+    unit: seconds
+    dependencies:
+      - tiflux_chat_state_age_max_seconds
+  - id: client_waiting_unread_max
+    title: Maior espera do cliente com mensagem nao lida
+    promql: max by (department) (tiflux_chat_client_waiting_max_seconds{job="integrations/tiflux",kind="unread"})
+    unit: seconds
+    dependencies:
+      - tiflux_chat_client_waiting_max_seconds
+  - id: client_waiting_read_max
+    title: Maior espera do cliente com mensagem lida e nao respondida
+    promql: max by (department) (tiflux_chat_client_waiting_max_seconds{job="integrations/tiflux",kind="read"})
+    unit: seconds
+    dependencies:
+      - tiflux_chat_client_waiting_max_seconds
+  - id: idle_assumed_max
+    title: Maior tempo sem movimentacao entre chats assumidos
+    promql: max by (department) (tiflux_chat_idle_max_seconds{job="integrations/tiflux",state="assumed"})
+    unit: seconds
+    dependencies:
+      - tiflux_chat_idle_max_seconds
+  - id: chats_over_threshold
+    title: Quantos chats passam do limiar (ex. cliente aguardando ha 30 min ou mais)
+    promql: sum by (department) (tiflux_chats_over_age{job="integrations/tiflux",signal="client_waiting_read",threshold="1800"})
+    unit: count
+    dependencies:
+      - tiflux_chats_over_age
+    notes:
+      - Sem serie = nenhum chat acima do limiar (com tiflux_up = 1).
+      - threshold so aceita os valores de label_values.threshold.
+  - id: open_by_state
+    title: Chats abertos por estado
+    promql: sum by (state) (tiflux_chats_open{job="integrations/tiflux"})
+    unit: count
+    dependencies:
+      - tiflux_chats_open
+  - id: client_waiting_count
+    title: Chats com cliente aguardando resposta
+    promql: sum by (kind, department) (tiflux_chats_client_waiting{job="integrations/tiflux"})
+    unit: count
+    dependencies:
+      - tiflux_chats_client_waiting
+  - id: archived_per_hour
+    title: Chats encerrados por hora e resultado
+    promql: sum by (outcome) (increase(tiflux_chats_archived_total{job="integrations/tiflux"}[1h]))
+    unit: count
+    dependencies:
+      - tiflux_chats_archived_total
+  - id: cancel_ratio_1d
+    title: Fracao de chats cancelados em 24 h
+    promql: sum(increase(tiflux_chats_archived_total{job="integrations/tiflux",outcome="canceled"}[1d])) / sum(increase(tiflux_chats_archived_total{job="integrations/tiflux"}[1d]))
+    unit: percentunit
+    dependencies:
+      - tiflux_chats_archived_total
+  - id: ratings_7d
+    title: Distribuicao das notas em 7 dias
+    promql: sum by (rating) (increase(tiflux_chat_ratings_total{job="integrations/tiflux"}[7d]))
+    unit: count
+    dependencies:
+      - tiflux_chat_ratings_total
+  - id: assign_wait_p90_1d
+    title: P90 da espera ate ser assumido, por departamento, em 24 h
+    promql: histogram_quantile(0.9, sum by (le, department) (increase(tiflux_chat_assign_wait_seconds_bucket{job="integrations/tiflux"}[1d])))
+    unit: seconds
+    dependencies:
+      - tiflux_chat_assign_wait_seconds_bucket
+  - id: messages_stale
+    title: Leitura de mensagens atrasada
+    promql: tiflux_chat_messages_stale_max_seconds{job="integrations/tiflux"}
+    unit: seconds
+    dependencies:
+      - tiflux_chat_messages_stale_max_seconds
+  - id: collection_stale
+    title: Tempo desde o ultimo ciclo bem-sucedido
+    promql: time() - tiflux_last_success_timestamp_seconds{job="integrations/tiflux"}
+    unit: seconds
+    dependencies:
+      - tiflux_last_success_timestamp_seconds
+  - id: collection_failed
+    title: Ultimo ciclo de coleta falhou
+    promql: tiflux_up{job="integrations/tiflux"} == 0
+    dependencies:
+      - tiflux_up
+  - id: exporter_down
+    title: Exporter nao responde ao scrape
+    promql: up{job="integrations/tiflux"} == 0
+    dependencies:
+      - up
+  - id: api_errors_15m
+    title: Requisicoes com erro na API em 15 min
+    promql: sum by (endpoint, code) (increase(tiflux_api_requests_total{job="integrations/tiflux",code!="200"}[15m]))
+    unit: count
+    dependencies:
+      - tiflux_api_requests_total
+  - id: ratelimit_remaining
+    title: Requisicoes restantes na janela da API
+    promql: tiflux_api_ratelimit_remaining{job="integrations/tiflux"}
+    unit: count
+    dependencies:
+      - tiflux_api_ratelimit_remaining
+limitations:
+  - Os sinais valem para o fim do ultimo ciclo (ate 60 s de atraso), e client_waiting read e idle dependem da ultima
+    leitura das mensagens de cada chat.
+  - Chat que abre e fecha entre dois ciclos nao aparece nas metricas de fila, so nos encerrados.
+  - A API nao informa a data de finalizacao; o exporter usa o updated_at do chat arquivado.
+  - O exporter enxerga o que o perfil do token enxerga; com perfil tecnico, so os departamentos do grupo dele.
+  - Horario de atendimento nao entra nos sinais; fora do expediente as esperas continuam crescendo. Tratar nas
+    regras (mute timing), nao nas consultas.
+change_policy:
+  require_new_metrics_before_using_in_dashboard: true
+  preserve_raw_labels: true
+  new_metrics: >-
+    Metrica ou label novo entra primeiro neste contrato e depois no exporter (nome tiflux_*). Nada que identifique
+    chat, cliente, atendente ou contato vira label.

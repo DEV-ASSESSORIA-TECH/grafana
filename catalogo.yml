@@ -80,3 +80,26 @@ backups:
     - dominio/database-log
   srv-dom-trs: [dominio/database, dominio/database-log]
   srv-seven-mtc: [seven/database, seven/fiscal]
+
+# Fila de atendimento do TiFlux (TFX-401 a 405), em minutos. O alerta e por departamento e dispara quando o pior
+# chat do departamento passa do limite:
+#   caixa_entrada     TFX-401  chat na caixa de entrada sem ninguem assumir
+#   triagem           TFX-402  chat parado na triagem (bot/departamento, sem responsavel)
+#   cliente_nao_lida  TFX-403  cliente escreveu e o atendente nao leu
+#   cliente_lida      TFX-404  atendente leu e nao respondeu
+#   sem_movimentacao  TFX-405  chat assumido sem nenhuma mensagem humana
+# departamentos: nome igual ao label department do integrations/tiflux (minusculas, sem acento, '_' no lugar de
+# espaco: SUPORTE TECNICO -> suporte_tecnico; sem departamento = sem_departamento). Cada departamento sobrescreve
+# so os limites que listar; 'ignorar' desliga aquele alerta, e 'departamento: ignorar' desliga todos.
+atendimento:
+  padrao:
+    caixa_entrada: 10
+    triagem: 15
+    cliente_nao_lida: 15
+    cliente_lida: 30
+    sem_movimentacao: 240
+  departamentos: {}
+  # exemplo:
+  #   contabilidade:
+  #     sem_movimentacao: 480
+  #   financeiro: ignorar

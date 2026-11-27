@@ -1,0 +1,523 @@
+# Regras da fila de atendimento do TiFlux (job integrations/tiflux, produtor DEV-ASSESSORIA-TECH/tiflux-exporter).
+# Codigos em contracts/alerts/codes.yml; metricas em contracts/prometheus/tiflux.yml.
+# Limites da fila (TFX-401 a 405) no catalogo.yml, secao atendimento (marcador catalogo:atendimento=LIMITE entre arrobas,
+# expandido no build com o limite de cada departamento).
+# Labels: escrever $$labels (o provisionamento interpola variaveis de ambiente nos labels).
+# Annotations e consultas nao sao interpoladas: nelas, $labels.
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: atendimento-1m
+    folder: ATENDIMENTO
+    interval: 1m
+    rules:
+      - uid: tfx-401
+        title: '[TFX-401] Chat aguardando atendimento na caixa de entrada'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                max by (department) (tiflux_chat_state_age_max_seconds{job="integrations/tiflux",state="inbox"})
+                > on (department) @catalogo:atendimento=caixa_entrada@
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-401.md
+          summary: 'Chat na caixa de entrada de {{ $labels.department }} há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }}'
+          description: |-
+            O chat mais antigo da caixa de entrada de {{ $labels.department }} espera há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }} sem ninguém assumir. O limite fica em catalogo.yml (atendimento.caixa_entrada).
+
+            Assuma o chat no TiFlux ou redistribua a fila.
+        labels:
+          alert_code: TFX-401
+          alvo: '{{ with $$labels.department }}{{ . }}{{ end }}'
+          severity: warning
+          area: atendimento
+          scope: atendimento
+        isPaused: false
+
+      - uid: tfx-402
+        title: '[TFX-402] Chat parado na triagem'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                max by (department) (tiflux_chat_state_age_max_seconds{job="integrations/tiflux",state="triage"})
+                > on (department) @catalogo:atendimento=triagem@
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-402.md
+          summary: 'Chat na triagem ({{ $labels.department }}) há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }}'
+          description: |-
+            Um chat está na triagem (bot ou departamento, sem responsável) há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }}. O cliente não avança para o atendimento. O limite fica em catalogo.yml (atendimento.triagem).
+
+            Confira o fluxo do chatbot e direcione o chat para um departamento ou atendente.
+        labels:
+          alert_code: TFX-402
+          alvo: '{{ with $$labels.department }}{{ . }}{{ end }}'
+          severity: warning
+          area: atendimento
+          scope: atendimento
+        isPaused: false
+
+      - uid: tfx-403
+        title: '[TFX-403] Cliente aguardando resposta (mensagem não lida)'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                max by (department) (tiflux_chat_client_waiting_max_seconds{job="integrations/tiflux",kind="unread"})
+                > on (department) @catalogo:atendimento=cliente_nao_lida@
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-403.md
+          summary: 'Cliente sem leitura em {{ $labels.department }} há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }}'
+          description: |-
+            Em {{ $labels.department }}, um cliente mandou mensagem num chat assumido e o atendente não leu há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }}. O limite fica em catalogo.yml (atendimento.cliente_nao_lida).
+
+            Veja o chat no TiFlux (aba de atendimento do responsável) ou transfira se o atendente estiver ausente.
+        labels:
+          alert_code: TFX-403
+          alvo: '{{ with $$labels.department }}{{ . }}{{ end }}'
+          severity: warning
+          area: atendimento
+          scope: atendimento
+        isPaused: false
+
+      - uid: tfx-404
+        title: '[TFX-404] Cliente aguardando resposta (mensagem lida)'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                max by (department) (tiflux_chat_client_waiting_max_seconds{job="integrations/tiflux",kind="read"})
+                > on (department) @catalogo:atendimento=cliente_lida@
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-404.md
+          summary: 'Cliente sem resposta em {{ $labels.department }} há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }}'
+          description: |-
+            Em {{ $labels.department }}, o atendente leu a última mensagem do cliente e não respondeu há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }}. O limite fica em catalogo.yml (atendimento.cliente_lida).
+
+            Responda o cliente ou encerre o chat se o atendimento já terminou.
+        labels:
+          alert_code: TFX-404
+          alvo: '{{ with $$labels.department }}{{ . }}{{ end }}'
+          severity: warning
+          area: atendimento
+          scope: atendimento
+        isPaused: false
+
+      - uid: tfx-405
+        title: '[TFX-405] Chat sem movimentação'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                max by (department) (tiflux_chat_idle_max_seconds{job="integrations/tiflux",state="assumed"})
+                > on (department) @catalogo:atendimento=sem_movimentacao@
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-405.md
+          summary: 'Chat sem movimentação em {{ $labels.department }} há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }}'
+          description: |-
+            Em {{ $labels.department }}, um chat assumido está há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }} sem nenhuma mensagem do cliente nem do atendente. O limite fica em catalogo.yml (atendimento.sem_movimentacao).
+
+            Retome o contato ou encerre o chat no TiFlux.
+        labels:
+          alert_code: TFX-405
+          alvo: '{{ with $$labels.department }}{{ . }}{{ end }}'
+          severity: warning
+          area: atendimento
+          scope: atendimento
+        isPaused: false
+
+      - uid: tfx-301
+        title: '[TFX-301] Coletor do TiFlux sem métricas'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (1 - up{job="integrations/tiflux"})
+                or
+                absent_over_time(up{job="integrations/tiflux"}[5m])
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-301.md
+          summary: 'Coletor do TiFlux sem métricas'
+          description: |-
+            O Prometheus não consegue coletar as métricas do tiflux-exporter há mais de 5 minutos.
+
+            Enquanto isso, nenhum alerta da fila de atendimento (TFX-401 a 405) funciona. Verifique o container tiflux-exporter no servidor do Grafana.
+        labels:
+          alert_code: TFX-301
+          alvo: tiflux-exporter
+          severity: warning
+          area: atendimento
+          scope: collection
+        isPaused: false
+
+      - uid: tfx-302
+        title: '[TFX-302] Coleta do TiFlux falhando'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                time() - tiflux_last_success_timestamp_seconds{job="integrations/tiflux"}
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 600
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-302.md
+          summary: 'Coletor do TiFlux sem conseguir ler a API'
+          description: |-
+            O tiflux-exporter responde, mas o último ciclo bem-sucedido foi há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }}. As métricas da fila estão congeladas nesse momento.
+
+            Veja os logs do container: token inválido (HTTP 401), limite de requisições (429) ou API do TiFlux fora.
+        labels:
+          alert_code: TFX-302
+          alvo: tiflux-exporter
+          severity: warning
+          area: atendimento
+          scope: collection
+        isPaused: false
+
+      - uid: tfx-303
+        title: '[TFX-303] Leitura de mensagens do TiFlux atrasada'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                tiflux_chat_messages_stale_max_seconds{job="integrations/tiflux"}
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 900
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/TFX-303.md
+          summary: 'Mensagens de chat do TiFlux lidas há mais de 15 min'
+          description: |-
+            Algum chat aberto teve as mensagens lidas pela última vez há {{ with $values.A }}{{ humanizeDuration .Value }}{{ end }}. TFX-404 e TFX-405 dependem dessa leitura e podem atrasar.
+
+            Normalmente é excesso de chats abertos para o limite de requisições: confira tiflux_api_ratelimit_remaining e TIFLUX_MESSAGE_REFRESH_MAX.
+        labels:
+          alert_code: TFX-303
+          alvo: tiflux-exporter
+          severity: info
+          area: atendimento
+          scope: collection
+        isPaused: false

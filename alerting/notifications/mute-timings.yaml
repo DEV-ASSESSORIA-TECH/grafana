@@ -10,14 +10,14 @@ muteTimes:
     name: fora-expediente-atendimento
     time_intervals:
       - weekdays: [saturday, sunday]
-        location: America/Sao_Paulo
+        location: America/Cuiaba
       - weekdays: ['monday:friday']
         times:
           - start_time: '00:00'
             end_time: '08:00'
           - start_time: '18:00'
             end_time: '24:00'
-        location: America/Sao_Paulo
+        location: America/Cuiaba
 deleteMuteTimes:
   - orgId: 1
     name: sempre

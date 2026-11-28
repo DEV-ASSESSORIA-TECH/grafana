@@ -496,6 +496,41 @@ codes:
     scope: service
     status: active
     runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-402.md
+  SQL-102:
+    uid: sql-102
+    title: MySQL inacessível
+    severity: critical
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-102.md
+  SQL-111:
+    uid: sql-111
+    title: Servidor MySQL reiniciado
+    severity: info
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-111.md
+  SQL-203:
+    uid: sql-203
+    title: Conexões do MySQL perto do limite
+    severity: warning
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-203.md
+  SQL-302:
+    uid: sql-302
+    title: Coleta do MySQL parada
+    severity: warning
+    scope: collection
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-302.md
+  SQL-403:
+    uid: sql-403
+    title: Consultas esperando lock de tabela no MySQL
+    severity: warning
+    scope: service
+    status: active
+    runbook: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-403.md
   BKP-101:
     uid: bkp-101
     title: Backup muito atrasado

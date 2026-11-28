@@ -99,12 +99,17 @@ Padrão em [`contracts/alerts/docs.yml`](../../contracts/alerts/docs.yml). Arqui
 | Código | Alerta | Severidade |
 |---|---|---|
 | [SQL-101](SQL-101.md) | Banco SQL Anywhere inacessível | critical |
+| [SQL-102](SQL-102.md) | MySQL inacessível | critical |
 | [SQL-110](SQL-110.md) | Servidor SQL Anywhere reiniciado | info |
+| [SQL-111](SQL-111.md) | Servidor MySQL reiniciado | info |
 | [SQL-201](SQL-201.md) | Cache do SQL Anywhere sem página livre | warning |
 | [SQL-202](SQL-202.md) | Memória de consulta negada no SQL Anywhere | warning |
+| [SQL-203](SQL-203.md) | Conexões do MySQL perto do limite | warning |
 | [SQL-301](SQL-301.md) | Coleta do SQL Anywhere parada | warning |
+| [SQL-302](SQL-302.md) | Coleta do MySQL parada | warning |
 | [SQL-401](SQL-401.md) | Requisições na fila do SQL Anywhere | warning |
 | [SQL-402](SQL-402.md) | Thread deadlock no SQL Anywhere | warning |
+| [SQL-403](SQL-403.md) | Consultas esperando lock de tabela no MySQL | warning |
 
 ## Backups
 

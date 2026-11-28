@@ -83,6 +83,7 @@ labels:
         code_prefix: SQL
         prometheus_jobs:
           - integrations/sqlanywhere
+          - integrations/mysql
         loki_jobs: []
       backups:
         code_prefix: BKP

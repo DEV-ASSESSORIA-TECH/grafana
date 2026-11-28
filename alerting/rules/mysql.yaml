@@ -1,0 +1,475 @@
+# Regras de alerta do MySQL (job integrations/mysql). Codigos em contracts/alerts/codes.yml.
+# Area bancos (prefixo SQL, compartilhado com o SQL Anywhere).
+# Labels: escrever $$labels (o provisionamento interpola variaveis de ambiente nos labels).
+# Annotations e consultas nao sao interpoladas: nelas, $labels.
+# VM e hipervisor vem do inventario (receita guest_join): com a VM ou o host fora, estes alertas ficam inibidos.
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: mysql-1m
+    folder: INFRA
+    interval: 1m
+    rules:
+      - uid: sql-102
+        title: '[SQL-102] MySQL inacessível'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  group by (instance) (mysql_up{job="integrations/mysql"} == 0)
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  group by (instance) (mysql_up{job="integrations/mysql"} == 0)
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 2m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-102.md
+          __dashboardUid__: mysql
+          __panelId__: "29"
+          summary: 'MySQL inacessível em {{ $labels.instance }}'
+          description: |-
+            O coletor de {{ $labels.instance }} não consegue conectar ao MySQL há mais de 2 minutos.
+
+            Possíveis causas: serviço do MySQL parado ou travado na inicialização, usuário de monitoramento bloqueado ou com senha trocada, limite de conexões atingido.
+            O servidor Windows continua enviando métricas; se ele inteiro estiver fora, quem avisa é o alerta de servidor sem métricas.
+        labels:
+          alert_code: SQL-102
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
+          severity: critical
+          area: bancos
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: sql-111
+        title: '[SQL-111] Servidor MySQL reiniciado'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  group by (instance) (mysql_global_status_uptime{job="integrations/mysql"} < 600)
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  group by (instance) (mysql_global_status_uptime{job="integrations/mysql"} < 600)
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-111.md
+          __dashboardUid__: mysql
+          __panelId__: "29"
+          summary: 'Servidor MySQL reiniciado em {{ $labels.instance }}'
+          description: |-
+            O MySQL em {{ $labels.instance }} foi iniciado nos últimos 10 minutos.
+
+            Informativo: confirme se foi planejado. Os contadores do servidor (consultas, conexões, locks) voltam a zero.
+        labels:
+          alert_code: SQL-111
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
+          severity: info
+          area: bancos
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: sql-203
+        title: '[SQL-203] Conexões do MySQL perto do limite'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  max by (instance) (mysql_global_status_threads_connected{job="integrations/mysql"})
+                  /
+                  max by (instance) (mysql_global_variables_max_connections{job="integrations/mysql"})
+                  > 0.8
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  max by (instance) (mysql_global_status_threads_connected{job="integrations/mysql"})
+                  /
+                  max by (instance) (mysql_global_variables_max_connections{job="integrations/mysql"})
+                  > 0.8
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-203.md
+          __dashboardUid__: mysql
+          __panelId__: "23"
+          summary: 'Conexões do MySQL perto do limite em {{ $labels.instance }}'
+          description: |-
+            As conexões abertas no MySQL de {{ $labels.instance }} passam de 80% de max_connections há mais de 5 minutos.
+
+            Ao atingir o limite, novos clientes recebem "Too many connections". Conexões acumulando costumam ser consultas presas em lock (veja SQL-403) ou clientes que não fecham a conexão.
+        labels:
+          alert_code: SQL-203
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
+          severity: warning
+          area: bancos
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: sql-302
+        title: '[SQL-302] Coleta do MySQL parada'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  (
+                    (
+                      group by (instance) (max_over_time(mysql_up{job="integrations/mysql"}[7d]))
+                      unless
+                      group by (instance) (time() - timestamp(mysql_up{job="integrations/mysql"}) < 180)
+                    )
+                    or
+                    group by (instance) (
+                      mysql_exporter_collector_success{job="integrations/mysql"} == 0
+                      and on (instance)
+                      mysql_up{job="integrations/mysql"} == 1
+                    )
+                  )
+                  and on (instance)
+                  group by (instance) (up{job="integrations/windows"} == 1)
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  (
+                    (
+                      group by (instance) (max_over_time(mysql_up{job="integrations/mysql"}[7d]))
+                      unless
+                      group by (instance) (time() - timestamp(mysql_up{job="integrations/mysql"}) < 180)
+                    )
+                    or
+                    group by (instance) (
+                      mysql_exporter_collector_success{job="integrations/mysql"} == 0
+                      and on (instance)
+                      mysql_up{job="integrations/mysql"} == 1
+                    )
+                  )
+                  and on (instance)
+                  group by (instance) (up{job="integrations/windows"} == 1)
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-302.md
+          __dashboardUid__: mysql
+          __panelId__: "53"
+          summary: 'Coleta do MySQL parada em {{ $labels.instance }}'
+          description: |-
+            O servidor {{ $labels.instance }} envia métricas do Windows, mas a coleta do MySQL parou há mais de 5 minutos: o módulo MySQL do Alloy deixou de publicar ou um dos coletores (status, variáveis, processlist) está falhando.
+
+            Sem a coleta, os alertas SQL-102, SQL-203 e SQL-403 deste servidor ficam cegos.
+        labels:
+          alert_code: SQL-302
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
+          severity: warning
+          area: bancos
+          scope: collection
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false
+
+      - uid: sql-403
+        title: '[SQL-403] Consultas esperando lock de tabela no MySQL'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              editorMode: code
+              expr: |-
+                (
+                  sum by (instance) (
+                    mysql_info_schema_processlist_threads{job="integrations/mysql",state=~"locked|waiting_for_table_level_lock|waiting_for_table_metadata_lock"}
+                  ) > 10
+                )
+                * on (instance) group_left (vm, hypervisor)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+                or
+                (
+                  sum by (instance) (
+                    mysql_info_schema_processlist_threads{job="integrations/mysql",state=~"locked|waiting_for_table_level_lock|waiting_for_table_metadata_lock"}
+                  ) > 10
+                )
+                unless on (instance)
+                max by (instance, vm, hypervisor) (
+                  label_replace(label_replace(
+                    max by (instance, guest_host, vm) (last_over_time(hypervisor_vm_info{job="integrations/hypervisor"}[1h])),
+                    "hypervisor", "$1", "instance", "(.+)"), "instance", "$1", "guest_host", "(.+)")
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: C
+            queryType: expression
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          runbook_url: https://github.com/DEV-ASSESSORIA-TECH/grafana/blob/main/docs/alerts/SQL-403.md
+          __dashboardUid__: mysql
+          __panelId__: "24"
+          summary: '{{ $values.A }} consultas esperando lock de tabela no MySQL em {{ $labels.instance }}'
+          description: |-
+            Mais de 10 consultas no MySQL de {{ $labels.instance }} esperam lock de tabela (locked, waiting for table level lock ou waiting for table metadata lock) há mais de 5 minutos.
+
+            Uma consulta ou transação longa está segurando a tabela e as demais ficam na fila. Os usuários sentem o sistema travado; as conexões acumulam até max_connections (SQL-203).
+        labels:
+          alert_code: SQL-403
+          alvo: '{{ with $$labels.instance }}{{ . }}{{ end }}'
+          severity: warning
+          area: bancos
+          scope: service
+          dep_hypervisor: '{{ with $$labels.hypervisor }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+          dep_vm: '{{ with $$labels.vm }}{{ . | toLower | reReplaceAll "[^a-z0-9_]" "_" }}{{ end }}'
+        isPaused: false

@@ -29,6 +29,7 @@ Todas as regras ficam na pasta INFRA do Grafana, um grupo por arquivo. O catálo
 | `servicos.yaml` | `servicos-1m` | Uptime Kuma: serviços por criticidade, externos (15 min de tolerância), certificados (sem Tiflux e Sispcard, de terceiros), Kuma sem métricas |
 | `monitoramento.yaml` | `monitoramento-5m` | Prometheus: configuração inválida, falha de compactação |
 | `sqlanywhere.yaml` | `sqlanywhere-1m` | SQL Anywhere: banco inacessível, reinício, cache sem página livre, memória de consulta negada, coleta parada, fila de requisições, thread deadlock |
+| `mysql.yaml` | `mysql-1m` | MySQL: inacessível, reinício, conexões perto do limite, coleta parada, consultas esperando lock de tabela |
 | `backups.yaml` | `backups-1m` | Backups (`integrations/backup`, qualquer produtor): atrasado e muito atrasado, falha, degradado, tamanho caiu, estado não lido, backup que sumiu, leitor com erro, backup esperado não reportado, lentidão |
 
 **Decisões que estão nas consultas** (mude aqui quando mudar a operação):
